@@ -1,0 +1,30 @@
+[package]
+name = "barbed"
+version = "0.0.1"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+authors = ["すごいジャン <me@sugoijan.dev>"]
+description = "Twitch Helix, EventSub, OAuth, and signing helpers"
+readme = false
+repository = "https://github.com/sugoijan/barbed"
+documentation = "https://docs.rs/barbed"
+keywords = ["twitch", "eventsub", "helix", "oauth"]
+
+[dependencies]
+hex = "0.4"
+hmac = "0.12"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"
+
+# Optional: Cloudflare Workers integration
+wasm-bindgen = { version = "0.2", optional = true }
+worker = { version = "0.7", optional = true }
+
+[features]
+cloudflare-worker = ["dep:worker", "dep:wasm-bindgen"]
+
+[package.metadata.docs.rs]
+all-features = true

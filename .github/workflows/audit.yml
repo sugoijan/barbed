@@ -1,0 +1,23 @@
+name: Audit
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Audit dependencies
+        uses: actions-rust-lang/audit@v1
+        with:
+          createIssues: false
+          denyWarnings: true

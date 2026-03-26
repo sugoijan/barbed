@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "message_id": "msg-reconnect-1",
+    "message_type": "session_reconnect",
+    "message_timestamp": "2026-03-10T09:05:00Z"
+  },
+  "payload": {
+    "session": {
+      "id": "AQoQexAWVYKSTIu4ec_2VAxyuhAB",
+      "status": "reconnecting",
+      "connected_at": "2026-03-10T09:00:00Z",
+      "keepalive_timeout_seconds": 30,
+      "reconnect_url": "wss://eventsub.wss.twitch.tv/ws?reconnect=abc123",
+      "recovery_url": null
+    }
+  }
+}

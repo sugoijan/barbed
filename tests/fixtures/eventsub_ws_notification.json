@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "message_id": "msg-note-1",
+    "message_type": "notification",
+    "message_timestamp": "2026-03-10T09:00:05Z",
+    "subscription_type": "channel.chat.message",
+    "subscription_version": "1"
+  },
+  "payload": {
+    "subscription": {
+      "id": "sub-123",
+      "status": "enabled",
+      "type": "channel.chat.message",
+      "version": "1",
+      "condition": {
+        "broadcaster_user_id": "777",
+        "user_id": "777"
+      },
+      "transport": {
+        "method": "websocket",
+        "session_id": "AQoQexAWVYKSTIu4ec_2VAxyuhAB"
+      }
+    },
+    "event": {
+      "broadcaster_user_id": "777",
+      "chatter_user_id": "42",
+      "chatter_user_login": "challenger",
+      "chatter_user_name": "Challenger",
+      "message_id": "chat-msg-1",
+      "message": {
+        "text": "!play"
+      }
+    }
+  }
+}
