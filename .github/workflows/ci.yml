@@ -67,8 +67,8 @@ jobs:
       - name: Restore Rust cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Build all features for wasm
-        run: cargo build --all-features --target wasm32-unknown-unknown --locked
+      - name: Build Cloudflare Worker feature for wasm
+        run: cargo build --features cloudflare-worker --target wasm32-unknown-unknown --locked
 
   msrv:
     name: MSRV 1.85.0

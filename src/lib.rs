@@ -8,13 +8,16 @@
 //! - HMAC signing helpers for short-lived tokens and state payloads
 //!
 //! The default crate stays runtime-agnostic. Enable the `cloudflare-worker`
-//! feature to send [`helix::PreparedRequest`] values via the Cloudflare
-//! Workers `Fetch` API.
+//! feature to send [`http::PreparedRequest`] values via the Cloudflare
+//! Workers `Fetch` API. Enable the `reqwest-client` and `tokio-eventsub`
+//! features for a native Rust runtime.
 //!
 //! # Feature Flags
 //!
 //! - `cloudflare-worker`: adds transport helpers built on the Cloudflare
 //!   Workers `Fetch` API.
+//! - `reqwest-client`: adds native HTTP helpers built on `reqwest`.
+//! - `tokio-eventsub`: adds the native EventSub websocket client/runtime.
 //!
 //! # MSRV
 //!
@@ -80,6 +83,9 @@ pub mod helix;
 pub mod http;
 /// Identity types for authenticated Twitch users.
 pub mod identity;
+/// Native async helpers for OAuth, Helix, and EventSub interactions.
+#[cfg(feature = "reqwest-client")]
+pub mod native;
 /// OAuth URL construction, token lifecycle helpers, and signed state handling.
 pub mod oauth;
 /// Shared HMAC signing helpers for short-lived payloads.

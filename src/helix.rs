@@ -6,6 +6,8 @@ use crate::eventsub::{CreateEventSubSubscriptionRequest, CreateEventSubSubscript
 use crate::http::form_body;
 use crate::oauth::{TwitchAuthOutcome, TwitchTokenState};
 
+const TWITCH_TOKEN_URL: &str = "https://id.twitch.tv/oauth2/token";
+
 #[derive(Debug, Error)]
 pub enum HelixError {
     #[error("twitch API request failed with status {status}: {body}")]
@@ -20,26 +22,7 @@ pub enum HelixError {
     MissingCredentials,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum HttpMethod {
-    Get,
-    Post,
-    Delete,
-}
-
-#[derive(Clone, Debug)]
-pub struct PreparedRequest {
-    pub url: String,
-    pub method: HttpMethod,
-    pub headers: Vec<(String, String)>,
-    pub body: Option<String>,
-}
-
-#[derive(Clone, Debug)]
-pub struct RawResponse {
-    pub status: u16,
-    pub body: String,
-}
+pub use crate::http::{HttpMethod, PreparedRequest, RawResponse};
 
 // -- Twitch API response types --
 
@@ -73,7 +56,7 @@ pub fn token_exchange_request(
     redirect_uri: &str,
 ) -> PreparedRequest {
     PreparedRequest {
-        url: "https://id.twitch.tv/oauth2/token".to_string(),
+        url: TWITCH_TOKEN_URL.to_string(),
         method: HttpMethod::Post,
         headers: vec![(
             "Content-Type".to_string(),
@@ -95,7 +78,7 @@ pub fn token_refresh_request(
     refresh_token: &str,
 ) -> PreparedRequest {
     PreparedRequest {
-        url: "https://id.twitch.tv/oauth2/token".to_string(),
+        url: TWITCH_TOKEN_URL.to_string(),
         method: HttpMethod::Post,
         headers: vec![(
             "Content-Type".to_string(),
@@ -113,6 +96,28 @@ pub fn token_refresh_request(
 pub fn user_lookup_request(access_token: &str, client_id: &str) -> PreparedRequest {
     PreparedRequest {
         url: "https://api.twitch.tv/helix/users".to_string(),
+        method: HttpMethod::Get,
+        headers: vec![
+            (
+                "Authorization".to_string(),
+                format!("Bearer {access_token}"),
+            ),
+            ("Client-Id".to_string(), client_id.to_string()),
+        ],
+        body: None,
+    }
+}
+
+pub fn user_lookup_by_login_request(
+    access_token: &str,
+    client_id: &str,
+    login: &str,
+) -> PreparedRequest {
+    PreparedRequest {
+        url: format!(
+            "https://api.twitch.tv/helix/users?login={}",
+            crate::http::percent_encode(login)
+        ),
         method: HttpMethod::Get,
         headers: vec![
             (

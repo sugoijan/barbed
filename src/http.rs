@@ -1,5 +1,26 @@
 use thiserror::Error;
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum HttpMethod {
+    Get,
+    Post,
+    Delete,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PreparedRequest {
+    pub url: String,
+    pub method: HttpMethod,
+    pub headers: Vec<(String, String)>,
+    pub body: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RawResponse {
+    pub status: u16,
+    pub body: String,
+}
+
 pub fn form_body(values: &[(&str, &str)]) -> String {
     values
         .iter()

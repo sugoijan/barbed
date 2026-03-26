@@ -1,9 +1,21 @@
+use std::time::Duration;
+
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
+#[cfg(feature = "reqwest-client")]
+use time::Duration as TimeDuration;
+use time::OffsetDateTime;
 
 use crate::TwitchIdentity;
+use crate::http::{HttpMethod, PreparedRequest, form_body};
 use crate::signing::{self, SigningError};
 
 const TOKEN_REFRESH_SKEW_MS: i64 = 5 * 60 * 1_000;
+const TWITCH_DEVICE_CODE_URL: &str = "https://id.twitch.tv/oauth2/device";
+const TWITCH_TOKEN_URL: &str = "https://id.twitch.tv/oauth2/token";
+const TWITCH_VALIDATE_URL: &str = "https://id.twitch.tv/oauth2/validate";
+const DEVICE_GRANT_TYPE: &str = "urn:ietf:params:oauth:grant-type:device_code";
+#[cfg(feature = "reqwest-client")]
+const DEFAULT_POLL_INTERVAL_SECS: u64 = 5;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TwitchTokenState {
@@ -19,6 +31,88 @@ pub struct TwitchTokenState {
 pub struct TwitchAuthOutcome {
     pub identity: TwitchIdentity,
     pub tokens: TwitchTokenState,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TwitchAuthConfig {
+    pub client_id: String,
+    pub default_scopes: Vec<String>,
+}
+
+impl TwitchAuthConfig {
+    pub fn new(client_id: impl Into<String>) -> Self {
+        Self {
+            client_id: client_id.into(),
+            default_scopes: vec![
+                "chat:read".to_string(),
+                "bits:read".to_string(),
+                "channel:read:redemptions".to_string(),
+                "moderator:read:chatters".to_string(),
+                "user:read:chat".to_string(),
+            ],
+        }
+    }
+
+    pub fn with_default_scopes<I, S>(mut self, scopes: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.default_scopes = scopes.into_iter().map(Into::into).collect();
+        self
+    }
+
+    pub fn client_id(&self) -> &str {
+        &self.client_id
+    }
+
+    pub fn default_scopes(&self) -> &[String] {
+        &self.default_scopes
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TwitchDeviceAuthorization {
+    pub user_code: String,
+    pub verification_uri: String,
+    pub verification_uri_complete: Option<String>,
+    pub expires_at: OffsetDateTime,
+    pub interval: Duration,
+    pub(crate) device_code: String,
+}
+
+impl TwitchDeviceAuthorization {
+    #[cfg(feature = "reqwest-client")]
+    pub(crate) fn new(
+        user_code: String,
+        verification_uri: String,
+        verification_uri_complete: Option<String>,
+        expires_in_seconds: u64,
+        interval_seconds: Option<u64>,
+        device_code: String,
+        now: OffsetDateTime,
+    ) -> Result<Self, SigningError> {
+        let expires_at = now
+            .checked_add(TimeDuration::seconds(expires_in_seconds as i64))
+            .ok_or(SigningError::MalformedToken)?;
+        Ok(Self {
+            user_code,
+            verification_uri,
+            verification_uri_complete,
+            expires_at,
+            interval: Duration::from_secs(interval_seconds.unwrap_or(DEFAULT_POLL_INTERVAL_SECS)),
+            device_code,
+        })
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TokenValidation {
+    pub client_id: String,
+    pub login: Option<String>,
+    pub user_id: Option<String>,
+    pub scopes: Vec<String>,
+    pub expires_in: u64,
 }
 
 pub fn token_expires_at_ms(tokens: &TwitchTokenState) -> Option<i64> {
@@ -48,6 +142,67 @@ pub fn refreshed_twitch_token_state(
         scope: scope.unwrap_or_else(|| previous.scope.clone()),
         token_type: token_type.unwrap_or_else(|| previous.token_type.clone()),
         linked_at_ms: now_ms,
+    }
+}
+
+pub fn device_code_request(client_id: &str, scopes: &[String]) -> PreparedRequest {
+    let scope_string = normalize_scopes(scopes, &[]);
+    device_code_request_with_scope(client_id, &scope_string)
+}
+
+pub fn device_code_request_with_scope(client_id: &str, scope_string: &str) -> PreparedRequest {
+    PreparedRequest {
+        url: TWITCH_DEVICE_CODE_URL.to_string(),
+        method: HttpMethod::Post,
+        headers: vec![(
+            "Content-Type".to_string(),
+            "application/x-www-form-urlencoded".to_string(),
+        )],
+        body: Some(form_body(&[
+            ("client_id", client_id),
+            ("scope", scope_string),
+        ])),
+    }
+}
+
+pub fn device_token_request(client_id: &str, device_code: &str) -> PreparedRequest {
+    PreparedRequest {
+        url: TWITCH_TOKEN_URL.to_string(),
+        method: HttpMethod::Post,
+        headers: vec![(
+            "Content-Type".to_string(),
+            "application/x-www-form-urlencoded".to_string(),
+        )],
+        body: Some(form_body(&[
+            ("client_id", client_id),
+            ("device_code", device_code),
+            ("grant_type", DEVICE_GRANT_TYPE),
+        ])),
+    }
+}
+
+pub fn refresh_token_request(client_id: &str, refresh_token: &str) -> PreparedRequest {
+    PreparedRequest {
+        url: TWITCH_TOKEN_URL.to_string(),
+        method: HttpMethod::Post,
+        headers: vec![(
+            "Content-Type".to_string(),
+            "application/x-www-form-urlencoded".to_string(),
+        )],
+        body: Some(form_body(&[
+            ("client_id", client_id),
+            ("grant_type", "refresh_token"),
+            ("refresh_token", refresh_token),
+        ])),
+    }
+}
+
+pub fn validate_token_request(access_token: &str) -> PreparedRequest {
+    PreparedRequest {
+        url: TWITCH_VALIDATE_URL.to_string(),
+        method: HttpMethod::Get,
+        headers: vec![("Authorization".to_string(), format!("OAuth {access_token}"))],
+        body: None,
     }
 }
 
@@ -103,6 +258,17 @@ pub fn verify_oauth_state<S: OAuthStatePayload>(
         return Err(SigningError::Expired);
     }
     Ok(claims)
+}
+
+pub(crate) fn normalize_scopes(overrides: &[String], defaults: &[String]) -> String {
+    let mut scopes: Vec<String> = if overrides.is_empty() {
+        defaults.to_vec()
+    } else {
+        overrides.to_vec()
+    };
+    scopes.sort();
+    scopes.dedup();
+    scopes.join(" ")
 }
 
 #[cfg(test)]

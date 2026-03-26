@@ -65,8 +65,8 @@ jobs:
       - name: Test all features
         run: cargo test --all-features --locked
 
-      - name: Build all features for wasm
-        run: cargo build --all-features --target wasm32-unknown-unknown --locked
+      - name: Build Cloudflare Worker feature for wasm
+        run: cargo build --features cloudflare-worker --target wasm32-unknown-unknown --locked
 
       - name: Verify packaging
         run: cargo package --locked
