@@ -11,7 +11,7 @@ members = [
 [workspace.package]
 version = "0.0.3"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 license = "MIT OR Apache-2.0"
 authors = ["すごいジャン <me@sugoijan.dev>"]
 repository = "https://github.com/sugoijan/barbed"

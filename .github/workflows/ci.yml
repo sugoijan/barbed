@@ -74,15 +74,29 @@ jobs:
         run: cargo build --features cloudflare-worker --target wasm32-unknown-unknown --locked
 
   msrv:
-    name: MSRV 1.85.0
+    name: MSRV
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Read MSRV from Cargo.toml
+        id: msrv
+        run: |
+          set -euo pipefail
+
+          MSRV="$(sed -n 's/^rust-version = "\(.*\)"/\1/p' Cargo.toml | head -n 1)"
+          if [ -z "$MSRV" ]; then
+            echo "Could not read rust-version from Cargo.toml." >&2
+            exit 1
+          fi
+          echo "version=$MSRV" >> "$GITHUB_OUTPUT"
+
       - name: Install MSRV toolchain
-        uses: dtolnay/rust-toolchain@1.85.0
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.msrv.outputs.version }}
 
       - name: Restore Rust cache
         uses: Swatinem/rust-cache@v2
