@@ -41,6 +41,7 @@ dependencies = [
  "barbed-bttv",
  "barbed-core",
  "barbed-ffz",
+ "base64",
  "futures-util",
  "hex",
  "hmac",

@@ -1,9 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, Mutex};
 
-use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
-use sha2::Sha256;
 use thiserror::Error;
 use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
@@ -16,8 +14,6 @@ pub use crate::helix::EndpointStability;
 
 pub const CHANNEL_CHAT_MESSAGE: &str = "channel.chat.message";
 pub const CHANNEL_CHAT_MESSAGE_DELETE: &str = "channel.chat.message_delete";
-
-type HmacSha256 = Hmac<Sha256>;
 
 #[derive(Debug, Error)]
 pub enum EventSubError {
@@ -93,32 +89,24 @@ impl EventSubTransport {
         Self {
             method: Some("websocket".to_string()),
             session_id: Some(session_id.into()),
-            callback: None,
-            secret: None,
-            conduit_id: None,
-            extra: BTreeMap::new(),
+            ..Self::default()
         }
     }
 
     pub fn webhook(callback: impl Into<String>, secret: impl Into<String>) -> Self {
         Self {
             method: Some("webhook".to_string()),
-            session_id: None,
             callback: Some(callback.into()),
             secret: Some(secret.into()),
-            conduit_id: None,
-            extra: BTreeMap::new(),
+            ..Self::default()
         }
     }
 
     pub fn conduit(conduit_id: impl Into<String>) -> Self {
         Self {
             method: Some("conduit".to_string()),
-            session_id: None,
-            callback: None,
-            secret: None,
             conduit_id: Some(conduit_id.into()),
-            extra: BTreeMap::new(),
+            ..Self::default()
         }
     }
 }
@@ -342,14 +330,9 @@ impl EventSubMessageEmote {
             }
         }
 
-        let is_animated = formats
-            .iter()
-            .any(|format| matches!(format, EmoteImageFormat::Animated));
-
         Emote::new(
             EmoteId::new(EmoteProvider::Twitch, self.id.clone()),
             code,
-            is_animated,
             images,
         )
     }
@@ -499,8 +482,7 @@ impl EventSubWebSocketEnvelope {
     }
 
     fn deserialize_event<T: serde::de::DeserializeOwned + HasSourceTimestamp>(&self) -> Option<T> {
-        let event = self.payload.event.clone()?;
-        let mut value: T = serde_json::from_value(event).ok()?;
+        let mut value: T = T::deserialize(self.payload.event.as_ref()?).ok()?;
         value.set_source_timestamp(self.message_timestamp());
         Some(value)
     }
@@ -761,12 +743,15 @@ pub fn compute_webhook_signature(
     headers: &EventSubWebhookHeaders,
     raw_body: &str,
 ) -> String {
-    let mut mac =
-        HmacSha256::new_from_slice(secret.as_bytes()).expect("sha256 hmac accepts any key length");
-    mac.update(headers.message_id.as_bytes());
-    mac.update(headers.message_timestamp.as_bytes());
-    mac.update(raw_body.as_bytes());
-    format!("sha256={}", hex::encode(mac.finalize().into_bytes()))
+    let signature = crate::signing::hmac_sha256(
+        secret.as_bytes(),
+        &[
+            headers.message_id.as_bytes(),
+            headers.message_timestamp.as_bytes(),
+            raw_body.as_bytes(),
+        ],
+    );
+    format!("sha256={}", hex::encode(signature))
 }
 
 pub fn verify_webhook_signature(
@@ -774,7 +759,7 @@ pub fn verify_webhook_signature(
     headers: &EventSubWebhookHeaders,
     raw_body: &str,
 ) -> bool {
-    constant_time_eq(
+    crate::signing::constant_time_eq(
         compute_webhook_signature(secret, headers, raw_body).as_bytes(),
         headers.message_signature.as_bytes(),
     )
@@ -811,18 +796,6 @@ pub fn verify_and_decode_webhook_message(
         }
     }
     decode_eventsub_webhook_message(raw_body)
-}
-
-fn constant_time_eq(left: &[u8], right: &[u8]) -> bool {
-    if left.len() != right.len() {
-        return false;
-    }
-
-    let mut diff = 0u8;
-    for (lhs, rhs) in left.iter().zip(right.iter()) {
-        diff |= lhs ^ rhs;
-    }
-    diff == 0
 }
 
 #[path = "eventsub_generated.rs"]
@@ -923,7 +896,7 @@ mod tests {
         .to_emote("Kappa");
 
         assert_eq!(emote.code, "Kappa");
-        assert!(emote.is_animated);
+        assert!(emote.is_animated());
         assert_eq!(emote.images.len(), 4);
     }
 

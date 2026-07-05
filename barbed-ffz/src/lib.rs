@@ -296,19 +296,18 @@ fn emote_from_model(model: EmoteModel) -> Emote {
     if let Some(animated) = &model.animated {
         images.extend(image_variants(animated, EmoteImageFormat::Animated));
     }
-    let is_animated = images
-        .iter()
-        .any(|image| matches!(image.format, EmoteImageFormat::Animated));
 
     let mut emote = Emote::new(
         EmoteId::new(EmoteProvider::FrankerFaceZ, model.id.to_string()),
         model.name,
-        is_animated,
         images,
     );
 
     if model.modifier {
-        let flags = EmoteModifierFlags::from_bits_retain(model.modifier_flags);
+        let mut flags = EmoteModifierFlags::from_bits_retain(model.modifier_flags);
+        if model.hidden {
+            flags |= EmoteModifierFlags::HIDDEN;
+        }
         let mut mask_images = Vec::new();
         if let Some(mask) = &model.mask {
             mask_images.extend(image_variants(mask, EmoteImageFormat::Static));
@@ -316,12 +315,7 @@ fn emote_from_model(model: EmoteModel) -> Emote {
         if let Some(mask) = &model.mask_animated {
             mask_images.extend(image_variants(mask, EmoteImageFormat::Animated));
         }
-        emote = emote.with_modifier(EmoteModifier {
-            flags,
-            raw_flags: model.modifier_flags,
-            is_hidden: model.hidden || flags.contains(EmoteModifierFlags::HIDDEN),
-            mask_images,
-        });
+        emote = emote.with_modifier(EmoteModifier { flags, mask_images });
     }
 
     emote
@@ -339,21 +333,11 @@ fn image_variants(
             Some(EmoteImage {
                 format: format.clone(),
                 theme_mode: EmoteThemeMode::Light,
-                scale: parse_scale(scale_key),
+                scale: EmoteImageScale::parse(scale_key),
                 url,
             })
         })
         .collect()
-}
-
-#[cfg(any(test, feature = "reqwest-client"))]
-fn parse_scale(value: &str) -> EmoteImageScale {
-    match value {
-        "1" | "1.0" => EmoteImageScale::One,
-        "2" | "2.0" => EmoteImageScale::Two,
-        "3" | "3.0" => EmoteImageScale::Three,
-        other => EmoteImageScale::Other(other.to_string()),
-    }
 }
 
 #[cfg(test)]
@@ -374,9 +358,10 @@ mod tests {
         let room = parse_room_sets_json(include_str!("../tests/fixtures/room_sets.json"))
             .expect("room fixture should parse");
         let modifier = room.sets[0].emotes[0]
-            .modifier()
+            .modifier
+            .as_ref()
             .expect("modifier metadata should exist");
-        assert!(modifier.is_hidden);
+        assert!(modifier.flags.contains(EmoteModifierFlags::HIDDEN));
         assert!(modifier.flags.contains(EmoteModifierFlags::RAINBOW));
     }
 

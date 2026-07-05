@@ -67,26 +67,22 @@ fn store_err(context: &'static str, err: BoxError) -> anyhow::Error {
 }
 
 #[cfg(feature = "reqwest-client")]
-pub async fn ensure_valid_stored_auth<S: TwitchAuthStore>(
+async fn load_stored_auth<S: TwitchAuthStore>(
+    store: &S,
+) -> anyhow::Result<Option<TwitchAuthOutcome>> {
+    store
+        .load_auth()
+        .await
+        .map_err(|err| store_err("failed to load stored auth", err))
+}
+
+#[cfg(feature = "reqwest-client")]
+async fn refresh_and_persist<S: TwitchAuthStore>(
     http: &reqwest::Client,
     store: &S,
     client_id: &str,
+    mut auth: TwitchAuthOutcome,
 ) -> anyhow::Result<Option<TwitchAuthOutcome>> {
-    let Some(mut auth) = store
-        .load_auth()
-        .await
-        .map_err(|err| store_err("failed to load stored auth", err))?
-    else {
-        return Ok(None);
-    };
-
-    if crate::native::validate_access_token(http, &auth.tokens.access_token)
-        .await?
-        .is_some()
-    {
-        return Ok(Some(auth));
-    }
-
     let Some(refreshed) =
         crate::native::refresh_access_token(http, client_id, &auth.tokens.refresh_token).await?
     else {
@@ -106,35 +102,36 @@ pub async fn ensure_valid_stored_auth<S: TwitchAuthStore>(
 }
 
 #[cfg(feature = "reqwest-client")]
+pub async fn ensure_valid_stored_auth<S: TwitchAuthStore>(
+    http: &reqwest::Client,
+    store: &S,
+    client_id: &str,
+) -> anyhow::Result<Option<TwitchAuthOutcome>> {
+    let Some(auth) = load_stored_auth(store).await? else {
+        return Ok(None);
+    };
+
+    if crate::native::validate_access_token(http, &auth.tokens.access_token)
+        .await?
+        .is_some()
+    {
+        return Ok(Some(auth));
+    }
+
+    refresh_and_persist(http, store, client_id, auth).await
+}
+
+#[cfg(feature = "reqwest-client")]
 pub async fn refresh_stored_auth<S: TwitchAuthStore>(
     http: &reqwest::Client,
     store: &S,
     client_id: &str,
 ) -> anyhow::Result<Option<TwitchAuthOutcome>> {
-    let Some(mut auth) = store
-        .load_auth()
-        .await
-        .map_err(|err| store_err("failed to load stored auth", err))?
-    else {
+    let Some(auth) = load_stored_auth(store).await? else {
         return Ok(None);
     };
 
-    let Some(refreshed) =
-        crate::native::refresh_access_token(http, client_id, &auth.tokens.refresh_token).await?
-    else {
-        store
-            .clear_auth()
-            .await
-            .map_err(|err| store_err("failed to clear rejected auth", err))?;
-        return Ok(None);
-    };
-
-    auth.tokens = refreshed;
-    store
-        .save_auth(&auth)
-        .await
-        .map_err(|err| store_err("failed to persist refreshed auth", err))?;
-    Ok(Some(auth))
+    refresh_and_persist(http, store, client_id, auth).await
 }
 
 #[cfg(test)]

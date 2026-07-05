@@ -1,17 +1,18 @@
 use std::time::Duration;
 
+use base64::Engine as _;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 #[cfg(feature = "reqwest-client")]
 use time::Duration as TimeDuration;
 use time::OffsetDateTime;
 
 use crate::TwitchIdentity;
-use crate::http::{HttpMethod, PreparedRequest, form_body};
+use crate::http::{HttpMethod, PreparedRequest, append_query_params, form_post_request};
 use crate::signing::{self, SigningError};
 
 const TOKEN_REFRESH_SKEW_MS: i64 = 5 * 60 * 1_000;
 const TWITCH_DEVICE_CODE_URL: &str = "https://id.twitch.tv/oauth2/device";
-const TWITCH_TOKEN_URL: &str = "https://id.twitch.tv/oauth2/token";
+pub(crate) const TWITCH_TOKEN_URL: &str = "https://id.twitch.tv/oauth2/token";
 const TWITCH_VALIDATE_URL: &str = "https://id.twitch.tv/oauth2/validate";
 const TWITCH_REVOKE_URL: &str = "https://id.twitch.tv/oauth2/revoke";
 const TWITCH_AUTHORIZE_URL: &str = "https://id.twitch.tv/oauth2/authorize";
@@ -66,14 +67,6 @@ impl TwitchAuthConfig {
     {
         self.default_scopes = scopes.into_iter().map(Into::into).collect();
         self
-    }
-
-    pub fn client_id(&self) -> &str {
-        &self.client_id
-    }
-
-    pub fn default_scopes(&self) -> &[String] {
-        &self.default_scopes
     }
 }
 
@@ -195,50 +188,32 @@ pub fn device_code_request(client_id: &str, scopes: &[String]) -> PreparedReques
 }
 
 pub fn device_code_request_with_scope(client_id: &str, scope_string: &str) -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_DEVICE_CODE_URL.to_string(),
-        method: HttpMethod::Post,
-        headers: vec![(
-            "Content-Type".to_string(),
-            "application/x-www-form-urlencoded".to_string(),
-        )],
-        body: Some(form_body(&[
-            ("client_id", client_id),
-            ("scope", scope_string),
-        ])),
-    }
+    form_post_request(
+        TWITCH_DEVICE_CODE_URL,
+        &[("client_id", client_id), ("scope", scope_string)],
+    )
 }
 
 pub fn device_token_request(client_id: &str, device_code: &str) -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_TOKEN_URL.to_string(),
-        method: HttpMethod::Post,
-        headers: vec![(
-            "Content-Type".to_string(),
-            "application/x-www-form-urlencoded".to_string(),
-        )],
-        body: Some(form_body(&[
+    form_post_request(
+        TWITCH_TOKEN_URL,
+        &[
             ("client_id", client_id),
             ("device_code", device_code),
             ("grant_type", DEVICE_GRANT_TYPE),
-        ])),
-    }
+        ],
+    )
 }
 
 pub fn refresh_token_request(client_id: &str, refresh_token: &str) -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_TOKEN_URL.to_string(),
-        method: HttpMethod::Post,
-        headers: vec![(
-            "Content-Type".to_string(),
-            "application/x-www-form-urlencoded".to_string(),
-        )],
-        body: Some(form_body(&[
+    form_post_request(
+        TWITCH_TOKEN_URL,
+        &[
             ("client_id", client_id),
             ("grant_type", "refresh_token"),
             ("refresh_token", refresh_token),
-        ])),
-    }
+        ],
+    )
 }
 
 pub fn validate_token_request(access_token: &str) -> PreparedRequest {
@@ -251,31 +226,21 @@ pub fn validate_token_request(access_token: &str) -> PreparedRequest {
 }
 
 pub fn client_credentials_request(client_id: &str, client_secret: &str) -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_TOKEN_URL.to_string(),
-        method: HttpMethod::Post,
-        headers: vec![(
-            "Content-Type".to_string(),
-            "application/x-www-form-urlencoded".to_string(),
-        )],
-        body: Some(form_body(&[
+    form_post_request(
+        TWITCH_TOKEN_URL,
+        &[
             ("client_id", client_id),
             ("client_secret", client_secret),
             ("grant_type", "client_credentials"),
-        ])),
-    }
+        ],
+    )
 }
 
 pub fn revoke_token_request(client_id: &str, token: &str) -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_REVOKE_URL.to_string(),
-        method: HttpMethod::Post,
-        headers: vec![(
-            "Content-Type".to_string(),
-            "application/x-www-form-urlencoded".to_string(),
-        )],
-        body: Some(form_body(&[("client_id", client_id), ("token", token)])),
-    }
+    form_post_request(
+        TWITCH_REVOKE_URL,
+        &[("client_id", client_id), ("token", token)],
+    )
 }
 
 pub fn openid_configuration_request() -> PreparedRequest {
@@ -330,21 +295,14 @@ pub fn build_authorize_url<S: Serialize>(
     signing_secret: &str,
 ) -> Result<String, SigningError> {
     let signed_state = signing::sign_payload(signing_secret, state)?;
-    let scope_joined = scopes.join(" ");
-
-    let mut url = String::from(TWITCH_AUTHORIZE_URL);
-    url.push('?');
-    url.push_str("client_id=");
-    url.push_str(&crate::http::percent_encode(client_id));
-    url.push_str("&redirect_uri=");
-    url.push_str(&crate::http::percent_encode(redirect_uri));
-    url.push_str("&response_type=code");
-    url.push_str("&scope=");
-    url.push_str(&crate::http::percent_encode(&scope_joined));
-    url.push_str("&state=");
-    url.push_str(&crate::http::percent_encode(&signed_state));
-
-    Ok(url)
+    let params = [
+        ("client_id".to_string(), client_id.to_string()),
+        ("redirect_uri".to_string(), redirect_uri.to_string()),
+        ("response_type".to_string(), "code".to_string()),
+        ("scope".to_string(), scopes.join(" ")),
+        ("state".to_string(), signed_state),
+    ];
+    Ok(append_query_params(TWITCH_AUTHORIZE_URL, &params))
 }
 
 pub fn build_oidc_authorize_url(
@@ -355,27 +313,20 @@ pub fn build_oidc_authorize_url(
     nonce: Option<&str>,
     response_type: &str,
 ) -> String {
-    let scope_joined = scopes.join(" ");
-    let mut url = String::from(TWITCH_AUTHORIZE_URL);
-    url.push('?');
-    url.push_str("client_id=");
-    url.push_str(&crate::http::percent_encode(client_id));
-    url.push_str("&redirect_uri=");
-    url.push_str(&crate::http::percent_encode(redirect_uri));
-    url.push_str("&response_type=");
-    url.push_str(&crate::http::percent_encode(response_type));
-    url.push_str("&scope=");
-    url.push_str(&crate::http::percent_encode(&scope_joined));
+    let mut params = vec![
+        ("client_id".to_string(), client_id.to_string()),
+        ("redirect_uri".to_string(), redirect_uri.to_string()),
+        ("response_type".to_string(), response_type.to_string()),
+        ("scope".to_string(), scopes.join(" ")),
+    ];
     if let Some(nonce) = nonce {
-        url.push_str("&nonce=");
-        url.push_str(&crate::http::percent_encode(nonce));
+        params.push(("nonce".to_string(), nonce.to_string()));
     }
     if let Some(claims) = claims {
         let claims = serde_json::to_string(claims).expect("OIDC claims JSON should serialize");
-        url.push_str("&claims=");
-        url.push_str(&crate::http::percent_encode(&claims));
+        params.push(("claims".to_string(), claims));
     }
-    url
+    append_query_params(TWITCH_AUTHORIZE_URL, &params)
 }
 
 /// Verifies and decodes a signed OAuth state parameter.
@@ -424,7 +375,7 @@ pub fn sign_extension_jwt<T: Serialize>(secret: &[u8], claims: &T) -> Result<Str
     let header = encode_base64_url_no_pad(&serde_json::to_vec(&header)?);
     let claims = encode_base64_url_no_pad(&serde_json::to_vec(claims)?);
     let signing_input = format!("{header}.{claims}");
-    let signature = hmac_sha256(secret, signing_input.as_bytes());
+    let signature = signing::hmac_sha256(secret, &[signing_input.as_bytes()]);
     Ok(format!(
         "{signing_input}.{}",
         encode_base64_url_no_pad(&signature)
@@ -441,87 +392,23 @@ pub fn verify_extension_jwt<T: DeserializeOwned>(
     let (header, rest) = token.split_once('.').ok_or(SigningError::MalformedToken)?;
     let (claims, signature) = rest.split_once('.').ok_or(SigningError::MalformedToken)?;
     let signing_input = format!("{header}.{claims}");
-    let expected = encode_base64_url_no_pad(&hmac_sha256(secret, signing_input.as_bytes()));
-    if !constant_time_eq(expected.as_bytes(), signature.as_bytes()) {
+    let expected =
+        encode_base64_url_no_pad(&signing::hmac_sha256(secret, &[signing_input.as_bytes()]));
+    if !signing::constant_time_eq(expected.as_bytes(), signature.as_bytes()) {
         return Err(SigningError::InvalidSignature);
     }
     let payload = decode_base64_url_no_pad(claims)?;
     serde_json::from_slice(&payload).map_err(SigningError::from)
 }
 
-fn hmac_sha256(secret: &[u8], input: &[u8]) -> Vec<u8> {
-    use hmac::{Hmac, Mac};
-    use sha2::Sha256;
-
-    let mut mac =
-        Hmac::<Sha256>::new_from_slice(secret).expect("sha256 hmac accepts any key length");
-    mac.update(input);
-    mac.finalize().into_bytes().to_vec()
-}
-
 fn encode_base64_url_no_pad(bytes: &[u8]) -> String {
-    const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-    let mut out = String::new();
-    let mut chunks = bytes.chunks_exact(3);
-    for chunk in &mut chunks {
-        let buffer = ((chunk[0] as u32) << 16) | ((chunk[1] as u32) << 8) | (chunk[2] as u32);
-        out.push(TABLE[((buffer >> 18) & 0x3F) as usize] as char);
-        out.push(TABLE[((buffer >> 12) & 0x3F) as usize] as char);
-        out.push(TABLE[((buffer >> 6) & 0x3F) as usize] as char);
-        out.push(TABLE[(buffer & 0x3F) as usize] as char);
-    }
-
-    let remainder = chunks.remainder();
-    if !remainder.is_empty() {
-        let first = remainder[0];
-        out.push(TABLE[(first >> 2) as usize] as char);
-        if remainder.len() == 1 {
-            out.push(TABLE[((first & 0x03) << 4) as usize] as char);
-        } else {
-            let second = remainder[1];
-            out.push(TABLE[(((first & 0x03) << 4) | (second >> 4)) as usize] as char);
-            out.push(TABLE[((second & 0x0F) << 2) as usize] as char);
-        }
-    }
-
-    out
+    base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(bytes)
 }
 
 fn decode_base64_url_no_pad(value: &str) -> Result<Vec<u8>, SigningError> {
-    let mut bytes = Vec::new();
-    let mut buffer = 0u32;
-    let mut bits = 0u8;
-
-    for ch in value.bytes() {
-        let value = match ch {
-            b'A'..=b'Z' => ch - b'A',
-            b'a'..=b'z' => ch - b'a' + 26,
-            b'0'..=b'9' => ch - b'0' + 52,
-            b'-' => 62,
-            b'_' => 63,
-            _ => return Err(SigningError::MalformedToken),
-        } as u32;
-        buffer = (buffer << 6) | value;
-        bits += 6;
-        while bits >= 8 {
-            bits -= 8;
-            bytes.push(((buffer >> bits) & 0xFF) as u8);
-        }
-    }
-
-    Ok(bytes)
-}
-
-fn constant_time_eq(left: &[u8], right: &[u8]) -> bool {
-    if left.len() != right.len() {
-        return false;
-    }
-
-    let mut diff = 0u8;
-    for (lhs, rhs) in left.iter().zip(right.iter()) {
-        diff |= lhs ^ rhs;
-    }
-    diff == 0
+    base64::engine::general_purpose::URL_SAFE_NO_PAD
+        .decode(value)
+        .map_err(|_| SigningError::MalformedToken)
 }
 
 #[cfg(test)]

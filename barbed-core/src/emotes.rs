@@ -33,6 +33,14 @@ pub enum EmoteImageFormat {
 }
 
 impl EmoteImageFormat {
+    pub fn from_animated(animated: bool) -> Self {
+        if animated {
+            Self::Animated
+        } else {
+            Self::Static
+        }
+    }
+
     pub fn parse(value: &str) -> Self {
         match value {
             "static" => Self::Static,
@@ -130,37 +138,22 @@ bitflags! {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EmoteModifier {
     pub flags: EmoteModifierFlags,
-    pub raw_flags: u32,
-    pub is_hidden: bool,
     pub mask_images: Vec<EmoteImage>,
-}
-
-impl EmoteModifier {
-    pub fn has_flag(&self, flag: EmoteModifierFlags) -> bool {
-        self.flags.contains(flag)
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Emote {
     pub id: EmoteId,
     pub code: String,
-    pub is_animated: bool,
     pub images: Vec<EmoteImage>,
     pub modifier: Option<EmoteModifier>,
 }
 
 impl Emote {
-    pub fn new(
-        id: EmoteId,
-        code: impl Into<String>,
-        is_animated: bool,
-        images: Vec<EmoteImage>,
-    ) -> Self {
+    pub fn new(id: EmoteId, code: impl Into<String>, images: Vec<EmoteImage>) -> Self {
         Self {
             id,
             code: code.into(),
-            is_animated,
             images,
             modifier: None,
         }
@@ -171,12 +164,10 @@ impl Emote {
         self
     }
 
-    pub fn is_modifier(&self) -> bool {
-        self.modifier.is_some()
-    }
-
-    pub fn modifier(&self) -> Option<&EmoteModifier> {
-        self.modifier.as_ref()
+    pub fn is_animated(&self) -> bool {
+        self.images
+            .iter()
+            .any(|image| matches!(image.format, EmoteImageFormat::Animated))
     }
 }
 
@@ -198,26 +189,25 @@ mod tests {
     }
 
     #[test]
-    fn emote_modifier_accessors_report_presence() {
+    fn emote_modifier_preserves_flags() {
         let emote = Emote::new(
             EmoteId::new(EmoteProvider::SevenTv, "123"),
             "Wave",
-            false,
             Vec::new(),
         )
         .with_modifier(EmoteModifier {
             flags: EmoteModifierFlags::RAINBOW,
-            raw_flags: EmoteModifierFlags::RAINBOW.bits(),
-            is_hidden: false,
             mask_images: Vec::new(),
         });
 
-        assert!(emote.is_modifier());
+        assert!(!emote.is_animated());
         assert!(
             emote
-                .modifier()
+                .modifier
+                .as_ref()
                 .expect("modifier should exist")
-                .has_flag(EmoteModifierFlags::RAINBOW)
+                .flags
+                .contains(EmoteModifierFlags::RAINBOW)
         );
     }
 }

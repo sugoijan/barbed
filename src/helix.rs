@@ -4,11 +4,9 @@ use thiserror::Error;
 use crate::TwitchIdentity;
 use crate::eventsub::{CreateEventSubSubscriptionRequest, CreateEventSubSubscriptionResponse};
 use crate::http::{
-    HttpResponse, PreparedRequestBuilder, ResponseMeta, append_query_params, form_body,
+    HttpResponse, PreparedRequestBuilder, ResponseMeta, append_query_params, form_post_request,
 };
-use crate::oauth::{TwitchAuthOutcome, TwitchTokenState};
-
-const TWITCH_TOKEN_URL: &str = "https://id.twitch.tv/oauth2/token";
+use crate::oauth::{TWITCH_TOKEN_URL, TwitchAuthOutcome, TwitchTokenState};
 
 #[derive(Debug, Error)]
 pub enum HelixError {
@@ -270,27 +268,32 @@ struct TwitchUserRecord {
 
 // -- Request builders --
 
+fn bearer_headers(access_token: &str, client_id: &str) -> Vec<(String, String)> {
+    vec![
+        (
+            "Authorization".to_string(),
+            format!("Bearer {access_token}"),
+        ),
+        ("Client-Id".to_string(), client_id.to_string()),
+    ]
+}
+
 pub fn token_exchange_request(
     client_id: &str,
     client_secret: &str,
     code: &str,
     redirect_uri: &str,
 ) -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_TOKEN_URL.to_string(),
-        method: HttpMethod::Post,
-        headers: vec![(
-            "Content-Type".to_string(),
-            "application/x-www-form-urlencoded".to_string(),
-        )],
-        body: Some(form_body(&[
+    form_post_request(
+        TWITCH_TOKEN_URL,
+        &[
             ("client_id", client_id),
             ("client_secret", client_secret),
             ("code", code),
             ("grant_type", "authorization_code"),
             ("redirect_uri", redirect_uri),
-        ])),
-    }
+        ],
+    )
 }
 
 pub fn token_refresh_request(
@@ -298,33 +301,22 @@ pub fn token_refresh_request(
     client_secret: &str,
     refresh_token: &str,
 ) -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_TOKEN_URL.to_string(),
-        method: HttpMethod::Post,
-        headers: vec![(
-            "Content-Type".to_string(),
-            "application/x-www-form-urlencoded".to_string(),
-        )],
-        body: Some(form_body(&[
+    form_post_request(
+        TWITCH_TOKEN_URL,
+        &[
             ("client_id", client_id),
             ("client_secret", client_secret),
             ("grant_type", "refresh_token"),
             ("refresh_token", refresh_token),
-        ])),
-    }
+        ],
+    )
 }
 
 pub fn user_lookup_request(access_token: &str, client_id: &str) -> PreparedRequest {
     PreparedRequest {
         url: "https://api.twitch.tv/helix/users".to_string(),
         method: HttpMethod::Get,
-        headers: vec![
-            (
-                "Authorization".to_string(),
-                format!("Bearer {access_token}"),
-            ),
-            ("Client-Id".to_string(), client_id.to_string()),
-        ],
+        headers: bearer_headers(access_token, client_id),
         body: None,
     }
 }
@@ -340,13 +332,7 @@ pub fn user_lookup_by_login_request(
             crate::http::percent_encode(login)
         ),
         method: HttpMethod::Get,
-        headers: vec![
-            (
-                "Authorization".to_string(),
-                format!("Bearer {access_token}"),
-            ),
-            ("Client-Id".to_string(), client_id.to_string()),
-        ],
+        headers: bearer_headers(access_token, client_id),
         body: None,
     }
 }
@@ -357,17 +343,12 @@ pub fn create_eventsub_subscription_request(
     subscription: &CreateEventSubSubscriptionRequest,
 ) -> Result<PreparedRequest, HelixError> {
     let body = serde_json::to_string(subscription)?;
+    let mut headers = bearer_headers(access_token, client_id);
+    headers.push(("Content-Type".to_string(), "application/json".to_string()));
     Ok(PreparedRequest {
         url: "https://api.twitch.tv/helix/eventsub/subscriptions".to_string(),
         method: HttpMethod::Post,
-        headers: vec![
-            (
-                "Authorization".to_string(),
-                format!("Bearer {access_token}"),
-            ),
-            ("Client-Id".to_string(), client_id.to_string()),
-            ("Content-Type".to_string(), "application/json".to_string()),
-        ],
+        headers,
         body: Some(body),
     })
 }
@@ -377,13 +358,7 @@ pub fn list_eventsub_subscriptions_request(client_id: &str, access_token: &str) 
         url: "https://api.twitch.tv/helix/eventsub/subscriptions?type=channel.chat.message"
             .to_string(),
         method: HttpMethod::Get,
-        headers: vec![
-            (
-                "Authorization".to_string(),
-                format!("Bearer {access_token}"),
-            ),
-            ("Client-Id".to_string(), client_id.to_string()),
-        ],
+        headers: bearer_headers(access_token, client_id),
         body: None,
     }
 }
@@ -399,27 +374,26 @@ pub fn delete_eventsub_subscription_request(
             crate::http::percent_encode(subscription_id)
         ),
         method: HttpMethod::Delete,
-        headers: vec![
-            (
-                "Authorization".to_string(),
-                format!("Bearer {access_token}"),
-            ),
-            ("Client-Id".to_string(), client_id.to_string()),
-        ],
+        headers: bearer_headers(access_token, client_id),
         body: None,
     }
 }
 
 // -- Response parsers --
 
-pub fn parse_token_exchange(response: RawResponse) -> Result<TwitchTokenExchange, HelixError> {
-    if response.status != 200 {
+/// Returns the response body if the status matches, or [`HelixError::ApiError`].
+fn expect_status(response: RawResponse, expected: u16) -> Result<String, HelixError> {
+    if response.status != expected {
         return Err(HelixError::ApiError {
             status: response.status,
             body: response.body,
         });
     }
-    serde_json::from_str(&response.body).map_err(HelixError::from)
+    Ok(response.body)
+}
+
+pub fn parse_token_exchange(response: RawResponse) -> Result<TwitchTokenExchange, HelixError> {
+    serde_json::from_str(&expect_status(response, 200)?).map_err(HelixError::from)
 }
 
 pub fn parse_token_refresh(response: RawResponse) -> Result<TwitchTokenExchange, HelixError> {
@@ -427,13 +401,7 @@ pub fn parse_token_refresh(response: RawResponse) -> Result<TwitchTokenExchange,
 }
 
 pub fn parse_user_lookup(response: RawResponse) -> Result<TwitchIdentity, HelixError> {
-    if response.status != 200 {
-        return Err(HelixError::ApiError {
-            status: response.status,
-            body: response.body,
-        });
-    }
-    let users: TwitchUsersResponse = serde_json::from_str(&response.body)?;
+    let users: TwitchUsersResponse = serde_json::from_str(&expect_status(response, 200)?)?;
     let user = users.data.into_iter().next().ok_or(HelixError::NoUsers)?;
     Ok(TwitchIdentity::new(user.id, user.login, user.display_name))
 }
@@ -465,35 +433,17 @@ pub fn build_auth_outcome(
 pub fn parse_create_eventsub_subscription(
     response: RawResponse,
 ) -> Result<CreateEventSubSubscriptionResponse, HelixError> {
-    if response.status != 202 {
-        return Err(HelixError::ApiError {
-            status: response.status,
-            body: response.body,
-        });
-    }
-    serde_json::from_str(&response.body).map_err(HelixError::from)
+    serde_json::from_str(&expect_status(response, 202)?).map_err(HelixError::from)
 }
 
 pub fn parse_list_eventsub_subscriptions(
     response: RawResponse,
 ) -> Result<CreateEventSubSubscriptionResponse, HelixError> {
-    if response.status != 200 {
-        return Err(HelixError::ApiError {
-            status: response.status,
-            body: response.body,
-        });
-    }
-    serde_json::from_str(&response.body).map_err(HelixError::from)
+    serde_json::from_str(&expect_status(response, 200)?).map_err(HelixError::from)
 }
 
 pub fn parse_delete_eventsub_subscription(response: RawResponse) -> Result<(), HelixError> {
-    if response.status != 204 {
-        return Err(HelixError::ApiError {
-            status: response.status,
-            body: response.body,
-        });
-    }
-    Ok(())
+    expect_status(response, 204).map(|_| ())
 }
 
 #[cfg(test)]

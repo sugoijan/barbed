@@ -30,7 +30,7 @@
 //!
 //! # MSRV
 //!
-//! `barbed` currently targets Rust `1.85.0`.
+//! `barbed` currently targets Rust `1.88.0`.
 //!
 //! # Example
 //!

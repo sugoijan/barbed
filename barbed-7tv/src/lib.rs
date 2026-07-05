@@ -271,11 +271,7 @@ struct HostFile {
 
 #[cfg(any(test, feature = "reqwest-client"))]
 fn emote_from_model(model: SetEmote) -> Emote {
-    let format = if model.data.animated {
-        EmoteImageFormat::Animated
-    } else {
-        EmoteImageFormat::Static
-    };
+    let format = EmoteImageFormat::from_animated(model.data.animated);
     let images = if model.data.host.files.is_empty() {
         vec![EmoteImage {
             format: format.clone(),
@@ -305,7 +301,6 @@ fn emote_from_model(model: SetEmote) -> Emote {
     Emote::new(
         EmoteId::new(EmoteProvider::SevenTv, model.id),
         model.name,
-        model.data.animated,
         images,
     )
 }
@@ -340,7 +335,7 @@ mod tests {
             .expect("set fixture should parse");
         assert_eq!(set.id, "set-123");
         assert_eq!(set.emotes.len(), 2);
-        assert!(set.emotes.iter().any(|emote| emote.is_animated));
+        assert!(set.emotes.iter().any(|emote| emote.is_animated()));
     }
 
     #[tokio::test(flavor = "current_thread")]

@@ -24,7 +24,7 @@ pub fn sign_payload<T: Serialize>(signing_secret: &str, value: &T) -> Result<Str
 
     let payload = serde_json::to_vec(value)?;
     let payload_hex = hex::encode(&payload);
-    let signature_hex = hex::encode(signing_hmac(signing_secret, &payload));
+    let signature_hex = hex::encode(hmac_sha256(signing_secret.as_bytes(), &[&payload]));
     Ok(format!("{payload_hex}.{signature_hex}"))
 }
 
@@ -36,7 +36,7 @@ pub fn verify_signed_payload<T: DeserializeOwned>(
 
     let (payload_hex, signature_hex) = token.split_once('.').ok_or(SigningError::MalformedToken)?;
     let payload = hex::decode(payload_hex).map_err(|_| SigningError::MalformedToken)?;
-    let expected_signature = signing_hmac(signing_secret, &payload);
+    let expected_signature = hmac_sha256(signing_secret.as_bytes(), &[&payload]);
     let actual_signature = hex::decode(signature_hex).map_err(|_| SigningError::MalformedToken)?;
     if !constant_time_eq(&expected_signature, &actual_signature) {
         return Err(SigningError::InvalidSignature);
@@ -51,14 +51,15 @@ fn ensure_signing_secret(signing_secret: &str) -> Result<(), SigningError> {
     Ok(())
 }
 
-fn signing_hmac(signing_secret: &str, payload: &[u8]) -> Vec<u8> {
-    let mut mac = HmacSha256::new_from_slice(signing_secret.as_bytes())
-        .expect("sha256 hmac accepts any key length");
-    mac.update(payload);
+pub(crate) fn hmac_sha256(secret: &[u8], parts: &[&[u8]]) -> Vec<u8> {
+    let mut mac = HmacSha256::new_from_slice(secret).expect("sha256 hmac accepts any key length");
+    for part in parts {
+        mac.update(part);
+    }
     mac.finalize().into_bytes().to_vec()
 }
 
-fn constant_time_eq(left: &[u8], right: &[u8]) -> bool {
+pub(crate) fn constant_time_eq(left: &[u8], right: &[u8]) -> bool {
     if left.len() != right.len() {
         return false;
     }

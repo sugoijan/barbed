@@ -19,6 +19,7 @@ documentation = "https://docs.rs/barbed"
 
 [workspace.dependencies]
 async-trait = "0.1"
+base64 = "0.22"
 bitflags = { version = "2", features = ["serde"] }
 futures-util = "0.3"
 hex = "0.4"
@@ -50,6 +51,7 @@ keywords = ["twitch", "eventsub", "helix", "oauth"]
 [dependencies]
 anyhow = { version = "1", optional = true }
 async-trait.workspace = true
+base64.workspace = true
 barbed-core = { path = "barbed-core", version = "0.0.3" }
 barbed_7tv = { package = "barbed-7tv", path = "barbed-7tv", version = "0.0.3", optional = true, default-features = false }
 barbed_bttv = { package = "barbed-bttv", path = "barbed-bttv", version = "0.0.3", optional = true, default-features = false }

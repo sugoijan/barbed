@@ -46,23 +46,13 @@ impl TwitchAuthClient {
         &self,
         scopes: &[String],
     ) -> Result<TwitchDeviceAuthorization> {
-        let scope_string = normalize_scopes(scopes, self.config.default_scopes());
-        let response = send_prepared_request(
+        let scope_string = normalize_scopes(scopes, &self.config.default_scopes);
+        let payload: DeviceCodeResponse = send_json(
             &self.http,
-            device_code_request_with_scope(self.config.client_id(), &scope_string),
+            device_code_request_with_scope(&self.config.client_id, &scope_string),
+            "Twitch device code",
         )
         .await?;
-
-        if response.status != 200 {
-            bail!(
-                "twitch device code request failed with status {}: {}",
-                response.status,
-                response.body
-            );
-        }
-
-        let payload: DeviceCodeResponse = serde_json::from_str(&response.body)
-            .context("failed to parse Twitch device code response")?;
 
         let now = OffsetDateTime::now_utc();
         TwitchDeviceAuthorization::new(
@@ -90,7 +80,7 @@ impl TwitchAuthClient {
 
             let response = send_prepared_request(
                 &self.http,
-                device_token_request(self.config.client_id(), &authorization.device_code),
+                device_token_request(&self.config.client_id, &authorization.device_code),
             )
             .await?;
 
@@ -100,7 +90,7 @@ impl TwitchAuthClient {
                 let identity = fetch_authenticated_user(
                     &self.http,
                     &exchange.access_token,
-                    self.config.client_id(),
+                    &self.config.client_id,
                 )
                 .await?;
                 return helix::build_auth_outcome(identity, exchange, now_ms())
@@ -146,27 +136,18 @@ impl TwitchAuthClient {
         &self,
         client_secret: &str,
     ) -> Result<TwitchTokenExchange> {
-        let response = send_prepared_request_with_metadata(
+        send_json(
             &self.http,
-            client_credentials_request(self.config.client_id(), client_secret),
+            client_credentials_request(&self.config.client_id, client_secret),
+            "Twitch app token",
         )
-        .await?;
-
-        if response.status != 200 {
-            bail!(
-                "twitch app token request failed with status {}: {}",
-                response.status,
-                response.body
-            );
-        }
-
-        serde_json::from_str(&response.body).context("failed to parse Twitch app token response")
+        .await
     }
 
     pub async fn revoke_token(&self, token: &str) -> Result<()> {
-        let response = send_prepared_request_with_metadata(
+        let response = send_prepared_request(
             &self.http,
-            revoke_token_request(self.config.client_id(), token),
+            revoke_token_request(&self.config.client_id, token),
         )
         .await?;
         if !(200..=299).contains(&response.status) {
@@ -180,33 +161,39 @@ impl TwitchAuthClient {
     }
 
     pub async fn fetch_openid_configuration(&self) -> Result<OpenIdConfiguration> {
-        let response =
-            send_prepared_request_with_metadata(&self.http, openid_configuration_request()).await?;
-        if response.status != 200 {
-            bail!(
-                "twitch openid configuration request failed with status {}: {}",
-                response.status,
-                response.body
-            );
-        }
-        serde_json::from_str(&response.body)
-            .context("failed to parse Twitch OpenID configuration response")
+        send_json(
+            &self.http,
+            openid_configuration_request(),
+            "Twitch OpenID configuration",
+        )
+        .await
     }
 
     pub async fn fetch_openid_userinfo(&self, access_token: &str) -> Result<OpenIdUserInfo> {
-        let response =
-            send_prepared_request_with_metadata(&self.http, openid_userinfo_request(access_token))
-                .await?;
-        if response.status != 200 {
-            bail!(
-                "twitch openid userinfo request failed with status {}: {}",
-                response.status,
-                response.body
-            );
-        }
-        serde_json::from_str(&response.body)
-            .context("failed to parse Twitch OpenID userinfo response")
+        send_json(
+            &self.http,
+            openid_userinfo_request(access_token),
+            "Twitch OpenID userinfo",
+        )
+        .await
     }
+}
+
+/// Sends a request, requires a 200 response, and decodes the JSON body.
+async fn send_json<T: serde::de::DeserializeOwned>(
+    http: &Client,
+    prepared: PreparedRequest,
+    what: &str,
+) -> Result<T> {
+    let response = send_prepared_request(http, prepared).await?;
+    if response.status != 200 {
+        bail!(
+            "{what} request failed with status {}: {}",
+            response.status,
+            response.body
+        );
+    }
+    serde_json::from_str(&response.body).with_context(|| format!("failed to parse {what} response"))
 }
 
 pub async fn send_prepared_request(

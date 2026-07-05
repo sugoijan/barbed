@@ -147,15 +147,32 @@ pub fn form_body(values: &[(&str, &str)]) -> String {
         .join("&")
 }
 
+/// Builds a form-urlencoded POST [`PreparedRequest`].
+pub fn form_post_request(url: impl Into<String>, fields: &[(&str, &str)]) -> PreparedRequest {
+    PreparedRequest {
+        url: url.into(),
+        method: HttpMethod::Post,
+        headers: vec![(
+            "Content-Type".to_string(),
+            "application/x-www-form-urlencoded".to_string(),
+        )],
+        body: Some(form_body(fields)),
+    }
+}
+
 pub fn percent_encode(value: &str) -> String {
+    const HEX: &[u8; 16] = b"0123456789ABCDEF";
     let mut out = String::with_capacity(value.len());
     for byte in value.bytes() {
         match byte {
             b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
                 out.push(byte as char)
             }
-            b' ' => out.push_str("%20"),
-            other => out.push_str(&format!("%{other:02X}")),
+            other => {
+                out.push('%');
+                out.push(HEX[usize::from(other >> 4)] as char);
+                out.push(HEX[usize::from(other & 0x0F)] as char);
+            }
         }
     }
     out

@@ -230,11 +230,7 @@ fn emote_from_model(model: EmoteModel) -> Emote {
             model.image_type.to_ascii_lowercase().as_str(),
             "gif" | "webm"
         );
-    let format = if is_animated {
-        EmoteImageFormat::Animated
-    } else {
-        EmoteImageFormat::Static
-    };
+    let format = EmoteImageFormat::from_animated(is_animated);
     let images = vec![
         EmoteImage {
             format: format.clone(),
@@ -259,7 +255,6 @@ fn emote_from_model(model: EmoteModel) -> Emote {
     Emote::new(
         EmoteId::new(EmoteProvider::BetterTtv, model.id),
         model.code,
-        is_animated,
         images,
     )
 }
@@ -273,7 +268,7 @@ mod tests {
         let set = parse_global_emotes_json(include_str!("../tests/fixtures/global_emotes.json"))
             .expect("global fixture should parse");
         assert_eq!(set.emotes.len(), 2);
-        assert!(set.emotes.iter().any(|emote| emote.is_animated));
+        assert!(set.emotes.iter().any(|emote| emote.is_animated()));
     }
 
     #[test]

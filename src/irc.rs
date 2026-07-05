@@ -395,15 +395,15 @@ impl TwitchIrcApi for TwitchIrcClient {
                 return Ok(None);
             }
 
-            let line = buffer.trim_end_matches(&['\r', '\n'][..]).to_string();
+            let line = buffer.trim_end_matches(['\r', '\n']);
             if line.is_empty() {
                 continue;
             }
 
-            if let Some(response) = ping_response(&line) {
+            if let Some(response) = ping_response(line) {
                 send_line(&mut self.writer, &response).await?;
             }
-            return Ok(Some(parse_line(&line, self.config.raw_mode)));
+            return Ok(Some(parse_line(line, self.config.raw_mode)));
         }
     }
 
