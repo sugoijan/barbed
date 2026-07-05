@@ -1,0 +1,15 @@
+[package]
+name = "barbed-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+documentation.workspace = true
+description = "Shared core types for barbed workspace crates"
+
+[dependencies]
+bitflags.workspace = true
+serde.workspace = true
+

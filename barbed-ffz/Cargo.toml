@@ -1,0 +1,24 @@
+[package]
+name = "barbed-ffz"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+documentation.workspace = true
+description = "FrankerFaceZ provider helpers for the barbed workspace"
+
+[dependencies]
+async-trait.workspace = true
+barbed-core = { path = "../barbed-core", version = "0.0.2" }
+reqwest = { workspace = true, optional = true }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[features]
+reqwest-client = ["dep:reqwest"]
+
+[dev-dependencies]
+tokio.workspace = true

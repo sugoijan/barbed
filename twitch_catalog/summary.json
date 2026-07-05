@@ -1,0 +1,25 @@
+{
+  "counts": {
+    "auth_endpoints": 8,
+    "auth_flows": 7,
+    "eventsub_beta": 4,
+    "eventsub_ga_or_new": 76,
+    "eventsub_total": 80,
+    "helix_beta": 12,
+    "helix_ga_or_new": 132,
+    "helix_groups": 30,
+    "helix_total": 144
+  },
+  "generated_at": "2026-04-16T02:45:59+00:00",
+  "sources": {
+    "changelog": "https://dev.twitch.tv/docs/change-log",
+    "eventsub_types": "https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/",
+    "eventsub_webhooks": "https://dev.twitch.tv/docs/eventsub/handling-webhook-events/",
+    "helix_reference": "https://dev.twitch.tv/docs/api/reference",
+    "oauth_oidc": "https://dev.twitch.tv/docs/authentication/getting-tokens-oidc",
+    "oauth_revoke": "https://dev.twitch.tv/docs/authentication/revoke-tokens",
+    "oauth_tokens": "https://dev.twitch.tv/docs/authentication/getting-tokens-oauth",
+    "oauth_validate": "https://dev.twitch.tv/docs/authentication/validate-tokens",
+    "product_lifecycle": "https://dev.twitch.tv/docs/product-lifecycle"
+  }
+}

@@ -1,0 +1,2712 @@
+{
+  "endpoints": [
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the channel:edit:commercial scope.\nBETA An app access token where the application, through a prior authorization, has the channel:edit:commercial scope for the user represented by the broadcaster_id query parameter.",
+        "scopes": [
+          "channel:edit:commercial"
+        ]
+      },
+      "description": "Starts a commercial on the specified channel.",
+      "group": "Ads",
+      "id": "ads_start_commercial",
+      "method": "POST",
+      "name": "Start Commercial",
+      "path": "/channels/commercial",
+      "slug": "start-commercial",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/channels/commercial"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the channel:read:ads scope. The user ID associated with the token must match the broadcaster_id in the query parameter.\nBETA An app access token where the application, through a prior authorization, has the channel:read:ads scope for the user represented by the broadcaster_id query parameter.",
+        "scopes": [
+          "channel:read:ads"
+        ]
+      },
+      "description": "Returns ad schedule related information.",
+      "group": "Ads",
+      "id": "ads_get_ad_schedule",
+      "method": "GET",
+      "name": "Get Ad Schedule",
+      "path": "/channels/ads",
+      "slug": "get-ad-schedule",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/channels/ads"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the channel:manage:ads scope. The user ID associated with the token must match the broadcaster_id in the query parameter.\nBETA An app access token where the application, through a prior authorization, has the channel:manage:ads scope for the user represented by the broadcaster_id query parameter.",
+        "scopes": [
+          "channel:manage:ads"
+        ]
+      },
+      "description": "Pushes back the timestamp of the upcoming automatic mid-roll ad by 5 minutes.",
+      "group": "Ads",
+      "id": "ads_snooze_next_ad",
+      "method": "POST",
+      "name": "Snooze Next Ad",
+      "path": "/channels/ads/schedule/snooze",
+      "slug": "snooze-next-ad",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/channels/ads/schedule/snooze"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the analytics:read:extensions scope.",
+        "scopes": [
+          "analytics:read:extensions"
+        ]
+      },
+      "description": "Gets an analytics report for one or more extensions.",
+      "group": "Analytics",
+      "id": "analytics_get_extension_analytics",
+      "method": "GET",
+      "name": "Get Extension Analytics",
+      "path": "/analytics/extensions",
+      "slug": "get-extension-analytics",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/analytics/extensions"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the analytics:read:games scope.",
+        "scopes": [
+          "analytics:read:games"
+        ]
+      },
+      "description": "Gets an analytics report for one or more games.",
+      "group": "Analytics",
+      "id": "analytics_get_game_analytics",
+      "method": "GET",
+      "name": "Get Game Analytics",
+      "path": "/analytics/games",
+      "slug": "get-game-analytics",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/analytics/games"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the bits:read scope.",
+        "scopes": [
+          "bits:read"
+        ]
+      },
+      "description": "Gets the Bits leaderboard for the authenticated broadcaster.",
+      "group": "Bits",
+      "id": "bits_get_bits_leaderboard",
+      "method": "GET",
+      "name": "Get Bits Leaderboard",
+      "path": "/bits/leaderboard",
+      "slug": "get-bits-leaderboard",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/bits/leaderboard"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets a list of Cheermotes that users can use to cheer Bits.",
+      "group": "Bits",
+      "id": "bits_get_cheermotes",
+      "method": "GET",
+      "name": "Get Cheermotes",
+      "path": "/bits/cheermotes",
+      "slug": "get-cheermotes",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/bits/cheermotes"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token.",
+        "scopes": []
+      },
+      "description": "Gets an extension\u2019s list of transactions.",
+      "group": "Bits",
+      "id": "bits_get_extension_transactions",
+      "method": "GET",
+      "name": "Get Extension Transactions",
+      "path": "/extensions/transactions",
+      "slug": "get-extension-transactions",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/extensions/transactions"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets information about one or more channels.",
+      "group": "Channels",
+      "id": "channels_get_channel_information",
+      "method": "GET",
+      "name": "Get Channel Information",
+      "path": "/channels",
+      "slug": "get-channel-information",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/channels"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:broadcast scope.",
+        "scopes": [
+          "channel:manage:broadcast"
+        ]
+      },
+      "description": "Updates a channel\u2019s properties.",
+      "group": "Channels",
+      "id": "channels_modify_channel_information",
+      "method": "PATCH",
+      "name": "Modify Channel Information",
+      "path": "/channels",
+      "slug": "modify-channel-information",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/channels"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:editors scope.",
+        "scopes": [
+          "channel:read:editors"
+        ]
+      },
+      "description": "Gets the broadcaster\u2019s list editors.",
+      "group": "Channels",
+      "id": "channels_get_channel_editors",
+      "method": "GET",
+      "name": "Get Channel Editors",
+      "path": "/channels/editors",
+      "slug": "get-channel-editors",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/channels/editors"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:read:follows scope.",
+        "scopes": [
+          "user:read:follows"
+        ]
+      },
+      "description": "Gets a list of broadcasters that the specified user follows. You can also use this endpoint to see whether a user follows a specific broadcaster.",
+      "group": "Channels",
+      "id": "channels_get_followed_channels",
+      "method": "GET",
+      "name": "Get Followed Channels",
+      "path": "/channels/followed",
+      "slug": "get-followed-channels",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/channels/followed"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the moderator:read:followers scope.\nThe ID in the broadcaster_id query parameter must match the user ID in the access token or the user ID in the access token must be a moderator for the specified broadcaster.\nThis endpoint will return specific follower information only if both of the above are true. If a scope is not provided or the user isn\u2019t the broadcaster or a moderator for the specified channel, only the total follower count will be included in the response.",
+        "scopes": [
+          "moderator:read:followers"
+        ]
+      },
+      "description": "Gets a list of users that follow the specified broadcaster. You can also use this endpoint to see whether a specific user follows the broadcaster.",
+      "group": "Channels",
+      "id": "channels_get_channel_followers",
+      "method": "GET",
+      "name": "Get Channel Followers",
+      "path": "/channels/followers",
+      "slug": "get-channel-followers",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/channels/followers"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:redemptions scope.",
+        "scopes": [
+          "channel:manage:redemptions"
+        ]
+      },
+      "description": "Creates a Custom Reward in the broadcaster\u2019s channel.",
+      "group": "Channel Points",
+      "id": "channel_points_create_custom_rewards",
+      "method": "POST",
+      "name": "Create Custom Rewards",
+      "path": "/channel_points/custom_rewards",
+      "slug": "create-custom-rewards",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/channel_points/custom_rewards"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:redemptions scope.",
+        "scopes": [
+          "channel:manage:redemptions"
+        ]
+      },
+      "description": "Deletes a custom reward that the broadcaster created.",
+      "group": "Channel Points",
+      "id": "channel_points_delete_custom_reward",
+      "method": "DELETE",
+      "name": "Delete Custom Reward",
+      "path": "/channel_points/custom_rewards",
+      "slug": "delete-custom-reward",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/channel_points/custom_rewards"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:redemptions or channel:manage:redemptions scope.",
+        "scopes": [
+          "channel:manage:redemptions",
+          "channel:read:redemptions"
+        ]
+      },
+      "description": "Gets a list of custom rewards that the specified broadcaster created.",
+      "group": "Channel Points",
+      "id": "channel_points_get_custom_reward",
+      "method": "GET",
+      "name": "Get Custom Reward",
+      "path": "/channel_points/custom_rewards",
+      "slug": "get-custom-reward",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/channel_points/custom_rewards"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:redemptions or channel:manage:redemptions scope.",
+        "scopes": [
+          "channel:manage:redemptions",
+          "channel:read:redemptions"
+        ]
+      },
+      "description": "Gets a list of redemptions for a custom reward.",
+      "group": "Channel Points",
+      "id": "channel_points_get_custom_reward_redemption",
+      "method": "GET",
+      "name": "Get Custom Reward Redemption",
+      "path": "/channel_points/custom_rewards/redemptions",
+      "slug": "get-custom-reward-redemption",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:redemptions scope.",
+        "scopes": [
+          "channel:manage:redemptions"
+        ]
+      },
+      "description": "Updates a custom reward.",
+      "group": "Channel Points",
+      "id": "channel_points_update_custom_reward",
+      "method": "PATCH",
+      "name": "Update Custom Reward",
+      "path": "/channel_points/custom_rewards",
+      "slug": "update-custom-reward",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/channel_points/custom_rewards"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:redemptions scope.",
+        "scopes": [
+          "channel:manage:redemptions"
+        ]
+      },
+      "description": "Updates a redemption\u2019s status.",
+      "group": "Channel Points",
+      "id": "channel_points_update_redemption_status",
+      "method": "PATCH",
+      "name": "Update Redemption Status",
+      "path": "/channel_points/custom_rewards/redemptions",
+      "slug": "update-redemption-status",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:charity scope.",
+        "scopes": [
+          "channel:read:charity"
+        ]
+      },
+      "description": "Gets information about the broadcaster\u2019s active charity campaign.",
+      "group": "Charity",
+      "id": "charity_get_charity_campaign",
+      "method": "GET",
+      "name": "Get Charity Campaign",
+      "path": "/charity/campaigns",
+      "slug": "get-charity-campaign",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/charity/campaigns"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:charity scope.",
+        "scopes": [
+          "channel:read:charity"
+        ]
+      },
+      "description": "Gets the list of donations that users have made to the broadcaster\u2019s active charity campaign.",
+      "group": "Charity",
+      "id": "charity_get_charity_campaign_donations",
+      "method": "GET",
+      "name": "Get Charity Campaign Donations",
+      "path": "/charity/donations",
+      "slug": "get-charity-campaign-donations",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/charity/donations"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:read:chatters scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:read:chatters scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:read:chatters"
+        ]
+      },
+      "description": "Gets the list of users that are connected to the broadcaster\u2019s chat session.",
+      "group": "Chat",
+      "id": "chat_get_chatters",
+      "method": "GET",
+      "name": "Get Chatters",
+      "path": "/chat/chatters",
+      "slug": "get-chatters",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/chat/chatters"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the broadcaster\u2019s list of custom emotes.",
+      "group": "Chat",
+      "id": "chat_get_channel_emotes",
+      "method": "GET",
+      "name": "Get Channel Emotes",
+      "path": "/chat/emotes",
+      "slug": "get-channel-emotes",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/chat/emotes"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets all global emotes.",
+      "group": "Chat",
+      "id": "chat_get_global_emotes",
+      "method": "GET",
+      "name": "Get Global Emotes",
+      "path": "/chat/emotes/global",
+      "slug": "get-global-emotes",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/chat/emotes/global"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets emotes for one or more specified emote sets.",
+      "group": "Chat",
+      "id": "chat_get_emote_sets",
+      "method": "GET",
+      "name": "Get Emote Sets",
+      "path": "/chat/emotes/set",
+      "slug": "get-emote-sets",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/chat/emotes/set"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the broadcaster\u2019s list of custom chat badges.",
+      "group": "Chat",
+      "id": "chat_get_channel_chat_badges",
+      "method": "GET",
+      "name": "Get Channel Chat Badges",
+      "path": "/chat/badges",
+      "slug": "get-channel-chat-badges",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/chat/badges"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets Twitch\u2019s list of chat badges.",
+      "group": "Chat",
+      "id": "chat_get_global_chat_badges",
+      "method": "GET",
+      "name": "Get Global Chat Badges",
+      "path": "/chat/badges/global",
+      "slug": "get-global-chat-badges",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/chat/badges/global"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the broadcaster\u2019s chat settings.",
+      "group": "Chat",
+      "id": "chat_get_chat_settings",
+      "method": "GET",
+      "name": "Get Chat Settings",
+      "path": "/chat/settings",
+      "slug": "get-chat-settings",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/chat/settings"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "NEW Retrieves the active shared chat session for a channel.",
+      "group": "Chat",
+      "id": "chat_get_shared_chat_session",
+      "method": "GET",
+      "name": "Get Shared Chat Session",
+      "path": "/shared_chat/session",
+      "slug": "get-shared-chat-session",
+      "stability": "new",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/shared_chat/session"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:read:emotes scope.\nQuery parameter user_id must match the user_id in the user access token.",
+        "scopes": [
+          "user:read:emotes"
+        ]
+      },
+      "description": "Retrieves emotes available to the user across all channels.",
+      "group": "Chat",
+      "id": "chat_get_user_emotes",
+      "method": "GET",
+      "name": "Get User Emotes",
+      "path": "/chat/emotes/user",
+      "slug": "get-user-emotes",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/chat/emotes/user"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:chat_settings scope. The user ID associated with the token must match the moderator_id in the query parameter.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:chat_settings scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:chat_settings"
+        ]
+      },
+      "description": "Updates the broadcaster\u2019s chat settings.",
+      "group": "Chat",
+      "id": "chat_update_chat_settings",
+      "method": "PATCH",
+      "name": "Update Chat Settings",
+      "path": "/chat/settings",
+      "slug": "update-chat-settings",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/chat/settings"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:announcements scope.\nBETA An app access token where the application, through prior authorizations, has:\nThe channel:bot scope for the user represented by the broadcaster_id query parameter, and\nThe moderator:manage:announcements and user:bot scopes for the user represented by the moderator_id in the query parameter.",
+        "scopes": [
+          "channel:bot",
+          "moderator:manage:announcements",
+          "user:bot"
+        ]
+      },
+      "description": "Sends an announcement to the broadcaster\u2019s chat room.",
+      "group": "Chat",
+      "id": "chat_send_chat_announcement",
+      "method": "POST",
+      "name": "Send Chat Announcement",
+      "path": "/chat/announcements",
+      "slug": "send-chat-announcement",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/chat/announcements"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:shoutouts scope.\nBETA An app access token where the application, through prior authorizations, has:\nThe channel:bot scope for the user represented by the broadcaster_id query parameter, and\nThe moderator:manage:shoutouts and user:bot scopes for the user represented by the moderator_id in the query parameter.",
+        "scopes": [
+          "channel:bot",
+          "moderator:manage:shoutouts",
+          "user:bot"
+        ]
+      },
+      "description": "Sends a Shoutout to the specified broadcaster.",
+      "group": "Chat",
+      "id": "chat_send_a_shoutout",
+      "method": "POST",
+      "name": "Send a Shoutout",
+      "path": "/chat/shoutouts",
+      "slug": "send-a-shoutout",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/chat/shoutouts"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token that includes the user:write:chat scope. If app access token used, then additionally requires user:bot scope from chatting user, and either channel:bot scope from broadcaster or moderator status.",
+        "scopes": [
+          "channel:bot",
+          "user:bot",
+          "user:write:chat"
+        ]
+      },
+      "description": "Sends a message to the broadcaster\u2019s chat room.",
+      "group": "Chat",
+      "id": "chat_send_chat_message",
+      "method": "POST",
+      "name": "Send Chat Message",
+      "path": "/chat/messages",
+      "slug": "send-chat-message",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/chat/messages"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the color used for the user\u2019s name in chat.",
+      "group": "Chat",
+      "id": "chat_get_user_chat_color",
+      "method": "GET",
+      "name": "Get User Chat Color",
+      "path": "/chat/color",
+      "slug": "get-user-chat-color",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/chat/color"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:manage:chat_color scope.",
+        "scopes": [
+          "user:manage:chat_color"
+        ]
+      },
+      "description": "Updates the color used for the user\u2019s name in chat.",
+      "group": "Chat",
+      "id": "chat_update_user_chat_color",
+      "method": "PUT",
+      "name": "Update User Chat Color",
+      "path": "/chat/color",
+      "slug": "update-user-chat-color",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/chat/color"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the clips:edit scope.",
+        "scopes": [
+          "clips:edit"
+        ]
+      },
+      "description": "Creates a clip from the broadcaster\u2019s stream.",
+      "group": "Clips",
+      "id": "clips_create_clip",
+      "method": "POST",
+      "name": "Create Clip",
+      "path": "/clips",
+      "slug": "create-clip",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/clips"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token that includes the editor:manage:clips or channel:manage:clips scope.",
+        "scopes": [
+          "channel:manage:clips",
+          "editor:manage:clips"
+        ]
+      },
+      "description": "NEW Creates a clip from the broadcaster\u2019s VOD.",
+      "group": "Clips",
+      "id": "clips_create_clip_from_vod",
+      "method": "POST",
+      "name": "Create Clip From VOD",
+      "path": "/videos/clips",
+      "slug": "create-clip-from-vod",
+      "stability": "new",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/videos/clips"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets one or more video clips.",
+      "group": "Clips",
+      "id": "clips_get_clips",
+      "method": "GET",
+      "name": "Get Clips",
+      "path": "/clips",
+      "slug": "get-clips",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/clips"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token that includes the editor:manage:clips or channel:manage:clips scope.",
+        "scopes": [
+          "channel:manage:clips",
+          "editor:manage:clips"
+        ]
+      },
+      "description": "NEW Provides URLs to download the video file(s) for the specified clips.",
+      "group": "Clips",
+      "id": "clips_get_clips_download",
+      "method": "GET",
+      "name": "Get Clips Download",
+      "path": "/clips/downloads",
+      "slug": "get-clips-download",
+      "stability": "new",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/clips/downloads"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token.",
+        "scopes": []
+      },
+      "description": "Gets the conduits for a client ID.",
+      "group": "Conduits",
+      "id": "conduits_get_conduits",
+      "method": "GET",
+      "name": "Get Conduits",
+      "path": "/eventsub/conduits",
+      "slug": "get-conduits",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/eventsub/conduits"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token.",
+        "scopes": []
+      },
+      "description": "Creates a new conduit.",
+      "group": "Conduits",
+      "id": "conduits_create_conduits",
+      "method": "POST",
+      "name": "Create Conduits",
+      "path": "/eventsub/conduits",
+      "slug": "create-conduits",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/eventsub/conduits"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token.",
+        "scopes": []
+      },
+      "description": "Updates a conduit\u2019s shard count.",
+      "group": "Conduits",
+      "id": "conduits_update_conduits",
+      "method": "PATCH",
+      "name": "Update Conduits",
+      "path": "/eventsub/conduits",
+      "slug": "update-conduits",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/eventsub/conduits"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token.",
+        "scopes": []
+      },
+      "description": "Deletes a specified conduit.",
+      "group": "Conduits",
+      "id": "conduits_delete_conduit",
+      "method": "DELETE",
+      "name": "Delete Conduit",
+      "path": "/eventsub/conduits",
+      "slug": "delete-conduit",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/eventsub/conduits"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token.",
+        "scopes": []
+      },
+      "description": "Gets a lists of all shards for a conduit.",
+      "group": "Conduits",
+      "id": "conduits_get_conduit_shards",
+      "method": "GET",
+      "name": "Get Conduit Shards",
+      "path": "/eventsub/conduits/shards",
+      "slug": "get-conduit-shards",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/eventsub/conduits/shards"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token.",
+        "scopes": []
+      },
+      "description": "Updates shard(s) for a conduit.",
+      "group": "Conduits",
+      "id": "conduits_update_conduit_shards",
+      "method": "PATCH",
+      "name": "Update Conduit Shards",
+      "path": "/eventsub/conduits/shards",
+      "slug": "update-conduit-shards",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/eventsub/conduits/shards"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets information about Twitch content classification labels.",
+      "group": "CCLs",
+      "id": "ccls_get_content_classification_labels",
+      "method": "GET",
+      "name": "Get Content Classification Labels",
+      "path": "/content_classification_labels",
+      "slug": "get-content-classification-labels",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/content_classification_labels"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token. The Client ID associated with the access token must be owned by a user who is a member of the organization that holds ownership of the game.",
+        "scopes": []
+      },
+      "description": "Gets an organization\u2019s list of entitlements that have been granted to a game, a user, or both.",
+      "group": "Entitlements",
+      "id": "entitlements_get_drops_entitlements",
+      "method": "GET",
+      "name": "Get Drops Entitlements",
+      "path": "/entitlements/drops",
+      "slug": "get-drops-entitlements",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/entitlements/drops"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token. The Client ID associated with the access token must be owned by a user who is a member of the organization that holds ownership of the game.",
+        "scopes": []
+      },
+      "description": "Updates the Drop entitlement\u2019s fulfillment status.",
+      "group": "Entitlements",
+      "id": "entitlements_update_drops_entitlements",
+      "method": "PATCH",
+      "name": "Update Drops Entitlements",
+      "path": "/entitlements/drops",
+      "slug": "update-drops-entitlements",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/entitlements/drops"
+    },
+    {
+      "auth": {
+        "kind": "extension_jwt",
+        "raw": "Requires a signed JSON Web Token (JWT) created by an Extension Backend Service (EBS). For signing requirements, see Signing the JWT. The signed JWT must include the role, user_id, and exp fields (see JWT Schema). The role field must be set to external.",
+        "scopes": []
+      },
+      "description": "Gets the specified configuration segment from the specified extension.",
+      "group": "Extensions",
+      "id": "extensions_get_extension_configuration_segment",
+      "method": "GET",
+      "name": "Get Extension Configuration Segment",
+      "path": "/extensions/configurations",
+      "slug": "get-extension-configuration-segment",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/extensions/configurations"
+    },
+    {
+      "auth": {
+        "kind": "extension_jwt",
+        "raw": "Requires a signed JSON Web Token (JWT) created by an Extension Backend Service (EBS). For signing requirements, see Signing the JWT. The signed JWT must include the role, user_id, and exp fields (see JWT Schema). The role field must be set to external.",
+        "scopes": []
+      },
+      "description": "Updates a configuration segment.",
+      "group": "Extensions",
+      "id": "extensions_set_extension_configuration_segment",
+      "method": "PUT",
+      "name": "Set Extension Configuration Segment",
+      "path": "/extensions/configurations",
+      "slug": "set-extension-configuration-segment",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/extensions/configurations"
+    },
+    {
+      "auth": {
+        "kind": "extension_jwt",
+        "raw": "Requires a signed JSON Web Token (JWT) created by an EBS. For signing requirements, see Signing the JWT. The signed JWT must include the role, user_id, and exp fields (see JWT Schema). Set the role field to external and the user_id field to the ID of the user that owns the extension.",
+        "scopes": []
+      },
+      "description": "Updates the extension\u2019s required_configuration string.",
+      "group": "Extensions",
+      "id": "extensions_set_extension_required_configuration",
+      "method": "PUT",
+      "name": "Set Extension Required Configuration",
+      "path": "/extensions/required_configuration",
+      "slug": "set-extension-required-configuration",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/extensions/required_configuration"
+    },
+    {
+      "auth": {
+        "kind": "extension_jwt",
+        "raw": "Requires a signed JSON Web Token (JWT) created by an Extension Backend Service (EBS). For signing requirements, see Signing the JWT. The signed JWT must include the role, user_id, and exp fields (see JWT Schema) along with the channel_id and pubsub_perms fields. The role field must be set to external.\nTo send the message to a specific channel, set the channel_id field in the JWT to the channel\u2019s ID and set the pubsub_perms.send array to broadcast.\n{\n\"exp\": 1503343947,\n\"user_id\": \"27419011\",\n\"role\": \"external\",\n\"channel_id\": \"27419011\",\n\"pubsub_perms\": {\n\"send\":[\n\"broadcast\"\n]\n}\n}\nTo send the message to all channels on which your extension is active, set the channel_id field to all and set the pubsub_perms.send array to global.\n{\n\"exp\": 1503343947,\n\"user_id\": \"27419011\",\n\"role\": \"external\",\n\"channel_id\": \"all\",\n\"pubsub_perms\": {\n\"send\":[\n\"global\"\n]\n}\n}",
+        "scopes": []
+      },
+      "description": "Sends a message to one or more viewers.",
+      "group": "Extensions",
+      "id": "extensions_send_extension_pubsub_message",
+      "method": "POST",
+      "name": "Send Extension PubSub Message",
+      "path": "/extensions/pubsub",
+      "slug": "send-extension-pubsub-message",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/extensions/pubsub"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets a list of broadcasters that are streaming live and have installed or activated the extension.",
+      "group": "Extensions",
+      "id": "extensions_get_extension_live_channels",
+      "method": "GET",
+      "name": "Get Extension Live Channels",
+      "path": "/extensions/live",
+      "slug": "get-extension-live-channels",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/extensions/live"
+    },
+    {
+      "auth": {
+        "kind": "extension_jwt",
+        "raw": "Requires a signed JSON Web Token (JWT) created by an Extension Backend Service (EBS). For signing requirements, see Signing the JWT. The signed JWT must include the role, user_id, and exp fields (see JWT Schema). The role field must be set to external.",
+        "scopes": []
+      },
+      "description": "Gets an extension\u2019s list of shared secrets.",
+      "group": "Extensions",
+      "id": "extensions_get_extension_secrets",
+      "method": "GET",
+      "name": "Get Extension Secrets",
+      "path": "/extensions/jwt/secrets",
+      "slug": "get-extension-secrets",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/extensions/jwt/secrets"
+    },
+    {
+      "auth": {
+        "kind": "extension_jwt",
+        "raw": "Requires a signed JSON Web Token (JWT) created by an Extension Backend Service (EBS). For signing requirements, see Signing the JWT. The signed JWT must include the role, user_id, and exp fields (see JWT Schema). The role field must be set to external.",
+        "scopes": []
+      },
+      "description": "Creates a shared secret used to sign and verify JWT tokens.",
+      "group": "Extensions",
+      "id": "extensions_create_extension_secret",
+      "method": "POST",
+      "name": "Create Extension Secret",
+      "path": "/extensions/jwt/secrets",
+      "slug": "create-extension-secret",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/extensions/jwt/secrets"
+    },
+    {
+      "auth": {
+        "kind": "extension_jwt",
+        "raw": "Requires a signed JSON Web Token (JWT) created by an Extension Backend Service (EBS). For signing requirements, see Signing the JWT. The signed JWT must include the role and user_id fields (see JWT Schema). The role field must be set to external.",
+        "scopes": []
+      },
+      "description": "Sends a message to the specified broadcaster\u2019s chat room.",
+      "group": "Extensions",
+      "id": "extensions_send_extension_chat_message",
+      "method": "POST",
+      "name": "Send Extension Chat Message",
+      "path": "/extensions/chat",
+      "slug": "send-extension-chat-message",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/extensions/chat"
+    },
+    {
+      "auth": {
+        "kind": "extension_jwt",
+        "raw": "Requires a signed JSON Web Token (JWT) created by an Extension Backend Service (EBS). For signing requirements, see Signing the JWT. The signed JWT must include the role field (see JWT Schema), and the role field must be set to external.",
+        "scopes": []
+      },
+      "description": "Gets information about an extension.",
+      "group": "Extensions",
+      "id": "extensions_get_extensions",
+      "method": "GET",
+      "name": "Get Extensions",
+      "path": "/extensions",
+      "slug": "get-extensions",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/extensions"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets information about a released extension.",
+      "group": "Extensions",
+      "id": "extensions_get_released_extensions",
+      "method": "GET",
+      "name": "Get Released Extensions",
+      "path": "/extensions/released",
+      "slug": "get-released-extensions",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/extensions/released"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token. The client ID in the app access token must be the extension\u2019s client ID.",
+        "scopes": []
+      },
+      "description": "Gets the list of Bits products that belongs to the extension.",
+      "group": "Extensions",
+      "id": "extensions_get_extension_bits_products",
+      "method": "GET",
+      "name": "Get Extension Bits Products",
+      "path": "/bits/extensions",
+      "slug": "get-extension-bits-products",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/bits/extensions"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token. The client ID in the app access token must match the extension\u2019s client ID.",
+        "scopes": []
+      },
+      "description": "Adds or updates a Bits product that the extension created.",
+      "group": "Extensions",
+      "id": "extensions_update_extension_bits_product",
+      "method": "PUT",
+      "name": "Update Extension Bits Product",
+      "path": "/bits/extensions",
+      "slug": "update-extension-bits-product",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/bits/extensions"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "If you use webhooks to receive events, the request must specify an app access token. The request will fail if you use a user access token. If the subscription type requires user authorization, the user must have granted your app (client ID) permissions to receive those events before you subscribe to them. For example, to subscribe to channel.subscribe events, your app must get a user access token that includes the channel:read:subscriptions scope, which adds the required permission to your app access token\u2019s client ID.\nIf you use WebSockets to receive events, the request must specify a user access token. The request will fail if you use an app access token. If the subscription type requires user authorization, the token must include the required scope. However, if the subscription type doesn\u2019t include user authorization, the token may include any scopes or no scopes.\nIf you use Conduits to receive events, the request must specify an app access token. The request will fail if you use a user access token.",
+        "scopes": [
+          "channel:read:subscriptions"
+        ]
+      },
+      "description": "Creates an EventSub subscription.",
+      "group": "EventSub",
+      "id": "eventsub_create_eventsub_subscription",
+      "method": "POST",
+      "name": "Create EventSub Subscription",
+      "path": "/eventsub/subscriptions",
+      "slug": "create-eventsub-subscription",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/eventsub/subscriptions"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "If you use webhooks to receive events, the request must specify an app access token. The request will fail if you use a user access token.\nIf you use WebSockets to receive events, the request must specify a user access token. The request will fail if you use an app access token. The token may include any scopes.",
+        "scopes": []
+      },
+      "description": "Deletes an EventSub subscription.",
+      "group": "EventSub",
+      "id": "eventsub_delete_eventsub_subscription",
+      "method": "DELETE",
+      "name": "Delete EventSub Subscription",
+      "path": "/eventsub/subscriptions",
+      "slug": "delete-eventsub-subscription",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/eventsub/subscriptions"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "If you use Webhooks or Conduits to receive events, the request must specify an app access token. The request will fail if you use a user access token.\nIf you use WebSockets to receive events, the request must specify a user access token. The request will fail if you use an app access token. The token may include any scopes.",
+        "scopes": []
+      },
+      "description": "Gets a list of EventSub subscriptions that the client in the access token created.",
+      "group": "EventSub",
+      "id": "eventsub_get_eventsub_subscriptions",
+      "method": "GET",
+      "name": "Get EventSub Subscriptions",
+      "path": "/eventsub/subscriptions",
+      "slug": "get-eventsub-subscriptions",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/eventsub/subscriptions"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets information about all broadcasts on Twitch.",
+      "group": "Games",
+      "id": "games_get_top_games",
+      "method": "GET",
+      "name": "Get Top Games",
+      "path": "/games/top",
+      "slug": "get-top-games",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/games/top"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets information about specified games.",
+      "group": "Games",
+      "id": "games_get_games",
+      "method": "GET",
+      "name": "Get Games",
+      "path": "/games",
+      "slug": "get-games",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/games"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:goals scope.",
+        "scopes": [
+          "channel:read:goals"
+        ]
+      },
+      "description": "Gets the broadcaster\u2019s list of active goals.",
+      "group": "Goals",
+      "id": "goals_get_creator_goals",
+      "method": "GET",
+      "name": "Get Creator Goals",
+      "path": "/goals",
+      "slug": "get-creator-goals",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/goals"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter moderator_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:read:guest_star, channel:manage:guest_star, moderator:read:guest_star or moderator:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star",
+          "channel:read:guest_star",
+          "moderator:manage:guest_star",
+          "moderator:read:guest_star"
+        ]
+      },
+      "description": "BETA Gets the channel settings for configuration of the Guest Star feature for a particular host.",
+      "group": "Guest Star",
+      "id": "guest_star_get_channel_guest_star_settings",
+      "method": "GET",
+      "name": "Get Channel Guest Star Settings",
+      "path": "/guest_star/channel_settings",
+      "slug": "get-channel-guest-star-settings",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/channel_settings"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter broadcaster_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star"
+        ]
+      },
+      "description": "BETA Mutates the channel settings for configuration of the Guest Star feature for a particular host.",
+      "group": "Guest Star",
+      "id": "guest_star_update_channel_guest_star_settings",
+      "method": "PUT",
+      "name": "Update Channel Guest Star Settings",
+      "path": "/guest_star/channel_settings",
+      "slug": "update-channel-guest-star-settings",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/channel_settings"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Requires OAuth Scope: channel:read:guest_star, channel:manage:guest_star, moderator:read:guest_star or moderator:manage:guest_star\nGuests must be either invited or assigned a slot within the session",
+        "scopes": [
+          "channel:manage:guest_star",
+          "channel:read:guest_star",
+          "moderator:manage:guest_star",
+          "moderator:read:guest_star"
+        ]
+      },
+      "description": "BETA Gets information about an ongoing Guest Star session for a particular channel.",
+      "group": "Guest Star",
+      "id": "guest_star_get_guest_star_session",
+      "method": "GET",
+      "name": "Get Guest Star Session",
+      "path": "/guest_star/session",
+      "slug": "get-guest-star-session",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/session"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter broadcaster_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star"
+        ]
+      },
+      "description": "BETA Programmatically creates a Guest Star session on behalf of the broadcaster.",
+      "group": "Guest Star",
+      "id": "guest_star_create_guest_star_session",
+      "method": "POST",
+      "name": "Create Guest Star Session",
+      "path": "/guest_star/session",
+      "slug": "create-guest-star-session",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/session"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter broadcaster_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star"
+        ]
+      },
+      "description": "BETA Programmatically ends a Guest Star session on behalf of the broadcaster.",
+      "group": "Guest Star",
+      "id": "guest_star_end_guest_star_session",
+      "method": "DELETE",
+      "name": "End Guest Star Session",
+      "path": "/guest_star/session",
+      "slug": "end-guest-star-session",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/session"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter broadcaster_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:read:guest_star, channel:manage:guest_star, moderator:read:guest_star or moderator:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star",
+          "channel:read:guest_star",
+          "moderator:manage:guest_star",
+          "moderator:read:guest_star"
+        ]
+      },
+      "description": "BETA Provides the caller with a list of pending invites to a Guest Star session.",
+      "group": "Guest Star",
+      "id": "guest_star_get_guest_star_invites",
+      "method": "GET",
+      "name": "Get Guest Star Invites",
+      "path": "/guest_star/invites",
+      "slug": "get-guest-star-invites",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/invites"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter moderator_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:manage:guest_star or moderator:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star",
+          "moderator:manage:guest_star"
+        ]
+      },
+      "description": "BETA Sends an invite to a specified guest on behalf of the broadcaster for a Guest Star session in progress.",
+      "group": "Guest Star",
+      "id": "guest_star_send_guest_star_invite",
+      "method": "POST",
+      "name": "Send Guest Star Invite",
+      "path": "/guest_star/invites",
+      "slug": "send-guest-star-invite",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/invites"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter moderator_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:manage:guest_star or moderator:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star",
+          "moderator:manage:guest_star"
+        ]
+      },
+      "description": "BETA Revokes a previously sent invite for a Guest Star session.",
+      "group": "Guest Star",
+      "id": "guest_star_delete_guest_star_invite",
+      "method": "DELETE",
+      "name": "Delete Guest Star Invite",
+      "path": "/guest_star/invites",
+      "slug": "delete-guest-star-invite",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/invites"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter moderator_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:manage:guest_star or moderator:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star",
+          "moderator:manage:guest_star"
+        ]
+      },
+      "description": "BETA Allows a previously invited user to be assigned a slot within the active Guest Star session.",
+      "group": "Guest Star",
+      "id": "guest_star_assign_guest_star_slot",
+      "method": "POST",
+      "name": "Assign Guest Star Slot",
+      "path": "/guest_star/slot",
+      "slug": "assign-guest-star-slot",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/slot"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter moderator_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:manage:guest_star or moderator:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star",
+          "moderator:manage:guest_star"
+        ]
+      },
+      "description": "BETA Allows a user to update the assigned slot for a particular user within the active Guest Star session.",
+      "group": "Guest Star",
+      "id": "guest_star_update_guest_star_slot",
+      "method": "PATCH",
+      "name": "Update Guest Star Slot",
+      "path": "/guest_star/slot",
+      "slug": "update-guest-star-slot",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/slot"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter moderator_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:manage:guest_star or moderator:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star",
+          "moderator:manage:guest_star"
+        ]
+      },
+      "description": "BETA Allows a caller to remove a slot assignment from a user participating in an active Guest Star session.",
+      "group": "Guest Star",
+      "id": "guest_star_delete_guest_star_slot",
+      "method": "DELETE",
+      "name": "Delete Guest Star Slot",
+      "path": "/guest_star/slot",
+      "slug": "delete-guest-star-slot",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/slot"
+    },
+    {
+      "auth": {
+        "kind": "none",
+        "raw": "Query parameter moderator_id must match the user_id in the User-Access token\nRequires OAuth Scope: channel:manage:guest_star or moderator:manage:guest_star",
+        "scopes": [
+          "channel:manage:guest_star",
+          "moderator:manage:guest_star"
+        ]
+      },
+      "description": "BETA Allows a user to update slot settings for a particular guest within a Guest Star session.",
+      "group": "Guest Star",
+      "id": "guest_star_update_guest_star_slot_settings",
+      "method": "PATCH",
+      "name": "Update Guest Star Slot Settings",
+      "path": "/guest_star/slot_settings",
+      "slug": "update-guest-star-slot-settings",
+      "stability": "beta",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/guest_star/slot_settings"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires an user access token.\nRequires OAuth Scope: channel:read:hype_train.\nRequires that broadcaster_id and user_id match in the User-Access token.",
+        "scopes": [
+          "channel:read:hype_train"
+        ]
+      },
+      "description": "NEW Gets the status of a Hype Train for the specified broadcaster.",
+      "group": "Hype Train",
+      "id": "hype_train_get_hype_train_status",
+      "method": "GET",
+      "name": "Get Hype Train Status",
+      "path": "/hypetrain/status",
+      "slug": "get-hype-train-status",
+      "stability": "new",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/hypetrain/status"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderation:read scope.\nBETA An app access token where the application, through a prior authorization, has the moderation:read scope for the user represented by the broadcaster_id query parameter.",
+        "scopes": [
+          "moderation:read"
+        ]
+      },
+      "description": "Checks whether AutoMod would flag the specified message for review.",
+      "group": "Moderation",
+      "id": "moderation_check_automod_status",
+      "method": "POST",
+      "name": "Check AutoMod Status",
+      "path": "/moderation/enforcements/status",
+      "slug": "check-automod-status",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/enforcements/status"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:automod scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:automod scope for the user represented by the user_id query parameter.",
+        "scopes": [
+          "moderator:manage:automod"
+        ]
+      },
+      "description": "Allow or deny the message that AutoMod flagged for review.",
+      "group": "Moderation",
+      "id": "moderation_manage_held_automod_messages",
+      "method": "POST",
+      "name": "Manage Held AutoMod Messages",
+      "path": "/moderation/automod/message",
+      "slug": "manage-held-automod-messages",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/automod/message"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:read:automod_settings or moderator:manage:automod_settings scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:read:automod_settings or moderator:manage:automod_settings scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:automod_settings",
+          "moderator:read:automod_settings"
+        ]
+      },
+      "description": "Gets the broadcaster\u2019s AutoMod settings.",
+      "group": "Moderation",
+      "id": "moderation_get_automod_settings",
+      "method": "GET",
+      "name": "Get AutoMod Settings",
+      "path": "/moderation/automod/settings",
+      "slug": "get-automod-settings",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/automod/settings"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:automod_settings scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:automod_settings scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:automod_settings"
+        ]
+      },
+      "description": "Updates the broadcaster\u2019s AutoMod settings.",
+      "group": "Moderation",
+      "id": "moderation_update_automod_settings",
+      "method": "PUT",
+      "name": "Update AutoMod Settings",
+      "path": "/moderation/automod/settings",
+      "slug": "update-automod-settings",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/moderation/automod/settings"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderation:read or moderator:manage:banned_users scope.\nBETA An app access token where the application, through a prior authorization, has the moderation:read or moderator:manage:banned_users scope for the user represented by the broadcaster_id query parameter.",
+        "scopes": [
+          "moderation:read",
+          "moderator:manage:banned_users"
+        ]
+      },
+      "description": "Gets all users that the broadcaster banned or put in a timeout.",
+      "group": "Moderation",
+      "id": "moderation_get_banned_users",
+      "method": "GET",
+      "name": "Get Banned Users",
+      "path": "/moderation/banned",
+      "slug": "get-banned-users",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/moderation/banned"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:banned_users scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:banned_users and user:bot scopes for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:banned_users",
+          "user:bot"
+        ]
+      },
+      "description": "Bans a user from participating in a broadcaster\u2019s chat room or puts them in a timeout.",
+      "group": "Moderation",
+      "id": "moderation_ban_user",
+      "method": "POST",
+      "name": "Ban User",
+      "path": "/moderation/bans",
+      "slug": "ban-user",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/bans"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:banned_users scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:banned_users and user:bot scopes for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:banned_users",
+          "user:bot"
+        ]
+      },
+      "description": "Removes the ban or timeout that was placed on the specified user.",
+      "group": "Moderation",
+      "id": "moderation_unban_user",
+      "method": "DELETE",
+      "name": "Unban User",
+      "path": "/moderation/bans",
+      "slug": "unban-user",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/bans"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the moderator:read:unban_requests or moderator:manage:unban_requests scope.\nQuery parameter moderator_id must match the user_id in the user access token.",
+        "scopes": [
+          "moderator:manage:unban_requests",
+          "moderator:read:unban_requests"
+        ]
+      },
+      "description": "Gets a list of unban requests for a broadcaster\u2019s channel.",
+      "group": "Moderation",
+      "id": "moderation_get_unban_requests",
+      "method": "GET",
+      "name": "Get Unban Requests",
+      "path": "/moderation/unban_requests",
+      "slug": "get-unban-requests",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/moderation/unban_requests"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the moderator:manage:unban_requests scope.\nQuery parameter moderator_id must match the user_id in theuser access token.",
+        "scopes": [
+          "moderator:manage:unban_requests"
+        ]
+      },
+      "description": "Resolves an unban request by approving or denying it.",
+      "group": "Moderation",
+      "id": "moderation_resolve_unban_requests",
+      "method": "PATCH",
+      "name": "Resolve Unban Requests",
+      "path": "/moderation/unban_requests",
+      "slug": "resolve-unban-requests",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/moderation/unban_requests"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:read:blocked_terms or moderator:manage:blocked_terms scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:read:blocked_terms or moderator:manage:blocked_terms scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:blocked_terms",
+          "moderator:read:blocked_terms"
+        ]
+      },
+      "description": "Gets the broadcaster\u2019s list of non-private, blocked words or phrases.",
+      "group": "Moderation",
+      "id": "moderation_get_blocked_terms",
+      "method": "GET",
+      "name": "Get Blocked Terms",
+      "path": "/moderation/blocked_terms",
+      "slug": "get-blocked-terms",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/moderation/blocked_terms"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:blocked_terms scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:blocked_terms scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:blocked_terms"
+        ]
+      },
+      "description": "Adds a word or phrase to the broadcaster\u2019s list of blocked terms.",
+      "group": "Moderation",
+      "id": "moderation_add_blocked_term",
+      "method": "POST",
+      "name": "Add Blocked Term",
+      "path": "/moderation/blocked_terms",
+      "slug": "add-blocked-term",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/moderation/blocked_terms"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:blocked_terms scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:blocked_terms scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:blocked_terms"
+        ]
+      },
+      "description": "Removes the word or phrase from the broadcaster\u2019s list of blocked terms.",
+      "group": "Moderation",
+      "id": "moderation_remove_blocked_term",
+      "method": "DELETE",
+      "name": "Remove Blocked Term",
+      "path": "/moderation/blocked_terms",
+      "slug": "remove-blocked-term",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/blocked_terms"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:chat_messages scope.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:chat_messages scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:chat_messages"
+        ]
+      },
+      "description": "Removes a single chat message or all chat messages from the broadcaster\u2019s chat room.",
+      "group": "Moderation",
+      "id": "moderation_delete_chat_messages",
+      "method": "DELETE",
+      "name": "Delete Chat Messages",
+      "path": "/moderation/chat",
+      "slug": "delete-chat-messages",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/chat"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the user:read:moderated_channels. The user ID associated with the token must match the user_id in the query parameter.\nBETA An app access token where the application, through a prior authorization, has the user:read:moderated_channels scope for the user represented by the user_id query parameter.",
+        "scopes": [
+          "user:read:moderated_channels"
+        ]
+      },
+      "description": "Gets a list of channels that the specified user has moderator privileges in.",
+      "group": "Moderation",
+      "id": "moderation_get_moderated_channels",
+      "method": "GET",
+      "name": "Get Moderated Channels",
+      "path": "/moderation/channels",
+      "slug": "get-moderated-channels",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/moderation/channels"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the moderation:read scope. If your app also adds and removes moderators, you can use the channel:manage:moderators scope instead.",
+        "scopes": [
+          "channel:manage:moderators",
+          "moderation:read"
+        ]
+      },
+      "description": "Gets all users allowed to moderate the broadcaster\u2019s chat room.",
+      "group": "Moderation",
+      "id": "moderation_get_moderators",
+      "method": "GET",
+      "name": "Get Moderators",
+      "path": "/moderation/moderators",
+      "slug": "get-moderators",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/moderation/moderators"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:moderators scope.",
+        "scopes": [
+          "channel:manage:moderators"
+        ]
+      },
+      "description": "Adds a moderator to the broadcaster\u2019s chat room.",
+      "group": "Moderation",
+      "id": "moderation_add_channel_moderator",
+      "method": "POST",
+      "name": "Add Channel Moderator",
+      "path": "/moderation/moderators",
+      "slug": "add-channel-moderator",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/moderators"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:moderators scope.",
+        "scopes": [
+          "channel:manage:moderators"
+        ]
+      },
+      "description": "Removes a moderator from the broadcaster\u2019s chat room.",
+      "group": "Moderation",
+      "id": "moderation_remove_channel_moderator",
+      "method": "DELETE",
+      "name": "Remove Channel Moderator",
+      "path": "/moderation/moderators",
+      "slug": "remove-channel-moderator",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/moderators"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:vips scope. If your app also adds and removes VIP status, you can use the channel:manage:vips scope instead.",
+        "scopes": [
+          "channel:manage:vips",
+          "channel:read:vips"
+        ]
+      },
+      "description": "Gets a list of the broadcaster\u2019s VIPs.",
+      "group": "Moderation",
+      "id": "moderation_get_vips",
+      "method": "GET",
+      "name": "Get VIPs",
+      "path": "/channels/vips",
+      "slug": "get-vips",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/channels/vips"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:vips scope.",
+        "scopes": [
+          "channel:manage:vips"
+        ]
+      },
+      "description": "Adds the specified user as a VIP in the broadcaster\u2019s channel.",
+      "group": "Moderation",
+      "id": "moderation_add_channel_vip",
+      "method": "POST",
+      "name": "Add Channel VIP",
+      "path": "/channels/vips",
+      "slug": "add-channel-vip",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/channels/vips"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:vips scope.",
+        "scopes": [
+          "channel:manage:vips"
+        ]
+      },
+      "description": "Removes the specified user as a VIP in the broadcaster\u2019s channel.",
+      "group": "Moderation",
+      "id": "moderation_remove_channel_vip",
+      "method": "DELETE",
+      "name": "Remove Channel VIP",
+      "path": "/channels/vips",
+      "slug": "remove-channel-vip",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/channels/vips"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:shield_mode scope. The user ID associated with the token must match the moderator_id in the query parameter.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:shield_mode scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:shield_mode"
+        ]
+      },
+      "description": "Activates or deactivates the broadcaster\u2019s Shield Mode.",
+      "group": "Moderation",
+      "id": "moderation_update_shield_mode_status",
+      "method": "PUT",
+      "name": "Update Shield Mode Status",
+      "path": "/moderation/shield_mode",
+      "slug": "update-shield-mode-status",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/shield_mode"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:read:shield_mode or moderator:manage:shield_mode scope. The user ID associated with the token must match the moderator_id in the query parameter.\nBETA An app access token where the application, through a prior authorization, has the moderator:read:shield_mode or moderator:manage:shield_mode scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:shield_mode",
+          "moderator:read:shield_mode"
+        ]
+      },
+      "description": "Gets the broadcaster\u2019s Shield Mode activation status.",
+      "group": "Moderation",
+      "id": "moderation_get_shield_mode_status",
+      "method": "GET",
+      "name": "Get Shield Mode Status",
+      "path": "/moderation/shield_mode",
+      "slug": "get-shield-mode-status",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/shield_mode"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires one of the following:\nA user access token that includes the moderator:manage:warnings scope. The user ID associated with the token must match the moderator_id in the query parameter.\nBETA An app access token where the application, through a prior authorization, has the moderator:manage:warnings scope for the user represented by the moderator_id query parameter.",
+        "scopes": [
+          "moderator:manage:warnings"
+        ]
+      },
+      "description": "Warns a user in the specified broadcaster\u2019s chat room, preventing them from chat interaction until the warning is acknowledged.",
+      "group": "Moderation",
+      "id": "moderation_warn_chat_user",
+      "method": "POST",
+      "name": "Warn Chat User",
+      "path": "/moderation/warnings",
+      "slug": "warn-chat-user",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/warnings"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token that includes the moderator:manage:suspicious_users scope.",
+        "scopes": [
+          "moderator:manage:suspicious_users"
+        ]
+      },
+      "description": "NEW Adds a suspicious user status to a chatter on the broadcaster\u2019s channel.",
+      "group": "Moderation",
+      "id": "moderation_add_suspicious_status_to_chat_user",
+      "method": "POST",
+      "name": "Add Suspicious Status to Chat User",
+      "path": "/moderation/suspicious_users",
+      "slug": "add-suspicious-status-to-chat-user",
+      "stability": "new",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/suspicious_users"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token that includes the moderator:manage:suspicious_users scope.",
+        "scopes": [
+          "moderator:manage:suspicious_users"
+        ]
+      },
+      "description": "NEW Remove a suspicious user status from a chatter on broadcaster\u2019s channel.",
+      "group": "Moderation",
+      "id": "moderation_remove_suspicious_status_from_chat_user",
+      "method": "DELETE",
+      "name": "Remove Suspicious Status From Chat User",
+      "path": "/moderation/suspicious_users",
+      "slug": "remove-suspicious-status-from-chat-user",
+      "stability": "new",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/moderation/suspicious_users"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:polls or channel:manage:polls scope.",
+        "scopes": [
+          "channel:manage:polls",
+          "channel:read:polls"
+        ]
+      },
+      "description": "Gets a list of polls that the broadcaster created.",
+      "group": "Polls",
+      "id": "polls_get_polls",
+      "method": "GET",
+      "name": "Get Polls",
+      "path": "/polls",
+      "slug": "get-polls",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/polls"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:polls scope.",
+        "scopes": [
+          "channel:manage:polls"
+        ]
+      },
+      "description": "Creates a poll that viewers in the broadcaster\u2019s channel can vote on.",
+      "group": "Polls",
+      "id": "polls_create_poll",
+      "method": "POST",
+      "name": "Create Poll",
+      "path": "/polls",
+      "slug": "create-poll",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/polls"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:polls scope.",
+        "scopes": [
+          "channel:manage:polls"
+        ]
+      },
+      "description": "End an active poll.",
+      "group": "Polls",
+      "id": "polls_end_poll",
+      "method": "PATCH",
+      "name": "End Poll",
+      "path": "/polls",
+      "slug": "end-poll",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/polls"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:predictions or channel:manage:predictions scope.",
+        "scopes": [
+          "channel:manage:predictions",
+          "channel:read:predictions"
+        ]
+      },
+      "description": "Gets a list of Channel Points Predictions that the broadcaster created.",
+      "group": "Predictions",
+      "id": "predictions_get_predictions",
+      "method": "GET",
+      "name": "Get Predictions",
+      "path": "/predictions",
+      "slug": "get-predictions",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/predictions"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:predictions scope.",
+        "scopes": [
+          "channel:manage:predictions"
+        ]
+      },
+      "description": "Create a Channel Points Prediction.",
+      "group": "Predictions",
+      "id": "predictions_create_prediction",
+      "method": "POST",
+      "name": "Create Prediction",
+      "path": "/predictions",
+      "slug": "create-prediction",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/predictions"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:predictions scope.",
+        "scopes": [
+          "channel:manage:predictions"
+        ]
+      },
+      "description": "Locks, resolves, or cancels a Channel Points Prediction.",
+      "group": "Predictions",
+      "id": "predictions_end_prediction",
+      "method": "PATCH",
+      "name": "End Prediction",
+      "path": "/predictions",
+      "slug": "end-prediction",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/predictions"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:raids scope.",
+        "scopes": [
+          "channel:manage:raids"
+        ]
+      },
+      "description": "Raid another channel by sending the broadcaster\u2019s viewers to the targeted channel.",
+      "group": "Raids",
+      "id": "raids_start_a_raid",
+      "method": "POST",
+      "name": "Start a raid",
+      "path": "/raids",
+      "slug": "start-a-raid",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/raids"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:raids scope.",
+        "scopes": [
+          "channel:manage:raids"
+        ]
+      },
+      "description": "Cancel a pending raid.",
+      "group": "Raids",
+      "id": "raids_cancel_a_raid",
+      "method": "DELETE",
+      "name": "Cancel a raid",
+      "path": "/raids",
+      "slug": "cancel-a-raid",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/raids"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the broadcaster\u2019s streaming schedule.",
+      "group": "Schedule",
+      "id": "schedule_get_channel_stream_schedule",
+      "method": "GET",
+      "name": "Get Channel Stream Schedule",
+      "path": "/schedule",
+      "slug": "get-channel-stream-schedule",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/schedule"
+    },
+    {
+      "auth": {
+        "kind": "custom",
+        "raw": "The Client-Id and Authorization headers are not required.",
+        "scopes": []
+      },
+      "description": "Gets the broadcaster\u2019s streaming schedule as an iCalendar.",
+      "group": "Schedule",
+      "id": "schedule_get_channel_icalendar",
+      "method": "GET",
+      "name": "Get Channel iCalendar",
+      "path": "/schedule/icalendar",
+      "slug": "get-channel-icalendar",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/schedule/icalendar"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:schedule scope.",
+        "scopes": [
+          "channel:manage:schedule"
+        ]
+      },
+      "description": "Updates the broadcaster\u2019s schedule settings, such as scheduling a vacation.",
+      "group": "Schedule",
+      "id": "schedule_update_channel_stream_schedule",
+      "method": "PATCH",
+      "name": "Update Channel Stream Schedule",
+      "path": "/schedule/settings",
+      "slug": "update-channel-stream-schedule",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/schedule/settings"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:schedule scope.",
+        "scopes": [
+          "channel:manage:schedule"
+        ]
+      },
+      "description": "Adds a single or recurring broadcast to the broadcaster\u2019s streaming schedule.",
+      "group": "Schedule",
+      "id": "schedule_create_channel_stream_schedule_segment",
+      "method": "POST",
+      "name": "Create Channel Stream Schedule Segment",
+      "path": "/schedule/segment",
+      "slug": "create-channel-stream-schedule-segment",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/schedule/segment"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:schedule scope.",
+        "scopes": [
+          "channel:manage:schedule"
+        ]
+      },
+      "description": "Updates a scheduled broadcast segment.",
+      "group": "Schedule",
+      "id": "schedule_update_channel_stream_schedule_segment",
+      "method": "PATCH",
+      "name": "Update Channel Stream Schedule Segment",
+      "path": "/schedule/segment",
+      "slug": "update-channel-stream-schedule-segment",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/schedule/segment"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:schedule scope.",
+        "scopes": [
+          "channel:manage:schedule"
+        ]
+      },
+      "description": "Deletes a broadcast from the broadcaster\u2019s streaming schedule.",
+      "group": "Schedule",
+      "id": "schedule_delete_channel_stream_schedule_segment",
+      "method": "DELETE",
+      "name": "Delete Channel Stream Schedule Segment",
+      "path": "/schedule/segment",
+      "slug": "delete-channel-stream-schedule-segment",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/schedule/segment"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the games or categories that match the specified query.",
+      "group": "Search",
+      "id": "search_search_categories",
+      "method": "GET",
+      "name": "Search Categories",
+      "path": "/search/categories",
+      "slug": "search-categories",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/search/categories"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the channels that match the specified query and have streamed content within the past 6 months.",
+      "group": "Search",
+      "id": "search_search_channels",
+      "method": "GET",
+      "name": "Search Channels",
+      "path": "/search/channels",
+      "slug": "search-channels",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/search/channels"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:read:stream_key scope.",
+        "scopes": [
+          "channel:read:stream_key"
+        ]
+      },
+      "description": "Gets the channel\u2019s stream key.",
+      "group": "Streams",
+      "id": "streams_get_stream_key",
+      "method": "GET",
+      "name": "Get Stream Key",
+      "path": "/get-stream-key",
+      "slug": "get-stream-key",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/get-stream-key"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets a list of all streams.",
+      "group": "Streams",
+      "id": "streams_get_streams",
+      "method": "GET",
+      "name": "Get Streams",
+      "path": "/streams",
+      "slug": "get-streams",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/streams"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:read:follows scope.",
+        "scopes": [
+          "user:read:follows"
+        ]
+      },
+      "description": "Gets the list of broadcasters that the user follows and that are streaming live.",
+      "group": "Streams",
+      "id": "streams_get_followed_streams",
+      "method": "GET",
+      "name": "Get Followed Streams",
+      "path": "/streams/followed",
+      "slug": "get-followed-streams",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/streams/followed"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:broadcast scope.",
+        "scopes": [
+          "channel:manage:broadcast"
+        ]
+      },
+      "description": "Adds a marker to a live stream.",
+      "group": "Streams",
+      "id": "streams_create_stream_marker",
+      "method": "POST",
+      "name": "Create Stream Marker",
+      "path": "/streams/markers",
+      "slug": "create-stream-marker",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/streams/markers"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:read:broadcast or channel:manage:broadcast scope.",
+        "scopes": [
+          "channel:manage:broadcast",
+          "user:read:broadcast"
+        ]
+      },
+      "description": "Gets a list of markers from the user\u2019s most recent stream or from the specified VOD/video.",
+      "group": "Streams",
+      "id": "streams_get_stream_markers",
+      "method": "GET",
+      "name": "Get Stream Markers",
+      "path": "/streams/markers",
+      "slug": "get-stream-markers",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/streams/markers"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires a user access token that includes the channel:read:subscriptions scope.\nA Twitch extensions may use an app access token if the broadcaster has granted the channel:read:subscriptions scope from within the Twitch Extensions manager.",
+        "scopes": [
+          "channel:read:subscriptions"
+        ]
+      },
+      "description": "Gets a list of users that subscribe to the specified broadcaster.",
+      "group": "Subscriptions",
+      "id": "subscriptions_get_broadcaster_subscriptions",
+      "method": "GET",
+      "name": "Get Broadcaster Subscriptions",
+      "path": "/subscriptions",
+      "slug": "get-broadcaster-subscriptions",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/subscriptions"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires a user access token that includes the user:read:subscriptions scope.\nA Twitch extensions may use an app access token if the broadcaster has granted the user:read:subscriptions scope from within the Twitch Extensions manager.",
+        "scopes": [
+          "user:read:subscriptions"
+        ]
+      },
+      "description": "Checks whether the user subscribes to the broadcaster\u2019s channel.",
+      "group": "Subscriptions",
+      "id": "subscriptions_check_user_subscription",
+      "method": "GET",
+      "name": "Check User Subscription",
+      "path": "/subscriptions/user",
+      "slug": "check-user-subscription",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/subscriptions/user"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the list of all stream tags that Twitch defines. You can also filter the list by one or more tag IDs.",
+      "group": "Tags",
+      "id": "tags_get_all_stream_tags",
+      "method": "GET",
+      "name": "Get All Stream Tags",
+      "path": "/tags/streams",
+      "slug": "get-all-stream-tags",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/tags/streams"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the list of stream tags that the broadcaster or Twitch added to their channel.",
+      "group": "Tags",
+      "id": "tags_get_stream_tags",
+      "method": "GET",
+      "name": "Get Stream Tags",
+      "path": "/streams/tags",
+      "slug": "get-stream-tags",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/streams/tags"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the list of Twitch teams that the broadcaster is a member of.",
+      "group": "Teams",
+      "id": "teams_get_channel_teams",
+      "method": "GET",
+      "name": "Get Channel Teams",
+      "path": "/teams/channel",
+      "slug": "get-channel-teams",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/teams/channel"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets information about the specified Twitch team.",
+      "group": "Teams",
+      "id": "teams_get_teams",
+      "method": "GET",
+      "name": "Get Teams",
+      "path": "/teams",
+      "slug": "get-teams",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/teams"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets information about one or more users.",
+      "group": "Users",
+      "id": "users_get_users",
+      "method": "GET",
+      "name": "Get Users",
+      "path": "/users",
+      "slug": "get-users",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/users"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:edit scope.",
+        "scopes": [
+          "user:edit"
+        ]
+      },
+      "description": "Updates the user\u2019s information.",
+      "group": "Users",
+      "id": "users_update_user",
+      "method": "PUT",
+      "name": "Update User",
+      "path": "/users",
+      "slug": "update-user",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/users"
+    },
+    {
+      "auth": {
+        "kind": "app",
+        "raw": "Requires an app access token.",
+        "scopes": []
+      },
+      "description": "NEW Gets the authorization scopes that the specified user has granted the application.",
+      "group": "Users",
+      "id": "users_get_authorization_by_user",
+      "method": "GET",
+      "name": "Get Authorization By User",
+      "path": "/authorization/users",
+      "slug": "get-authorization-by-user",
+      "stability": "new",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/authorization/users"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:read:blocked_users scope.",
+        "scopes": [
+          "user:read:blocked_users"
+        ]
+      },
+      "description": "Gets the list of users that the broadcaster has blocked.",
+      "group": "Users",
+      "id": "users_get_user_block_list",
+      "method": "GET",
+      "name": "Get User Block List",
+      "path": "/users/blocks",
+      "slug": "get-user-block-list",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/users/blocks"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:manage:blocked_users scope.",
+        "scopes": [
+          "user:manage:blocked_users"
+        ]
+      },
+      "description": "Blocks the specified user from interacting with or having contact with the broadcaster.",
+      "group": "Users",
+      "id": "users_block_user",
+      "method": "PUT",
+      "name": "Block User",
+      "path": "/users/blocks",
+      "slug": "block-user",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/users/blocks"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:manage:blocked_users scope.",
+        "scopes": [
+          "user:manage:blocked_users"
+        ]
+      },
+      "description": "Removes the user from the broadcaster\u2019s list of blocked users.",
+      "group": "Users",
+      "id": "users_unblock_user",
+      "method": "DELETE",
+      "name": "Unblock User",
+      "path": "/users/blocks",
+      "slug": "unblock-user",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/users/blocks"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:read:broadcast or user:edit:broadcast scope. To include inactive extensions, you must include the user:edit:broadcast scope.",
+        "scopes": [
+          "user:edit:broadcast",
+          "user:read:broadcast"
+        ]
+      },
+      "description": "Gets a list of all extensions (both active and inactive) that the broadcaster has installed.",
+      "group": "Users",
+      "id": "users_get_user_extensions",
+      "method": "GET",
+      "name": "Get User Extensions",
+      "path": "/users/extensions/list",
+      "slug": "get-user-extensions",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/users/extensions/list"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets the active extensions that the broadcaster has installed for each configuration.",
+      "group": "Users",
+      "id": "users_get_user_active_extensions",
+      "method": "GET",
+      "name": "Get User Active Extensions",
+      "path": "/users/extensions",
+      "slug": "get-user-active-extensions",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/users/extensions"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:edit:broadcast scope.",
+        "scopes": [
+          "user:edit:broadcast"
+        ]
+      },
+      "description": "Updates an installed extension\u2019s information.",
+      "group": "Users",
+      "id": "users_update_user_extensions",
+      "method": "PUT",
+      "name": "Update User Extensions",
+      "path": "/users/extensions",
+      "slug": "update-user-extensions",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/users/extensions"
+    },
+    {
+      "auth": {
+        "kind": "either",
+        "raw": "Requires an app access token or user access token.",
+        "scopes": []
+      },
+      "description": "Gets information about one or more published videos.",
+      "group": "Videos",
+      "id": "videos_get_videos",
+      "method": "GET",
+      "name": "Get Videos",
+      "path": "/videos",
+      "slug": "get-videos",
+      "stability": "ga",
+      "supports_pagination": true,
+      "url": "https://api.twitch.tv/helix/videos"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the channel:manage:videos scope.",
+        "scopes": [
+          "channel:manage:videos"
+        ]
+      },
+      "description": "Deletes one or more videos.",
+      "group": "Videos",
+      "id": "videos_delete_videos",
+      "method": "DELETE",
+      "name": "Delete Videos",
+      "path": "/videos",
+      "slug": "delete-videos",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/videos"
+    },
+    {
+      "auth": {
+        "kind": "user",
+        "raw": "Requires a user access token that includes the user:manage:whispers scope.",
+        "scopes": [
+          "user:manage:whispers"
+        ]
+      },
+      "description": "Sends a whisper message to the specified user.",
+      "group": "Whispers",
+      "id": "whispers_send_whisper",
+      "method": "POST",
+      "name": "Send Whisper",
+      "path": "/whispers",
+      "slug": "send-whisper",
+      "stability": "ga",
+      "supports_pagination": false,
+      "url": "https://api.twitch.tv/helix/whispers"
+    }
+  ],
+  "generated_at": "2026-04-16T02:45:57+00:00",
+  "group_counts": {
+    "Ads": 3,
+    "Analytics": 2,
+    "Bits": 3,
+    "CCLs": 1,
+    "Channel Points": 6,
+    "Channels": 5,
+    "Charity": 2,
+    "Chat": 15,
+    "Clips": 4,
+    "Conduits": 6,
+    "Entitlements": 2,
+    "EventSub": 3,
+    "Extensions": 12,
+    "Games": 2,
+    "Goals": 1,
+    "Guest Star": 12,
+    "Hype Train": 1,
+    "Moderation": 25,
+    "Polls": 3,
+    "Predictions": 3,
+    "Raids": 2,
+    "Schedule": 6,
+    "Search": 2,
+    "Streams": 5,
+    "Subscriptions": 2,
+    "Tags": 2,
+    "Teams": 2,
+    "Users": 9,
+    "Videos": 2,
+    "Whispers": 1
+  },
+  "source": "https://dev.twitch.tv/docs/api/reference"
+}

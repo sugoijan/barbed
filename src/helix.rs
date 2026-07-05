@@ -1,9 +1,11 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::TwitchIdentity;
 use crate::eventsub::{CreateEventSubSubscriptionRequest, CreateEventSubSubscriptionResponse};
-use crate::http::form_body;
+use crate::http::{
+    HttpResponse, PreparedRequestBuilder, ResponseMeta, append_query_params, form_body,
+};
 use crate::oauth::{TwitchAuthOutcome, TwitchTokenState};
 
 const TWITCH_TOKEN_URL: &str = "https://id.twitch.tv/oauth2/token";
@@ -20,9 +22,233 @@ pub enum HelixError {
     MissingRefreshToken,
     #[error("client_id or client_secret is not configured")]
     MissingCredentials,
+    #[error("endpoint {endpoint} requires an access token")]
+    MissingAccessToken { endpoint: &'static str },
 }
 
 pub use crate::http::{HttpMethod, PreparedRequest, RawResponse};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum EndpointStability {
+    Ga,
+    New,
+    Beta,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum HelixAuthKind {
+    None,
+    App,
+    User,
+    Either,
+    ExtensionJwt,
+    Custom,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct HelixEndpoint {
+    pub id: &'static str,
+    pub group: &'static str,
+    pub name: &'static str,
+    pub description: &'static str,
+    pub stability: EndpointStability,
+    pub method: HttpMethod,
+    pub path: &'static str,
+    pub auth_kind: HelixAuthKind,
+    pub scopes: &'static [&'static str],
+    pub supports_pagination: bool,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct HelixEndpointRequest {
+    path_params: Vec<(String, String)>,
+    query_params: Vec<(String, String)>,
+    headers: Vec<(String, String)>,
+    json_body: Option<serde_json::Value>,
+}
+
+impl HelixEndpointRequest {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_path_param(
+        mut self,
+        name: impl Into<String>,
+        value: impl Into<String>,
+    ) -> Self {
+        self.path_params.push((name.into(), value.into()));
+        self
+    }
+
+    pub fn with_query_param(
+        mut self,
+        name: impl Into<String>,
+        value: impl Into<String>,
+    ) -> Self {
+        self.query_params.push((name.into(), value.into()));
+        self
+    }
+
+    pub fn with_header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.headers.push((name.into(), value.into()));
+        self
+    }
+
+    pub fn with_json_body(mut self, value: serde_json::Value) -> Self {
+        self.json_body = Some(value);
+        self
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct HelixJsonResponse {
+    pub meta: ResponseMeta,
+    pub body: serde_json::Value,
+}
+
+impl HelixEndpoint {
+    pub fn missing_scopes(&self, granted: &[String]) -> Vec<&'static str> {
+        self.scopes
+            .iter()
+            .copied()
+            .filter(|scope| !granted.iter().any(|granted_scope| granted_scope == scope))
+            .collect()
+    }
+
+    pub fn prepare(
+        &'static self,
+        request: &HelixEndpointRequest,
+        client_id: &str,
+        access_token: Option<&str>,
+    ) -> Result<PreparedRequest, HelixError> {
+        if client_id.is_empty() {
+            return Err(HelixError::MissingCredentials);
+        }
+        if matches!(
+            self.auth_kind,
+            HelixAuthKind::App | HelixAuthKind::User | HelixAuthKind::Either | HelixAuthKind::ExtensionJwt
+        ) && access_token.is_none()
+        {
+            return Err(HelixError::MissingAccessToken { endpoint: self.id });
+        }
+
+        let mut path = self.path.to_string();
+        for (name, value) in &request.path_params {
+            let needle = format!("{{{name}}}");
+            path = path.replace(&needle, &crate::http::percent_encode(value));
+        }
+
+        let base_url = format!("https://api.twitch.tv/helix{path}");
+        let url = append_query_params(&base_url, &request.query_params);
+        let mut builder = PreparedRequestBuilder::new(self.method.clone(), url)
+            .header("Client-Id", client_id);
+        if let Some(access_token) = access_token {
+            builder = builder.header("Authorization", format!("Bearer {access_token}"));
+        }
+        for (name, value) in &request.headers {
+            builder = builder.header(name.clone(), value.clone());
+        }
+        if let Some(json_body) = &request.json_body {
+            builder = builder.json_body(json_body)?;
+        }
+        Ok(builder.build())
+    }
+
+    pub fn parse_json_response(
+        &self,
+        response: HttpResponse,
+    ) -> Result<HelixJsonResponse, HelixError> {
+        if !(200..=299).contains(&response.status) {
+            return Err(HelixError::ApiError {
+                status: response.status,
+                body: response.body,
+            });
+        }
+        let meta = response.meta();
+        let body = if response.body.trim().is_empty() {
+            serde_json::Value::Null
+        } else {
+            serde_json::from_str(&response.body)?
+        };
+        Ok(HelixJsonResponse { meta, body })
+    }
+}
+
+macro_rules! declare_generated_endpoint {
+    ($request_name:ident, $response_name:ident, $endpoint_const:ident) => {
+        #[derive(Clone, Debug, Default, PartialEq, Eq)]
+        pub struct $request_name {
+            inner: $crate::helix::HelixEndpointRequest,
+        }
+
+        impl $request_name {
+            pub fn new() -> Self {
+                Self {
+                    inner: $crate::helix::HelixEndpointRequest::new(),
+                }
+            }
+
+            pub fn with_path_param(
+                mut self,
+                name: impl Into<String>,
+                value: impl Into<String>,
+            ) -> Self {
+                self.inner = self.inner.with_path_param(name, value);
+                self
+            }
+
+            pub fn with_query_param(
+                mut self,
+                name: impl Into<String>,
+                value: impl Into<String>,
+            ) -> Self {
+                self.inner = self.inner.with_query_param(name, value);
+                self
+            }
+
+            pub fn with_header(
+                mut self,
+                name: impl Into<String>,
+                value: impl Into<String>,
+            ) -> Self {
+                self.inner = self.inner.with_header(name, value);
+                self
+            }
+
+            pub fn with_json_body(mut self, value: serde_json::Value) -> Self {
+                self.inner = self.inner.with_json_body(value);
+                self
+            }
+
+            pub fn endpoint(&self) -> &'static HelixEndpoint {
+                &$endpoint_const
+            }
+
+            pub fn prepare(
+                self,
+                client_id: &str,
+                access_token: Option<&str>,
+            ) -> Result<$crate::http::PreparedRequest, $crate::helix::HelixError> {
+                $endpoint_const.prepare(&self.inner, client_id, access_token)
+            }
+        }
+
+        pub type $response_name = $crate::helix::HelixJsonResponse;
+    };
+}
+
+#[path = "helix_generated.rs"]
+pub mod generated;
+
+pub use generated::{
+    ads, analytics, bits, ccls as content_classification_labels, channel_points, channels, charity,
+    chat, clips, conduits, entitlements, eventsub as eventsub_endpoints, extensions, games, goals,
+    guest_star, hype_train, moderation, polls, predictions, raids, schedule, search, streams,
+    subscriptions, tags, teams, users, videos, whispers,
+};
+
+pub static ALL_ENDPOINTS: &[&HelixEndpoint] = generated::ALL_ENDPOINTS;
 
 // -- Twitch API response types --
 

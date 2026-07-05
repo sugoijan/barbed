@@ -36,6 +36,11 @@ name = "barbed"
 version = "0.0.2"
 dependencies = [
  "anyhow",
+ "async-trait",
+ "barbed-7tv",
+ "barbed-bttv",
+ "barbed-core",
+ "barbed-ffz",
  "futures-util",
  "hex",
  "hmac",
@@ -54,6 +59,53 @@ dependencies = [
 ]
 
 [[package]]
+name = "barbed-7tv"
+version = "0.0.2"
+dependencies = [
+ "async-trait",
+ "barbed-core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "barbed-bttv"
+version = "0.0.2"
+dependencies = [
+ "async-trait",
+ "barbed-core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "barbed-core"
+version = "0.0.2"
+dependencies = [
+ "bitflags",
+ "serde",
+]
+
+[[package]]
+name = "barbed-ffz"
+version = "0.0.2"
+dependencies = [
+ "async-trait",
+ "barbed-core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -64,6 +116,9 @@ name = "bitflags"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
+dependencies = [
+ "serde_core",
+]
 
 [[package]]
 name = "block-buffer"

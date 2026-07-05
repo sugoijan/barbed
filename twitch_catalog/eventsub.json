@@ -1,0 +1,646 @@
+{
+  "generated_at": "2026-04-16T02:45:59+00:00",
+  "source": "https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/",
+  "subscriptions": [
+    {
+      "description": "A user is notified if a message is caught by automod for review.",
+      "id": "automod_message_hold_1",
+      "name": "Automod Message Hold",
+      "stability": "ga",
+      "subscription_type": "automod.message.hold",
+      "version": "1"
+    },
+    {
+      "description": "A user is notified if a message is caught by automod for review. Only public blocked terms trigger notifications, not private ones.",
+      "id": "automod_message_hold_2",
+      "name": "Automod Message Hold V2\nNEW",
+      "stability": "new",
+      "subscription_type": "automod.message.hold",
+      "version": "2"
+    },
+    {
+      "description": "A message in the automod queue had its status changed.",
+      "id": "automod_message_update_1",
+      "name": "Automod Message Update",
+      "stability": "ga",
+      "subscription_type": "automod.message.update",
+      "version": "1"
+    },
+    {
+      "description": "A message in the automod queue had its status changed. Only public blocked terms trigger notifications, not private ones.",
+      "id": "automod_message_update_2",
+      "name": "Automod Message Update V2\nNEW",
+      "stability": "new",
+      "subscription_type": "automod.message.update",
+      "version": "2"
+    },
+    {
+      "description": "A notification is sent when a broadcaster\u2019s automod settings are updated.",
+      "id": "automod_settings_update_1",
+      "name": "Automod Settings Update",
+      "stability": "ga",
+      "subscription_type": "automod.settings.update",
+      "version": "1"
+    },
+    {
+      "description": "A notification is sent when a broadcaster\u2019s automod terms are updated. Changes to private terms are not sent.",
+      "id": "automod_terms_update_1",
+      "name": "Automod Terms Update",
+      "stability": "ga",
+      "subscription_type": "automod.terms.update",
+      "version": "1"
+    },
+    {
+      "description": "A notification is sent whenever Bits are used on a channel.",
+      "id": "channel_bits_use_1",
+      "name": "Channel Bits Use\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.bits.use",
+      "version": "1"
+    },
+    {
+      "description": "A broadcaster updates their channel properties e.g., category, title, content classification labels, broadcast, or language.",
+      "id": "channel_update_2",
+      "name": "Channel Update",
+      "stability": "ga",
+      "subscription_type": "channel.update",
+      "version": "2"
+    },
+    {
+      "description": "A specified channel receives a follow.",
+      "id": "channel_follow_2",
+      "name": "Channel Follow",
+      "stability": "ga",
+      "subscription_type": "channel.follow",
+      "version": "2"
+    },
+    {
+      "description": "A midroll commercial break has started running.",
+      "id": "channel_ad_break_begin_1",
+      "name": "Channel Ad Break Begin",
+      "stability": "ga",
+      "subscription_type": "channel.ad_break.begin",
+      "version": "1"
+    },
+    {
+      "description": "A moderator or bot has cleared all messages from the chat room.",
+      "id": "channel_chat_clear_1",
+      "name": "Channel Chat Clear",
+      "stability": "ga",
+      "subscription_type": "channel.chat.clear",
+      "version": "1"
+    },
+    {
+      "description": "A moderator or bot has cleared all messages from a specific user.",
+      "id": "channel_chat_clear_user_messages_1",
+      "name": "Channel Chat Clear User Messages",
+      "stability": "ga",
+      "subscription_type": "channel.chat.clear_user_messages",
+      "version": "1"
+    },
+    {
+      "description": "Any user sends a message to a specific chat room.",
+      "id": "channel_chat_message_1",
+      "name": "Channel Chat Message\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.chat.message",
+      "version": "1"
+    },
+    {
+      "description": "A moderator has removed a specific message.",
+      "id": "channel_chat_message_delete_1",
+      "name": "Channel Chat Message Delete",
+      "stability": "ga",
+      "subscription_type": "channel.chat.message_delete",
+      "version": "1"
+    },
+    {
+      "description": "A notification for when an event that appears in chat has occurred.",
+      "id": "channel_chat_notification_1",
+      "name": "Channel Chat Notification",
+      "stability": "ga",
+      "subscription_type": "channel.chat.notification",
+      "version": "1"
+    },
+    {
+      "description": "A notification for when a broadcaster\u2019s chat settings are updated.",
+      "id": "channel_chat_settings_update_1",
+      "name": "Channel Chat Settings Update\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.chat_settings.update",
+      "version": "1"
+    },
+    {
+      "description": "A user is notified if their message is caught by automod.",
+      "id": "channel_chat_user_message_hold_1",
+      "name": "Channel Chat User Message Hold\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.chat.user_message_hold",
+      "version": "1"
+    },
+    {
+      "description": "A user is notified if their message\u2019s automod status is updated.",
+      "id": "channel_chat_user_message_update_1",
+      "name": "Channel Chat User Message Update\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.chat.user_message_update",
+      "version": "1"
+    },
+    {
+      "description": "A notification when a channel becomes active in an active shared chat session.",
+      "id": "channel_shared_chat_begin_1",
+      "name": "Channel Shared Chat Session Begin\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.shared_chat.begin",
+      "version": "1"
+    },
+    {
+      "description": "A notification when the active shared chat session the channel is in changes.",
+      "id": "channel_shared_chat_update_1",
+      "name": "Channel Shared Chat Session Update\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.shared_chat.update",
+      "version": "1"
+    },
+    {
+      "description": "A notification when a channel leaves a shared chat session or the session ends.",
+      "id": "channel_shared_chat_end_1",
+      "name": "Channel Shared Chat Session End",
+      "stability": "ga",
+      "subscription_type": "channel.shared_chat.end",
+      "version": "1"
+    },
+    {
+      "description": "A notification is sent when a specified channel receives a subscriber. This does not include resubscribes.",
+      "id": "channel_subscribe_1",
+      "name": "Channel Subscribe",
+      "stability": "ga",
+      "subscription_type": "channel.subscribe",
+      "version": "1"
+    },
+    {
+      "description": "A notification when a subscription to the specified channel ends.",
+      "id": "channel_subscription_end_1",
+      "name": "Channel Subscription End",
+      "stability": "ga",
+      "subscription_type": "channel.subscription.end",
+      "version": "1"
+    },
+    {
+      "description": "A notification when a viewer gives a gift subscription to one or more users in the specified channel.",
+      "id": "channel_subscription_gift_1",
+      "name": "Channel Subscription Gift",
+      "stability": "ga",
+      "subscription_type": "channel.subscription.gift",
+      "version": "1"
+    },
+    {
+      "description": "A notification when a user sends a resubscription chat message in a specific channel.",
+      "id": "channel_subscription_message_1",
+      "name": "Channel Subscription Message",
+      "stability": "ga",
+      "subscription_type": "channel.subscription.message",
+      "version": "1"
+    },
+    {
+      "description": "A user cheers on the specified channel.",
+      "id": "channel_cheer_1",
+      "name": "Channel Cheer",
+      "stability": "ga",
+      "subscription_type": "channel.cheer",
+      "version": "1"
+    },
+    {
+      "description": "A broadcaster raids another broadcaster\u2019s channel.",
+      "id": "channel_raid_1",
+      "name": "Channel Raid",
+      "stability": "ga",
+      "subscription_type": "channel.raid",
+      "version": "1"
+    },
+    {
+      "description": "A viewer is banned from the specified channel.",
+      "id": "channel_ban_1",
+      "name": "Channel Ban",
+      "stability": "ga",
+      "subscription_type": "channel.ban",
+      "version": "1"
+    },
+    {
+      "description": "A viewer is unbanned from the specified channel.",
+      "id": "channel_unban_1",
+      "name": "Channel Unban",
+      "stability": "ga",
+      "subscription_type": "channel.unban",
+      "version": "1"
+    },
+    {
+      "description": "A moderator performs a moderation action in a channel.",
+      "id": "channel_moderate_1",
+      "name": "Channel Unban Request Create\nNEW\nchannel.unban_request.create\n1\nA user creates an unban request.\nChannel Unban Request Resolve\nNEW\nchannel.unban_request.resolve\n1\nAn unban request has been resolved.\nChannel Moderate",
+      "stability": "new",
+      "subscription_type": "channel.moderate",
+      "version": "1"
+    },
+    {
+      "description": "A moderator performs a moderation action in a channel. Includes warnings.",
+      "id": "channel_moderate_2",
+      "name": "Channel Moderate V2\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.moderate",
+      "version": "2"
+    },
+    {
+      "description": "Moderator privileges were added to a user on a specified channel.",
+      "id": "channel_moderator_add_1",
+      "name": "Channel Moderator Add",
+      "stability": "ga",
+      "subscription_type": "channel.moderator.add",
+      "version": "1"
+    },
+    {
+      "description": "Moderator privileges were removed from a user on a specified channel.",
+      "id": "channel_moderator_remove_1",
+      "name": "Channel Moderator Remove",
+      "stability": "ga",
+      "subscription_type": "channel.moderator.remove",
+      "version": "1"
+    },
+    {
+      "description": "The host began a new Guest Star session.",
+      "id": "channel_guest_star_session_begin_beta",
+      "name": "Channel Guest Star Session Begin\nBETA",
+      "stability": "beta",
+      "subscription_type": "channel.guest_star_session.begin",
+      "version": "beta"
+    },
+    {
+      "description": "A running Guest Star session has ended.",
+      "id": "channel_guest_star_session_end_beta",
+      "name": "Channel Guest Star Session End\nBETA",
+      "stability": "beta",
+      "subscription_type": "channel.guest_star_session.end",
+      "version": "beta"
+    },
+    {
+      "description": "A guest or a slot is updated in an active Guest Star session.",
+      "id": "channel_guest_star_guest_update_beta",
+      "name": "Channel Guest Star Guest Update\nBETA",
+      "stability": "beta",
+      "subscription_type": "channel.guest_star_guest.update",
+      "version": "beta"
+    },
+    {
+      "description": "The host preferences for Guest Star have been updated.",
+      "id": "channel_guest_star_settings_update_beta",
+      "name": "Channel Guest Star Settings Update\nBETA",
+      "stability": "beta",
+      "subscription_type": "channel.guest_star_settings.update",
+      "version": "beta"
+    },
+    {
+      "description": "A viewer has redeemed an automatic channel points reward on the specified channel.",
+      "id": "channel_channel_points_automatic_reward_redemption_add_1",
+      "name": "Channel Points Automatic Reward Redemption Add",
+      "stability": "ga",
+      "subscription_type": "channel.channel_points_automatic_reward_redemption.add",
+      "version": "1"
+    },
+    {
+      "description": "A viewer has redeemed an automatic channel points reward on the specified channel.",
+      "id": "channel_channel_points_automatic_reward_redemption_add_2",
+      "name": "Channel Points Automatic Reward Redemption Add V2\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.channel_points_automatic_reward_redemption.add",
+      "version": "2"
+    },
+    {
+      "description": "A custom channel points reward has been created for the specified channel.",
+      "id": "channel_channel_points_custom_reward_add_1",
+      "name": "Channel Points Custom Reward Add",
+      "stability": "ga",
+      "subscription_type": "channel.channel_points_custom_reward.add",
+      "version": "1"
+    },
+    {
+      "description": "A custom channel points reward has been updated for the specified channel.",
+      "id": "channel_channel_points_custom_reward_update_1",
+      "name": "Channel Points Custom Reward Update",
+      "stability": "ga",
+      "subscription_type": "channel.channel_points_custom_reward.update",
+      "version": "1"
+    },
+    {
+      "description": "A custom channel points reward has been removed from the specified channel.",
+      "id": "channel_channel_points_custom_reward_remove_1",
+      "name": "Channel Points Custom Reward Remove",
+      "stability": "ga",
+      "subscription_type": "channel.channel_points_custom_reward.remove",
+      "version": "1"
+    },
+    {
+      "description": "A viewer has redeemed a custom channel points reward on the specified channel.",
+      "id": "channel_channel_points_custom_reward_redemption_add_1",
+      "name": "Channel Points Custom Reward Redemption Add",
+      "stability": "ga",
+      "subscription_type": "channel.channel_points_custom_reward_redemption.add",
+      "version": "1"
+    },
+    {
+      "description": "A redemption of a channel points custom reward has been updated for the specified channel.",
+      "id": "channel_channel_points_custom_reward_redemption_update_1",
+      "name": "Channel Points Custom Reward Redemption Update",
+      "stability": "ga",
+      "subscription_type": "channel.channel_points_custom_reward_redemption.update",
+      "version": "1"
+    },
+    {
+      "description": "A poll started on a specified channel.",
+      "id": "channel_poll_begin_1",
+      "name": "Channel Poll Begin",
+      "stability": "ga",
+      "subscription_type": "channel.poll.begin",
+      "version": "1"
+    },
+    {
+      "description": "Users respond to a poll on a specified channel.",
+      "id": "channel_poll_progress_1",
+      "name": "Channel Poll Progress",
+      "stability": "ga",
+      "subscription_type": "channel.poll.progress",
+      "version": "1"
+    },
+    {
+      "description": "A poll ended on a specified channel.",
+      "id": "channel_poll_end_1",
+      "name": "Channel Poll End",
+      "stability": "ga",
+      "subscription_type": "channel.poll.end",
+      "version": "1"
+    },
+    {
+      "description": "A Prediction started on a specified channel.",
+      "id": "channel_prediction_begin_1",
+      "name": "Channel Prediction Begin",
+      "stability": "ga",
+      "subscription_type": "channel.prediction.begin",
+      "version": "1"
+    },
+    {
+      "description": "Users participated in a Prediction on a specified channel.",
+      "id": "channel_prediction_progress_1",
+      "name": "Channel Prediction Progress",
+      "stability": "ga",
+      "subscription_type": "channel.prediction.progress",
+      "version": "1"
+    },
+    {
+      "description": "A Prediction was locked on a specified channel.",
+      "id": "channel_prediction_lock_1",
+      "name": "Channel Prediction Lock",
+      "stability": "ga",
+      "subscription_type": "channel.prediction.lock",
+      "version": "1"
+    },
+    {
+      "description": "A Prediction ended on a specified channel.",
+      "id": "channel_prediction_end_1",
+      "name": "Channel Prediction End",
+      "stability": "ga",
+      "subscription_type": "channel.prediction.end",
+      "version": "1"
+    },
+    {
+      "description": "A chat message has been sent by a suspicious user.",
+      "id": "channel_suspicious_user_message_1",
+      "name": "Channel Suspicious User Message\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.suspicious_user.message",
+      "version": "1"
+    },
+    {
+      "description": "A suspicious user has been updated.",
+      "id": "channel_suspicious_user_update_1",
+      "name": "Channel Suspicious User Update\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.suspicious_user.update",
+      "version": "1"
+    },
+    {
+      "description": "A VIP is added to the channel.",
+      "id": "channel_vip_add_1",
+      "name": "Channel VIP Add\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.vip.add",
+      "version": "1"
+    },
+    {
+      "description": "A VIP is removed from the channel.",
+      "id": "channel_vip_remove_1",
+      "name": "Channel VIP Remove\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.vip.remove",
+      "version": "1"
+    },
+    {
+      "description": "A user awknowledges a warning. Broadcasters and moderators can see the warning\u2019s details.",
+      "id": "channel_warning_acknowledge_1",
+      "name": "Channel Warning Acknowledgement\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.warning.acknowledge",
+      "version": "1"
+    },
+    {
+      "description": "A user is sent a warning. Broadcasters and moderators can see the warning\u2019s details.",
+      "id": "channel_warning_send_1",
+      "name": "Channel Warning Send\nNEW",
+      "stability": "new",
+      "subscription_type": "channel.warning.send",
+      "version": "1"
+    },
+    {
+      "description": "Sends an event notification when a user donates to the broadcaster\u2019s charity campaign.",
+      "id": "channel_charity_campaign_donate_1",
+      "name": "Charity Donation",
+      "stability": "ga",
+      "subscription_type": "channel.charity_campaign.donate",
+      "version": "1"
+    },
+    {
+      "description": "Sends an event notification when the broadcaster starts a charity campaign.",
+      "id": "channel_charity_campaign_start_1",
+      "name": "Charity Campaign Start",
+      "stability": "ga",
+      "subscription_type": "channel.charity_campaign.start",
+      "version": "1"
+    },
+    {
+      "description": "Sends an event notification when progress is made towards the campaign\u2019s goal or when the broadcaster changes the fundraising goal.",
+      "id": "channel_charity_campaign_progress_1",
+      "name": "Charity Campaign Progress",
+      "stability": "ga",
+      "subscription_type": "channel.charity_campaign.progress",
+      "version": "1"
+    },
+    {
+      "description": "Sends an event notification when the broadcaster stops a charity campaign.",
+      "id": "channel_charity_campaign_stop_1",
+      "name": "Charity Campaign Stop",
+      "stability": "ga",
+      "subscription_type": "channel.charity_campaign.stop",
+      "version": "1"
+    },
+    {
+      "description": "Sends a notification when EventSub disables a shard due to the status of the underlying transport changing.",
+      "id": "conduit_shard_disabled_1",
+      "name": "Conduit Shard Disabled\nNEW",
+      "stability": "new",
+      "subscription_type": "conduit.shard.disabled",
+      "version": "1"
+    },
+    {
+      "description": "An entitlement for a Drop is granted to a user.",
+      "id": "drop_entitlement_grant_1",
+      "name": "Drop Entitlement Grant",
+      "stability": "ga",
+      "subscription_type": "drop.entitlement.grant",
+      "version": "1"
+    },
+    {
+      "description": "A Bits transaction occurred for a specified Twitch Extension.",
+      "id": "extension_bits_transaction_create_1",
+      "name": "Extension Bits Transaction Create",
+      "stability": "ga",
+      "subscription_type": "extension.bits_transaction.create",
+      "version": "1"
+    },
+    {
+      "description": "Get notified when a broadcaster begins a goal.",
+      "id": "channel_goal_begin_1",
+      "name": "Goal Begin",
+      "stability": "ga",
+      "subscription_type": "channel.goal.begin",
+      "version": "1"
+    },
+    {
+      "description": "Get notified when progress (either positive or negative) is made towards a broadcaster\u2019s goal.",
+      "id": "channel_goal_progress_1",
+      "name": "Goal Progress",
+      "stability": "ga",
+      "subscription_type": "channel.goal.progress",
+      "version": "1"
+    },
+    {
+      "description": "Get notified when a broadcaster ends a goal.",
+      "id": "channel_goal_end_1",
+      "name": "Goal End",
+      "stability": "ga",
+      "subscription_type": "channel.goal.end",
+      "version": "1"
+    },
+    {
+      "description": "A Hype Train begins on the specified channel.",
+      "id": "channel_hype_train_begin_2",
+      "name": "Hype Train Begin",
+      "stability": "ga",
+      "subscription_type": "channel.hype_train.begin",
+      "version": "2"
+    },
+    {
+      "description": "A Hype Train makes progress on the specified channel.",
+      "id": "channel_hype_train_progress_2",
+      "name": "Hype Train Progress",
+      "stability": "ga",
+      "subscription_type": "channel.hype_train.progress",
+      "version": "2"
+    },
+    {
+      "description": "A Hype Train ends on the specified channel.",
+      "id": "channel_hype_train_end_2",
+      "name": "Hype Train End",
+      "stability": "ga",
+      "subscription_type": "channel.hype_train.end",
+      "version": "2"
+    },
+    {
+      "description": "Sends a notification when the broadcaster activates Shield Mode.",
+      "id": "channel_shield_mode_begin_1",
+      "name": "Shield Mode Begin",
+      "stability": "ga",
+      "subscription_type": "channel.shield_mode.begin",
+      "version": "1"
+    },
+    {
+      "description": "Sends a notification when the broadcaster deactivates Shield Mode.",
+      "id": "channel_shield_mode_end_1",
+      "name": "Shield Mode End",
+      "stability": "ga",
+      "subscription_type": "channel.shield_mode.end",
+      "version": "1"
+    },
+    {
+      "description": "Sends a notification when the specified broadcaster sends a Shoutout.",
+      "id": "channel_shoutout_create_1",
+      "name": "Shoutout Create",
+      "stability": "ga",
+      "subscription_type": "channel.shoutout.create",
+      "version": "1"
+    },
+    {
+      "description": "Sends a notification when the specified broadcaster receives a Shoutout.",
+      "id": "channel_shoutout_receive_1",
+      "name": "Shoutout Received",
+      "stability": "ga",
+      "subscription_type": "channel.shoutout.receive",
+      "version": "1"
+    },
+    {
+      "description": "The specified broadcaster starts a stream.",
+      "id": "stream_online_1",
+      "name": "Stream Online",
+      "stability": "ga",
+      "subscription_type": "stream.online",
+      "version": "1"
+    },
+    {
+      "description": "The specified broadcaster stops a stream.",
+      "id": "stream_offline_1",
+      "name": "Stream Offline",
+      "stability": "ga",
+      "subscription_type": "stream.offline",
+      "version": "1"
+    },
+    {
+      "description": "A user\u2019s authorization has been granted to your client id.",
+      "id": "user_authorization_grant_1",
+      "name": "User Authorization Grant",
+      "stability": "ga",
+      "subscription_type": "user.authorization.grant",
+      "version": "1"
+    },
+    {
+      "description": "A user\u2019s authorization has been revoked for your client id.",
+      "id": "user_authorization_revoke_1",
+      "name": "User Authorization Revoke",
+      "stability": "ga",
+      "subscription_type": "user.authorization.revoke",
+      "version": "1"
+    },
+    {
+      "description": "A user has updated their account.",
+      "id": "user_update_1",
+      "name": "User Update",
+      "stability": "ga",
+      "subscription_type": "user.update",
+      "version": "1"
+    },
+    {
+      "description": "A user receives a whisper.",
+      "id": "user_whisper_message_1",
+      "name": "Whisper Received\nNEW",
+      "stability": "new",
+      "subscription_type": "user.whisper.message",
+      "version": "1"
+    }
+  ]
+}

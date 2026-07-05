@@ -1,0 +1,27 @@
+{
+  "room": {
+    "id": "room-42",
+    "twitch_id": 42
+  },
+  "sets": {
+    "7": {
+      "id": 7,
+      "title": "Room FFZ",
+      "emoticons": [
+        {
+          "id": 700,
+          "name": "RainbowMod",
+          "hidden": true,
+          "modifier": true,
+          "modifier_flags": 2049,
+          "urls": {
+            "1": "https://cdn.frankerfacez.com/emote/700/1"
+          },
+          "mask": {
+            "1": "https://cdn.frankerfacez.com/emote/700/mask/1"
+          }
+        }
+      ]
+    }
+  }
+}

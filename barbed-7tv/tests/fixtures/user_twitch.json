@@ -1,0 +1,16 @@
+{
+  "connections": [
+    {
+      "platform": "Twitch",
+      "emote_set": {
+        "id": "set-123"
+      }
+    }
+  ],
+  "emote_sets": [
+    {
+      "id": "fallback-set"
+    }
+  ]
+}
+

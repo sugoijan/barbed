@@ -13,11 +13,13 @@ use crate::eventsub::{
     decode_eventsub_websocket_message,
 };
 use crate::helix::{self, TwitchTokenExchange};
-use crate::http::{HttpMethod, PreparedRequest, RawResponse};
+use crate::http::{HttpMethod, HttpResponse, PreparedRequest, RawResponse, ResponseHeader};
 use crate::oauth::{
-    TokenValidation, TwitchAuthConfig, TwitchAuthOutcome, TwitchDeviceAuthorization,
-    TwitchTokenState, device_code_request_with_scope, device_token_request, normalize_scopes,
-    refresh_token_request, validate_token_request,
+    OpenIdConfiguration, OpenIdUserInfo, TokenValidation, TwitchAuthConfig, TwitchAuthOutcome,
+    TwitchDeviceAuthorization, TwitchTokenState, client_credentials_request,
+    device_code_request_with_scope, device_token_request, normalize_scopes,
+    openid_configuration_request, openid_userinfo_request, refresh_token_request,
+    revoke_token_request, validate_token_request,
 };
 
 #[derive(Clone)]
@@ -139,12 +141,86 @@ impl TwitchAuthClient {
             }
         }
     }
+
+    pub async fn request_app_access_token(&self, client_secret: &str) -> Result<TwitchTokenExchange> {
+        let response = send_prepared_request_with_metadata(
+            &self.http,
+            client_credentials_request(self.config.client_id(), client_secret),
+        )
+        .await?;
+
+        if response.status != 200 {
+            bail!(
+                "twitch app token request failed with status {}: {}",
+                response.status,
+                response.body
+            );
+        }
+
+        serde_json::from_str(&response.body).context("failed to parse Twitch app token response")
+    }
+
+    pub async fn revoke_token(&self, token: &str) -> Result<()> {
+        let response = send_prepared_request_with_metadata(
+            &self.http,
+            revoke_token_request(self.config.client_id(), token),
+        )
+        .await?;
+        if !(200..=299).contains(&response.status) {
+            bail!(
+                "twitch token revoke request failed with status {}: {}",
+                response.status,
+                response.body
+            );
+        }
+        Ok(())
+    }
+
+    pub async fn fetch_openid_configuration(&self) -> Result<OpenIdConfiguration> {
+        let response =
+            send_prepared_request_with_metadata(&self.http, openid_configuration_request()).await?;
+        if response.status != 200 {
+            bail!(
+                "twitch openid configuration request failed with status {}: {}",
+                response.status,
+                response.body
+            );
+        }
+        serde_json::from_str(&response.body)
+            .context("failed to parse Twitch OpenID configuration response")
+    }
+
+    pub async fn fetch_openid_userinfo(&self, access_token: &str) -> Result<OpenIdUserInfo> {
+        let response = send_prepared_request_with_metadata(
+            &self.http,
+            openid_userinfo_request(access_token),
+        )
+        .await?;
+        if response.status != 200 {
+            bail!(
+                "twitch openid userinfo request failed with status {}: {}",
+                response.status,
+                response.body
+            );
+        }
+        serde_json::from_str(&response.body)
+            .context("failed to parse Twitch OpenID userinfo response")
+    }
 }
 
 pub async fn send_prepared_request(
     http: &Client,
     prepared: PreparedRequest,
 ) -> Result<RawResponse> {
+    Ok(send_prepared_request_with_metadata(http, prepared)
+        .await?
+        .into_raw_response())
+}
+
+pub async fn send_prepared_request_with_metadata(
+    http: &Client,
+    prepared: PreparedRequest,
+) -> Result<HttpResponse> {
     let PreparedRequest {
         url,
         method,
@@ -155,6 +231,8 @@ pub async fn send_prepared_request(
     let mut request = match method {
         HttpMethod::Get => http.get(&url),
         HttpMethod::Post => http.post(&url),
+        HttpMethod::Put => http.put(&url),
+        HttpMethod::Patch => http.patch(&url),
         HttpMethod::Delete => http.delete(&url),
     };
     for (key, value) in headers {
@@ -168,8 +246,20 @@ pub async fn send_prepared_request(
         .await
         .with_context(|| format!("failed to send request to {}", url))?;
     let status = response.status().as_u16();
+    let headers = response
+        .headers()
+        .iter()
+        .map(|(name, value)| ResponseHeader {
+            name: name.as_str().to_string(),
+            value: value.to_str().unwrap_or_default().to_string(),
+        })
+        .collect();
     let body = response.text().await.unwrap_or_default();
-    Ok(RawResponse { status, body })
+    Ok(HttpResponse {
+        status,
+        headers,
+        body,
+    })
 }
 
 pub async fn validate_access_token(

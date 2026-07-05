@@ -1,0 +1,15 @@
+[
+  {
+    "id": "cat",
+    "code": "CoolCat",
+    "imageType": "png",
+    "animated": false
+  },
+  {
+    "id": "dance",
+    "code": "DanceTime",
+    "imageType": "gif",
+    "animated": true
+  }
+]
+

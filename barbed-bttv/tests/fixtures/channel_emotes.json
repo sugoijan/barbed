@@ -1,0 +1,19 @@
+{
+  "channelEmotes": [
+    {
+      "id": "channel-1",
+      "code": "ChannelOnly",
+      "imageType": "png",
+      "animated": false
+    }
+  ],
+  "sharedEmotes": [
+    {
+      "id": "shared-1",
+      "code": "SharedOnly",
+      "imageType": "gif",
+      "animated": true
+    }
+  ]
+}
+

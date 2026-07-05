@@ -1,0 +1,35 @@
+{
+  "default_sets": [1],
+  "sets": {
+    "1": {
+      "id": 1,
+      "title": "Default FFZ",
+      "emoticons": [
+        {
+          "id": 100,
+          "name": "FFZWave",
+          "urls": {
+            "1": "https://cdn.frankerfacez.com/emote/100/1"
+          }
+        }
+      ]
+    },
+    "2": {
+      "id": 2,
+      "title": "Scoped FFZ",
+      "emoticons": [
+        {
+          "id": 200,
+          "name": "Scoped",
+          "urls": {
+            "1": "https://cdn.frankerfacez.com/emote/200/1"
+          }
+        }
+      ]
+    }
+  },
+  "users": {
+    "2": ["42", "77"]
+  }
+}
+

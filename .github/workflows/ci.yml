@@ -31,6 +31,9 @@ jobs:
       - name: Restore Rust cache
         uses: Swatinem/rust-cache@v2
 
+      - name: Validate Twitch surface tooling
+        run: python3 -m py_compile tools/twitch_surface.py
+
       - name: Check formatting
         run: cargo fmt --check
 

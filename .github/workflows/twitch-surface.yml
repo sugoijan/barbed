@@ -1,0 +1,122 @@
+name: Twitch Surface
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  catalog-drift:
+    name: Catalog Drift
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 5 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Download current Twitch docs
+        run: |
+          curl -L https://dev.twitch.tv/docs/api/reference -o /tmp/twitch_reference.html
+          curl -L https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/ -o /tmp/twitch_eventsub_types.html
+
+      - name: Generate candidate catalog
+        run: |
+          python3 tools/twitch_surface.py build \
+            --reference-html /tmp/twitch_reference.html \
+            --eventsub-html /tmp/twitch_eventsub_types.html \
+            --catalog-dir /tmp/twitch_catalog_candidate \
+            --helix-rust /tmp/helix_generated.rs \
+            --eventsub-rust /tmp/eventsub_generated.rs
+
+      - name: Diff checked-in catalog
+        id: diff
+        run: |
+          set +e
+          python3 tools/twitch_surface.py diff \
+            --old-catalog twitch_catalog \
+            --new-catalog /tmp/twitch_catalog_candidate \
+            --output /tmp/twitch-surface-report.md \
+            --fail-at-or-above 3
+          status=$?
+          severity=$(python3 - <<'PY'
+          import pathlib, re
+          report = pathlib.Path("/tmp/twitch-surface-report.md").read_text()
+          match = re.search(r"Severity: `(\d+)`", report)
+          print(match.group(1) if match else "0")
+          PY
+          )
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          echo "severity=$severity" >> "$GITHUB_OUTPUT"
+          exit $status
+
+      - name: Upload drift report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-surface-drift-report
+          path: /tmp/twitch-surface-report.md
+
+      - name: Create or update drift issue
+        if: always() && steps.diff.outputs.severity != '0' && steps.diff.outputs.severity != '3'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const body = fs.readFileSync("/tmp/twitch-surface-report.md", "utf8");
+            const title = "Twitch surface drift detected";
+            const { owner, repo } = context.repo;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => issue.title === title);
+            if (existing) {
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+              });
+            }
+
+  live-smoke:
+    name: Live Smoke
+    if: (github.event_name == 'workflow_dispatch' || github.event.schedule == '0 7 * * 1') && secrets.TWITCH_TEST_CLIENT_ID != '' && secrets.TWITCH_TEST_CLIENT_SECRET != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TWITCH_TEST_CLIENT_ID: ${{ secrets.TWITCH_TEST_CLIENT_ID }}
+      TWITCH_TEST_CLIENT_SECRET: ${{ secrets.TWITCH_TEST_CLIENT_SECRET }}
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Restore Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run ignored live smoke test
+        run: cargo test --features reqwest-client --test live_twitch_smoke -- --ignored --nocapture

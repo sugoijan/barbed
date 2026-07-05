@@ -5,12 +5,17 @@
 //! - OAuth authorize URL construction and signed state verification
 //! - Helix request builders and response parsers
 //! - EventSub WebSocket payload decoding and chat subscription helpers
+//! - IRC parsing plus an optional native async IRC client
+//! - Checked-in Twitch API/EventSub/auth catalogs with generated low-level registries
+//! - Provider-neutral emote models shared across Twitch/7TV/BTTV/FFZ helpers
 //! - HMAC signing helpers for short-lived tokens and state payloads
 //!
 //! The default crate stays runtime-agnostic. Enable the `cloudflare-worker`
 //! feature to send [`http::PreparedRequest`] values via the Cloudflare
-//! Workers `Fetch` API. Enable the `reqwest-client` and `tokio-eventsub`
-//! features for a native Rust runtime.
+//! Workers `Fetch` API. Enable the `reqwest-client`, `tokio-eventsub`,
+//! and `tokio-irc` features for native Rust runtime helpers. Optional
+//! provider crates are re-exported behind `seventv`, `bttv`, and `ffz`
+//! feature flags.
 //!
 //! # Feature Flags
 //!
@@ -18,6 +23,10 @@
 //!   Workers `Fetch` API.
 //! - `reqwest-client`: adds native HTTP helpers built on `reqwest`.
 //! - `tokio-eventsub`: adds the native EventSub websocket client/runtime.
+//! - `tokio-irc`: adds the native Twitch IRC client/runtime.
+//! - `seventv`, `bttv`, `ffz`: re-export the corresponding provider crates.
+//! - `seventv-reqwest`, `bttv-reqwest`, `ffz-reqwest`: enable reqwest-based
+//!   HTTP clients in the provider crates.
 //!
 //! # MSRV
 //!
@@ -71,10 +80,10 @@
 //! across `0.0.x` releases.
 #![deny(rustdoc::broken_intra_doc_links)]
 
-/// Cloudflare Workers transport helpers for prepared Twitch API requests.
-#[cfg(feature = "cloudflare-worker")]
-#[path = "client.rs"]
-pub mod cloudflare_worker;
+/// Re-exported provider-neutral emote types shared across workspace crates.
+pub mod emotes {
+    pub use barbed_core::emotes::*;
+}
 /// EventSub payload types and websocket subscription helpers.
 pub mod eventsub;
 /// Helix request builders and response parsers.
@@ -83,13 +92,24 @@ pub mod helix;
 pub mod http;
 /// Identity types for authenticated Twitch users.
 pub mod identity;
+/// IRC parsing plus optional native async Twitch IRC transport helpers.
+pub mod irc;
 /// Native async helpers for OAuth, Helix, and EventSub interactions.
 #[cfg(feature = "reqwest-client")]
 pub mod native;
 /// OAuth URL construction, token lifecycle helpers, and signed state handling.
 pub mod oauth;
+/// Shared auth/session abstractions and in-memory implementations.
+pub mod session;
 /// Shared HMAC signing helpers for short-lived payloads.
 pub mod signing;
+/// Checked-in Twitch surface catalogs generated from the published docs.
+pub mod twitch_catalog;
+
+/// Cloudflare Workers transport helpers for prepared Twitch API requests.
+#[cfg(feature = "cloudflare-worker")]
+#[path = "client.rs"]
+pub mod cloudflare_worker;
 
 /// Backwards-compatible alias for the legacy `client` module path.
 #[cfg(feature = "cloudflare-worker")]
@@ -100,3 +120,21 @@ pub mod client {
 
 /// Re-export of the core Twitch identity model.
 pub use identity::TwitchIdentity;
+
+/// Re-export of the optional 7TV provider crate.
+#[cfg(feature = "seventv")]
+pub mod seventv {
+    pub use barbed_7tv::*;
+}
+
+/// Re-export of the optional BetterTTV provider crate.
+#[cfg(feature = "bttv")]
+pub mod bttv {
+    pub use barbed_bttv::*;
+}
+
+/// Re-export of the optional FrankerFaceZ provider crate.
+#[cfg(feature = "ffz")]
+pub mod ffz {
+    pub use barbed_ffz::*;
+}

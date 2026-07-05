@@ -12,6 +12,8 @@ use crate::helix::{
     self, HelixError, HttpMethod, PreparedRequest, RawResponse, TwitchTokenExchange,
 };
 #[cfg(feature = "cloudflare-worker")]
+use crate::http::{HttpResponse, ResponseHeader};
+#[cfg(feature = "cloudflare-worker")]
 use crate::oauth::TwitchAuthOutcome;
 
 #[cfg(feature = "cloudflare-worker")]
@@ -28,6 +30,16 @@ pub enum CloudflareWorkerError {
 pub async fn send_prepared_request(
     prepared: PreparedRequest,
 ) -> Result<RawResponse, worker::Error> {
+    Ok(send_prepared_request_with_metadata(prepared)
+        .await?
+        .into_raw_response())
+}
+
+/// Sends a [`PreparedRequest`] and includes response headers for pagination/rate-limit metadata.
+#[cfg(feature = "cloudflare-worker")]
+pub async fn send_prepared_request_with_metadata(
+    prepared: PreparedRequest,
+) -> Result<HttpResponse, worker::Error> {
     let headers = Headers::new();
     for (key, value) in &prepared.headers {
         headers.set(key, value)?;
@@ -36,6 +48,8 @@ pub async fn send_prepared_request(
     init.with_method(match prepared.method {
         HttpMethod::Get => Method::Get,
         HttpMethod::Post => Method::Post,
+        HttpMethod::Put => Method::Put,
+        HttpMethod::Patch => Method::Patch,
         HttpMethod::Delete => Method::Delete,
     });
     init.with_headers(headers);
@@ -44,8 +58,14 @@ pub async fn send_prepared_request(
     }
     let request = Request::new_with_init(&prepared.url, &init)?;
     let mut response = Fetch::Request(request).send().await?;
-    Ok(RawResponse {
+    let headers = response
+        .headers()
+        .entries()
+        .map(|(name, value)| ResponseHeader { name, value })
+        .collect();
+    Ok(HttpResponse {
         status: response.status_code(),
+        headers,
         body: response.text().await.unwrap_or_default(),
     })
 }

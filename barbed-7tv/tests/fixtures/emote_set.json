@@ -1,0 +1,35 @@
+{
+  "id": "set-123",
+  "name": "Example 7TV Set",
+  "emotes": [
+    {
+      "id": "wave",
+      "name": "Wave",
+      "data": {
+        "animated": false,
+        "host": {
+          "url": "https://cdn.7tv.app/emote/wave",
+          "files": [
+            { "name": "1x.webp" },
+            { "name": "2x.webp" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "dance",
+      "name": "Dance",
+      "data": {
+        "animated": true,
+        "host": {
+          "url": "https://cdn.7tv.app/emote/dance",
+          "files": [
+            { "name": "1x.avif" },
+            { "name": "2x.avif" }
+          ]
+        }
+      }
+    }
+  ]
+}
+
