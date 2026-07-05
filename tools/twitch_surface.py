@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import copy
 import dataclasses
 import datetime as dt
 import html
@@ -16,6 +17,7 @@ from typing import Any
 SOURCE_URLS = {
     "helix_reference": "https://dev.twitch.tv/docs/api/reference",
     "eventsub_types": "https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/",
+    "eventsub_reference": "https://dev.twitch.tv/docs/eventsub/eventsub-reference/",
     "oauth_tokens": "https://dev.twitch.tv/docs/authentication/getting-tokens-oauth",
     "oauth_oidc": "https://dev.twitch.tv/docs/authentication/getting-tokens-oidc",
     "oauth_validate": "https://dev.twitch.tv/docs/authentication/validate-tokens",
@@ -214,16 +216,209 @@ def classify_auth(auth_text: str) -> dict[str, Any]:
     }
 
 
-def parse_section(section_html: str, heading: str) -> str:
+def parse_section_raw(section_html: str, heading: str) -> str:
     pattern = re.compile(
         rf"<h3[^>]*>\s*{re.escape(heading)}\s*</h3>(?P<body>.*?)(?=<h[23][^>]*>|$)",
         re.I | re.S,
     )
     match = pattern.search(section_html)
-    return clean_html(match.group("body")) if match else ""
+    return match.group("body") if match else ""
 
 
-def parse_helix(reference_html: str) -> dict[str, Any]:
+def parse_section(section_html: str, heading: str) -> str:
+    body = parse_section_raw(section_html, heading)
+    return clean_html(body) if body else ""
+
+
+RESPONSE_TABLE_RE = re.compile(r"<table[^>]*>.*?</table>", re.S)
+RESPONSE_ROW_RE = re.compile(
+    r"<tr>\s*<td[^>]*>(?P<field>.*?)</td>\s*<td[^>]*>(?P<type>.*?)</td>\s*<td[^>]*>(?P<description>.*?)</td>\s*</tr>",
+    re.S,
+)
+INDENT_CHARS = {" ", "\xa0", "\t"}
+# Documented types that cannot have nested child rows; used to repair rows the
+# docs over-indent under a scalar sibling.
+SCALAR_RESPONSE_TYPES = {
+    "string",
+    "integer",
+    "int64",
+    "unsigned integer",
+    "float",
+    "boolean",
+    "string[]",
+    "integer[]",
+}
+
+
+def response_type_can_nest(type_str: str) -> bool:
+    return type_str.strip().lower() not in SCALAR_RESPONSE_TYPES
+
+
+# EventSub reference docs use a looser type vocabulary than Helix; lookup is on
+# the lowercased raw cell so the catalog stores canonical type names.
+EVENTSUB_TYPE_ALIASES = {
+    "str": "string",
+    "int": "integer",
+    "int (or null)": "integer",
+    "bool": "boolean",
+    "[]string": "string[]",
+}
+EVENTSUB_PRIMITIVE_TYPES = {"string", "integer", "boolean", "string[]", "integer[]", "array", "float"}
+
+# Subscriptions whose event section id cannot be derived from the human name.
+EVENT_SECTION_OVERRIDES = {
+    ("channel.goal.begin", "1"): "goals-event",
+    ("channel.goal.progress", "1"): "goals-event",
+    ("channel.goal.end", "1"): "goals-event",
+    ("channel.shield_mode.begin", "1"): "shield-mode",
+    ("channel.shield_mode.end", "1"): "shield-mode",
+    ("channel.shoutout.create", "1"): "shoutout-create",
+    ("channel.shoutout.receive", "1"): "shoutout-received",
+    ("channel.warning.acknowledge", "1"): "channel-warning-acknowledge-event",
+    ("channel.custom_power_up_redemption.add", "1"): "channel-custom-power-up-redemption-add-event",
+}
+
+# Named doc types whose cardinality is an array; not derivable from the Type
+# cell, so asserted here (a description-based tripwire warns on drift).
+ARRAY_NAMED_TYPES = {"choices", "outcomes", "top_predictors", "top_contributions", "emotes"}
+
+# Events that keep their hand-written structs in src/eventsub.rs; their fields
+# are still scraped into the catalog for completeness.
+HANDWRITTEN_EVENTS = {
+    ("channel.chat.message", "1"),
+    ("channel.chat.message_delete", "1"),
+}
+
+# Shared doc object sections emitted once as `Shared*` structs. Array sections
+# name the element struct in the singular; explicit table, no heuristics.
+SHARED_STRUCT_NAMES = {
+    "choices": "SharedChoice",
+    "outcomes": "SharedOutcome",
+    "top-predictors": "SharedTopPredictor",
+    "emotes": "SharedEmote",
+    "reward": "SharedReward",
+    "image": "SharedImage",
+    "message": "SharedMessage",
+    "max-per-stream": "SharedMaxPerStream",
+    "max-per-user-per-stream": "SharedMaxPerUserPerStream",
+    "global-cooldown": "SharedGlobalCooldown",
+    "bits-voting": "SharedBitsVoting",
+    "channel-points-voting": "SharedChannelPointsVoting",
+    "custom-power-up": "SharedCustomPowerUp",
+    "product": "SharedProduct",
+    "last-contribution": "SharedLastContribution",
+    "top-contributions": "SharedTopContribution",
+    "shoutout-create": "SharedShoutoutCreate",
+    "shoutout-received": "SharedShoutoutReceived",
+}
+
+
+def normalize_eventsub_type(raw: str) -> str:
+    stripped = raw.strip()
+    lowered = stripped.lower()
+    if lowered in EVENTSUB_TYPE_ALIASES:
+        return EVENTSUB_TYPE_ALIASES[lowered]
+    if lowered in EVENTSUB_PRIMITIVE_TYPES or lowered in {"object", "object[]"}:
+        return lowered
+    return stripped
+
+
+def response_field_indent_and_name(raw_field: str) -> tuple[int, str]:
+    text = html.unescape(re.sub(r"<[^>]+>", "", raw_field))
+    indent = 0
+    for ch in text:
+        if ch in INDENT_CHARS:
+            indent += 1
+        else:
+            break
+    return indent, text.strip()
+
+
+def parse_fields_table(
+    table_html: str,
+    context_id: str,
+    warnings: list[str],
+    *,
+    scalar_parent: str = "lift",
+    normalize: Any = None,
+) -> list[dict[str, Any]] | None:
+    rows = RESPONSE_ROW_RE.findall(table_html)
+    if not rows:
+        warnings.append(f"{context_id}: response table has no parseable rows")
+        return None
+
+    fields: list[dict[str, Any]] = []
+    # Stack of (indent, field) along the current ancestor path. Indent widths
+    # in the docs are irregular (2/3/5/7/9 characters), so depth is inferred
+    # relatively: an indent wider than the stack top nests one level deeper,
+    # except that a scalar-typed field cannot be a parent. Helix tables repair
+    # that case by lifting the row to a sibling ("lift"); EventSub tables
+    # instead document real nesting under a mistyped scalar, so the parent is
+    # retyped to an object ("retype").
+    stack: list[tuple[int, dict[str, Any]]] = []
+    for raw_field, raw_type, raw_description in rows:
+        indent, name = response_field_indent_and_name(raw_field)
+        if not name:
+            warnings.append(f"{context_id}: empty field name in response table")
+            return None
+        type_str = html.unescape(re.sub(r"<[^>]+>", "", raw_type)).strip()
+        if normalize is not None:
+            type_str = normalize(type_str)
+        field: dict[str, Any] = {
+            "name": name,
+            "type": type_str,
+            "description": clean_html(raw_description).replace("\n", " ").strip(),
+        }
+        while stack and stack[-1][0] >= indent:
+            stack.pop()
+        if scalar_parent == "lift":
+            while stack and not response_type_can_nest(stack[-1][1]["type"]):
+                stack.pop()
+        elif stack:
+            parent = stack[-1][1]
+            parent_type = parent["type"]
+            if not response_type_can_nest(parent_type) or parent_type == "array":
+                retyped = (
+                    "object[]"
+                    if parent_type.endswith("[]") or parent_type == "array"
+                    else "object"
+                )
+                warnings.append(
+                    f"{context_id}: retyped scalar parent `{parent['name']}` "
+                    f"({parent_type}) to {retyped}"
+                )
+                parent["type"] = retyped
+        if stack:
+            stack[-1][1].setdefault("children", []).append(field)
+        else:
+            fields.append(field)
+        stack.append((indent, field))
+    return fields
+
+
+def parse_response_body(
+    section_html: str, endpoint_id: str, warnings: list[str]
+) -> list[dict[str, Any]] | None:
+    body = parse_section_raw(section_html, "Response Body")
+    if not body:
+        return None
+    table_match = RESPONSE_TABLE_RE.search(body)
+    if not table_match:
+        return None
+    return parse_fields_table(table_match.group(0), endpoint_id, warnings)
+
+
+def parse_expected_status(section_html: str) -> int:
+    body = parse_section(section_html, "Response Codes")
+    if not body:
+        return 200
+    match = re.search(r"\b([1-5]\d{2})\b", body)
+    return int(match.group(1)) if match else 200
+
+
+def parse_helix(reference_html: str, warnings: list[str] | None = None) -> dict[str, Any]:
+    if warnings is None:
+        warnings = []
     summary_start = reference_html.find('<h1 id="twitch-api-reference">')
     if summary_start == -1:
         raise RuntimeError("failed to locate helix summary table")
@@ -264,6 +459,14 @@ def parse_helix(reference_html: str) -> dict[str, Any]:
             or "cursor" in body.lower()
         )
         endpoint_id = snake_case(f"{group}_{name}")
+        expected_status = parse_expected_status(body)
+        response_fields = parse_response_body(body, endpoint_id, warnings)
+        if response_fields is not None:
+            response = {"fields": response_fields}
+        elif expected_status == 204:
+            response = {"fields": []}
+        else:
+            response = None
         endpoints.append(
             {
                 "id": endpoint_id,
@@ -277,6 +480,8 @@ def parse_helix(reference_html: str) -> dict[str, Any]:
                 "url": f"https://api.twitch.tv/helix{path}",
                 "auth": classify_auth(auth_text),
                 "supports_pagination": supports_pagination,
+                "expected_status": expected_status,
+                "response": response,
             }
         )
         groups[group] += 1
@@ -297,7 +502,7 @@ def parse_eventsub(eventsub_html: str) -> dict[str, Any]:
     summary_html = eventsub_html[start:end if end != -1 else None]
 
     row_re = re.compile(
-        r"<tr>\s*<td>(?P<name>.*?)</td>\s*<td><code[^>]*>(?P<subscription_type>[^<]+)</code></td>\s*<td><code[^>]*>(?P<version>[^<]+)</code></td>\s*<td>(?P<description>.*?)</td>\s*</tr>",
+        r"<tr>\s*<td>(?P<name>.*?)</td>\s*<td><code[^>]*>(?P<subscription_type>[^<]+)</code>\s*</td>\s*<td><code[^>]*>(?P<version>[^<]+)</code>\s*</td>\s*<td>(?P<description>.*?)</td>\s*</tr>",
         re.S,
     )
 
@@ -327,6 +532,123 @@ def parse_eventsub(eventsub_html: str) -> dict[str, Any]:
     }
 
 
+def eventsub_section_candidates(name: str, version: str) -> list[str]:
+    first = name.splitlines()[0].strip()
+    first = re.sub(r"\s+V2$", "", first, flags=re.I)
+    base = re.sub(r"[^a-z0-9]+", "-", first.lower()).strip("-")
+    if version == "2":
+        return [f"{base}-event-v2", f"{base}-v2-event", f"{base}-event"]
+    return [f"{base}-event"]
+
+
+def attach_eventsub_events(
+    eventsub: dict[str, Any], reference_html: str, warnings: list[str]
+) -> dict[str, Any]:
+    """Attaches `event` field shapes from the EventSub reference page to each
+    subscription and returns the shared object sections referenced by name."""
+    heading_re = re.compile(r"<h[23] id=\"(?P<slug>[^\"]+)\"[^>]*>")
+    matches = list(heading_re.finditer(reference_html))
+    sections: dict[str, str] = {}
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(reference_html)
+        sections[match.group("slug")] = reference_html[match.start() : end]
+
+    parsed: dict[str, list[dict[str, Any]] | None] = {}
+    resolving: set[str] = set()
+    shared_used: dict[str, list[dict[str, Any]]] = {}
+
+    def section_fields(slug: str) -> list[dict[str, Any]] | None:
+        if slug in parsed:
+            return parsed[slug]
+        body = sections.get(slug)
+        table_match = RESPONSE_TABLE_RE.search(body) if body else None
+        fields = (
+            parse_fields_table(
+                table_match.group(0),
+                slug,
+                warnings,
+                scalar_parent="retype",
+                normalize=normalize_eventsub_type,
+            )
+            if table_match
+            else None
+        )
+        parsed[slug] = fields
+        return fields
+
+    def resolve(fields: list[dict[str, Any]], origin: str) -> None:
+        for field in fields:
+            type_str = field["type"]
+            lowered = type_str.lower()
+            is_named = (
+                lowered not in EVENTSUB_PRIMITIVE_TYPES
+                and lowered not in {"object", "object[]"}
+            )
+            if field.get("children"):
+                if is_named:
+                    field["type"] = (
+                        "object[]" if lowered in ARRAY_NAMED_TYPES else "object"
+                    )
+                resolve(field["children"], origin)
+                continue
+            if not is_named:
+                continue
+            slug = lowered.replace("_", "-")
+            if slug in resolving:
+                warnings.append(f"{origin}: cyclic named type `{type_str}`")
+                continue
+            resolving.add(slug)
+            shared_fields = section_fields(slug)
+            if shared_fields is not None and slug not in shared_used:
+                resolve(shared_fields, slug)
+                shared_used[slug] = shared_fields
+            resolving.discard(slug)
+            if shared_fields is None:
+                warnings.append(f"{origin}: unresolved named type `{type_str}`")
+                continue
+            field["ref"] = slug
+            field["type"] = "object[]" if lowered in ARRAY_NAMED_TYPES else "object"
+            if (
+                lowered not in ARRAY_NAMED_TYPES
+                and "array of" in field["description"].lower()
+            ):
+                warnings.append(
+                    f"{origin}: field `{field['name']}` described as an array but "
+                    f"named type `{type_str}` is not in ARRAY_NAMED_TYPES"
+                )
+
+    consumed: set[str] = set()
+    for item in eventsub["subscriptions"]:
+        key = (item["subscription_type"], item["version"])
+        override = EVENT_SECTION_OVERRIDES.get(key)
+        candidates = (
+            [override]
+            if override
+            else eventsub_section_candidates(item["name"], item["version"])
+        )
+        slug = next((candidate for candidate in candidates if candidate in sections), None)
+        fields = section_fields(slug) if slug else None
+        if fields is None:
+            warnings.append(
+                f"{item['id']}: no event section found (tried {', '.join(candidates)})"
+            )
+            item["event"] = None
+            continue
+        consumed.add(slug)
+        resolve(fields, slug)
+        item["event"] = {"fields": copy.deepcopy(fields)}
+
+    for slug in sections:
+        if (slug.endswith("-event") or slug.endswith("-event-v2")) and slug not in consumed:
+            warnings.append(f"event section `{slug}` is not consumed by any subscription")
+
+    eventsub["event_source"] = SOURCE_URLS["eventsub_reference"]
+    eventsub["shared_objects"] = {
+        slug: {"fields": fields} for slug, fields in sorted(shared_used.items())
+    }
+    return shared_used
+
+
 def build_summary(helix: dict[str, Any], eventsub: dict[str, Any], auth: dict[str, Any]) -> dict[str, Any]:
     helix_endpoints = helix["endpoints"]
     eventsub_subscriptions = eventsub["subscriptions"]
@@ -338,6 +660,12 @@ def build_summary(helix: dict[str, Any], eventsub: dict[str, Any], auth: dict[st
             "helix_ga_or_new": sum(1 for item in helix_endpoints if item["stability"] != "beta"),
             "helix_beta": sum(1 for item in helix_endpoints if item["stability"] == "beta"),
             "helix_groups": len(helix["group_counts"]),
+            "helix_typed_responses": sum(
+                1 for item in helix_endpoints if item["response"] is not None
+            ),
+            "helix_untyped_responses": sum(
+                1 for item in helix_endpoints if item["response"] is None
+            ),
             "eventsub_total": len(eventsub_subscriptions),
             "eventsub_ga_or_new": sum(
                 1 for item in eventsub_subscriptions if item["stability"] != "beta"
@@ -345,10 +673,271 @@ def build_summary(helix: dict[str, Any], eventsub: dict[str, Any], auth: dict[st
             "eventsub_beta": sum(
                 1 for item in eventsub_subscriptions if item["stability"] == "beta"
             ),
+            "eventsub_typed_events": sum(
+                1 for item in eventsub_subscriptions if item["event"] is not None
+            ),
+            "eventsub_untyped_events": sum(
+                1 for item in eventsub_subscriptions if item["event"] is None
+            ),
             "auth_flows": len(auth["flows"]),
             "auth_endpoints": len(auth["endpoints"]),
         },
     }
+
+
+# Keywords that cannot be raw identifiers; anything else keyword-like becomes
+# `r#name`, which serde serializes under the bare name without a rename.
+NON_RAW_IDENT_KEYWORDS = {"crate", "self", "super"}
+RUST_KEYWORDS = {
+    "abstract", "as", "async", "await", "become", "box", "break", "const",
+    "continue", "crate", "do", "dyn", "else", "enum", "extern", "false",
+    "final", "fn", "for", "gen", "if", "impl", "in", "let", "loop", "macro",
+    "match", "mod", "move", "mut", "override", "priv", "pub", "ref", "return",
+    "self", "static", "struct", "super", "trait", "true", "try", "type",
+    "typeof", "unsafe", "unsized", "use", "virtual", "where", "while", "yield",
+}
+MAP_RESPONSE_TYPES = {
+    "map[string]string": "std::collections::BTreeMap<String, String>",
+    "map[string,string]": "std::collections::BTreeMap<String, String>",
+    "map[string]object": "std::collections::BTreeMap<String, serde_json::Value>",
+    "dictionary": "std::collections::BTreeMap<String, serde_json::Value>",
+}
+PRIMITIVE_RESPONSE_TYPES = {
+    "string": "String",
+    "integer": "i64",
+    "int64": "i64",
+    "unsigned integer": "i64",
+    "float": "f64",
+    "boolean": "bool",
+    "string[]": "Vec<String>",
+    "integer[]": "Vec<i64>",
+    "array": "Vec<serde_json::Value>",
+}
+
+
+class ResponseRenderError(Exception):
+    pass
+
+
+def rust_field_ident(name: str) -> tuple[str, str | None]:
+    """Returns (identifier, serde_rename or None)."""
+    ident = snake_case(name)
+    if not ident:
+        raise ResponseRenderError(f"field name `{name}` has no valid identifier")
+    if ident[0].isdigit():
+        ident = f"n{ident}"
+    rename = name if ident != name else None
+    if ident in RUST_KEYWORDS:
+        if ident in NON_RAW_IDENT_KEYWORDS:
+            rename = name
+            ident = f"{ident}_field"
+        else:
+            ident = f"r#{ident}"
+    return ident, rename
+
+
+def rust_type_for(field: dict[str, Any], child_struct: str | None) -> str:
+    type_str = field["type"].strip()
+    lowered = type_str.lower()
+    if lowered in PRIMITIVE_RESPONSE_TYPES:
+        return PRIMITIVE_RESPONSE_TYPES[lowered]
+    if lowered in MAP_RESPONSE_TYPES:
+        return MAP_RESPONSE_TYPES[lowered]
+    is_array = type_str.endswith("[]")
+    if child_struct:
+        return f"Vec<{child_struct}>" if is_array else child_struct
+    return "Vec<serde_json::Value>" if is_array else "serde_json::Value"
+
+
+def doc_sentence(description: str) -> str:
+    sentence = description.split(". ")[0].strip()
+    if sentence and not sentence.endswith("."):
+        sentence += "."
+    if len(sentence) > 200:
+        sentence = sentence[:197] + "..."
+    return sentence
+
+
+def render_struct_tree(
+    rendered: list[str],
+    struct_names: set[str],
+    struct_name: str,
+    child_prefix: str,
+    fields: list[dict[str, Any]],
+    doc: str,
+    *,
+    indent: str,
+    derives: str,
+    field_attr: Any,
+    special_field: Any = None,
+    child_namer: Any = None,
+    ref_struct: Any = None,
+    root_extra_lines: tuple[str, ...] = (),
+    is_root: bool = True,
+) -> None:
+    """Renders one struct and, depth-first, the nested structs its fields need.
+
+    Raises ResponseRenderError when the documented shape cannot be expressed.
+    """
+    if struct_name in struct_names:
+        raise ResponseRenderError(f"struct name `{struct_name}` collides")
+    struct_names.add(struct_name)
+
+    lines: list[str] = []
+    pending: list[tuple[str, str, list[dict[str, Any]], str]] = []
+    seen_idents: set[str] = set()
+    lines.append(f"{indent}/// {doc}")
+    lines.append(f"{indent}#[derive({derives})]")
+    lines.append(f"{indent}pub struct {struct_name} {{")
+    for field in fields:
+        name = field["name"]
+        ident, rename = rust_field_ident(name)
+        if ident in seen_idents:
+            raise ResponseRenderError(f"duplicate field `{ident}` in `{struct_name}`")
+        seen_idents.add(ident)
+        lowered = field["type"].strip().lower()
+        rust_type = special_field(field, is_root) if special_field is not None else None
+        if rust_type is None and ref_struct is not None:
+            rust_type = ref_struct(field)
+        if rust_type is None:
+            child_struct = None
+            if field.get("children") and lowered not in MAP_RESPONSE_TYPES:
+                if child_namer is not None:
+                    child_struct, grandchild_prefix = child_namer(
+                        field, is_root, child_prefix
+                    )
+                else:
+                    child_struct = f"{child_prefix}{camel_case(name)}"
+                    grandchild_prefix = child_struct
+                field_doc = doc_sentence(field["description"]) or f"`{name}` object."
+                pending.append(
+                    (child_struct, grandchild_prefix, field["children"], field_doc)
+                )
+            rust_type = rust_type_for(field, child_struct)
+        description = doc_sentence(field["description"])
+        if description:
+            lines.append(f"{indent}    /// {description}")
+        for attr in field_attr(rename):
+            lines.append(f"{indent}    {attr}")
+        lines.append(f"{indent}    pub {ident}: {rust_type},")
+    if is_root:
+        for line in root_extra_lines:
+            lines.append(f"{indent}    {line}")
+    lines.append(f"{indent}}}")
+    lines.append("")
+    rendered.extend(lines)
+
+    for child_name, grandchild_prefix, child_fields, child_doc in pending:
+        render_struct_tree(
+            rendered,
+            struct_names,
+            child_name,
+            grandchild_prefix,
+            child_fields,
+            child_doc,
+            indent=indent,
+            derives=derives,
+            field_attr=field_attr,
+            special_field=special_field,
+            child_namer=child_namer,
+            ref_struct=ref_struct,
+            is_root=False,
+        )
+
+
+def helix_field_attr(rename: str | None) -> list[str]:
+    if rename is not None:
+        return [f"#[serde(default, rename = {rust_string(rename)})]"]
+    return ["#[serde(default)]"]
+
+
+def render_response_types(endpoint: dict[str, Any]) -> list[str]:
+    """Renders the typed response structs for one endpoint.
+
+    Raises ResponseRenderError when the documented shape cannot be expressed;
+    the caller falls back to the untyped alias.
+    """
+    base = camel_case(endpoint["name"])
+    response_name = f"{base}Response"
+    rendered: list[str] = []
+
+    def special_field(field: dict[str, Any], is_root: bool) -> str | None:
+        if is_root and field["name"] == "pagination":
+            return "crate::helix::HelixPagination"
+        return None
+
+    def child_namer(
+        field: dict[str, Any], is_root: bool, child_prefix: str
+    ) -> tuple[str, str]:
+        if is_root and field["name"] == "data":
+            return f"{base}Item", base
+        child_struct = f"{child_prefix}{camel_case(field['name'])}"
+        return child_struct, child_struct
+
+    render_struct_tree(
+        rendered,
+        set(),
+        response_name,
+        base,
+        endpoint["response"]["fields"],
+        f"Response body for the \"{endpoint['name']}\" endpoint.",
+        indent="    ",
+        derives="Clone, Debug, Default, PartialEq, serde::Deserialize",
+        field_attr=helix_field_attr,
+        special_field=special_field,
+        child_namer=child_namer,
+    )
+
+    rendered.append(f"    impl {response_name} {{")
+    rendered.append(f"        pub const EXPECTED_STATUS: u16 = {endpoint['expected_status']};")
+    rendered.append("")
+    rendered.append("        pub fn parse(")
+    rendered.append("            response: crate::helix::RawResponse,")
+    rendered.append("        ) -> Result<Self, crate::helix::HelixError> {")
+    rendered.append(
+        "            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)"
+    )
+    rendered.append("        }")
+    rendered.append("    }")
+    rendered.append("")
+    return rendered
+
+
+def render_unit_response(endpoint: dict[str, Any]) -> list[str]:
+    base = camel_case(endpoint["name"])
+    response_name = f"{base}Response"
+    return [
+        f"    /// Response for the \"{endpoint['name']}\" endpoint "
+        f"(expects HTTP {endpoint['expected_status']} with an empty body).",
+        "    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]",
+        f"    pub struct {response_name};",
+        "",
+        f"    impl {response_name} {{",
+        f"        pub const EXPECTED_STATUS: u16 = {endpoint['expected_status']};",
+        "",
+        "        pub fn parse(",
+        "            response: crate::helix::RawResponse,",
+        "        ) -> Result<Self, crate::helix::HelixError> {",
+        "            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;",
+        "            Ok(Self)",
+        "        }",
+        "    }",
+        "",
+    ]
+
+
+def validate_responses(helix: dict[str, Any], warnings: list[str]) -> None:
+    """Nulls out response shapes that cannot be rendered, keeping the catalog,
+    summary counts, and generated Rust consistent."""
+    for endpoint in helix["endpoints"]:
+        response = endpoint.get("response")
+        if response is None or not response["fields"]:
+            continue
+        try:
+            render_response_types(endpoint)
+        except ResponseRenderError as error:
+            warnings.append(f"{endpoint['id']}: {error}; falling back to untyped")
+            endpoint["response"] = None
 
 
 def render_helix_rust(helix: dict[str, Any]) -> str:
@@ -372,7 +961,6 @@ def render_helix_rust(helix: dict[str, Any]) -> str:
         for endpoint in endpoints:
             const_name = snake_case(endpoint["id"]).upper()
             request_name = camel_case(endpoint["name"]) + "Request"
-            response_name = camel_case(endpoint["name"]) + "Response"
             description = endpoint["description"].replace("\n", " ")
             description = description.replace("*/", "* /")
             scopes = endpoint["auth"]["scopes"]
@@ -397,9 +985,20 @@ def render_helix_rust(helix: dict[str, Any]) -> str:
             )
             out.append("    };")
             out.append(
-                f"    declare_generated_endpoint!({request_name}, {response_name}, {const_name});"
+                f"    declare_generated_endpoint!({request_name}, {const_name});"
             )
             out.append("")
+            response = endpoint.get("response")
+            if response is None:
+                response_name = camel_case(endpoint["name"]) + "Response"
+                out.append(
+                    f"    pub type {response_name} = crate::helix::HelixJsonResponse;"
+                )
+                out.append("")
+            elif not response["fields"]:
+                out.extend(render_unit_response(endpoint))
+            else:
+                out.extend(render_response_types(endpoint))
             all_paths.append(f"&{module_name}::{const_name}")
         out.append("}")
         out.append("")
@@ -412,31 +1011,170 @@ def render_helix_rust(helix: dict[str, Any]) -> str:
     return "\n".join(out)
 
 
+# Names already defined in src/eventsub.rs or imported by the generated
+# module; generated structs must not collide with them.
+EVENTSUB_STRUCT_SEED = {
+    "GenericEventSubPayload",
+    "KnownEventSubPayload",
+    "EventSubSubscriptionDefinition",
+    "EventSubChatMessage",
+    "EventSubChatMessageDeleted",
+}
+
+EVENT_SOURCE_TIMESTAMP_LINES = (
+    "/// Timestamp from the delivery envelope; not part of the payload itself.",
+    "#[serde(skip)]",
+    "pub source_timestamp: Option<OffsetDateTime>,",
+)
+
+
+def eventsub_field_attr(rename: str | None) -> list[str]:
+    if rename is not None:
+        return [
+            "#[serde(default, deserialize_with = \"super::null_default\", "
+            f"rename = {rust_string(rename)})]"
+        ]
+    return ["#[serde(default, deserialize_with = \"super::null_default\")]"]
+
+
+def eventsub_ref_struct(field: dict[str, Any]) -> str | None:
+    ref = field.get("ref")
+    if ref is None:
+        return None
+    shared = SHARED_STRUCT_NAMES.get(ref)
+    if shared is None:
+        raise ResponseRenderError(f"no shared struct name for section `{ref}`")
+    if field["type"].strip().lower().endswith("[]"):
+        return f"Vec<{shared}>"
+    return shared
+
+
+def eventsub_variant(item: dict[str, Any]) -> str:
+    return camel_case(item["subscription_type"].replace(".", "_")) + camel_case(
+        item["version"]
+    )
+
+
+def render_shared_event_structs(
+    shared_objects: dict[str, Any], struct_names: set[str]
+) -> list[str]:
+    rendered: list[str] = []
+    for slug in sorted(shared_objects):
+        struct_name = SHARED_STRUCT_NAMES.get(slug)
+        if struct_name is None:
+            raise ResponseRenderError(f"no shared struct name for section `{slug}`")
+        render_struct_tree(
+            rendered,
+            struct_names,
+            struct_name,
+            struct_name,
+            shared_objects[slug]["fields"],
+            f"Shared `{slug}` object from the EventSub reference documentation.",
+            indent="",
+            derives="Clone, Debug, Default, PartialEq, Serialize, Deserialize",
+            field_attr=eventsub_field_attr,
+            ref_struct=eventsub_ref_struct,
+        )
+    return rendered
+
+
+def render_event_struct(
+    item: dict[str, Any], struct_names: set[str]
+) -> list[str]:
+    fields = item["event"]["fields"]
+    if any(field["name"] == "source_timestamp" for field in fields):
+        raise ResponseRenderError("documented field named `source_timestamp`")
+    struct_name = f"{eventsub_variant(item)}Event"
+    rendered: list[str] = []
+    render_struct_tree(
+        rendered,
+        struct_names,
+        struct_name,
+        struct_name,
+        fields,
+        f"Event payload for `{item['subscription_type']}` version {item['version']}. "
+        "Undocumented fields are dropped when decoding.",
+        indent="",
+        derives="Clone, Debug, Default, PartialEq, Serialize, Deserialize",
+        field_attr=eventsub_field_attr,
+        ref_struct=eventsub_ref_struct,
+        root_extra_lines=EVENT_SOURCE_TIMESTAMP_LINES,
+    )
+    rendered.append(f"impl super::HasSourceTimestamp for {struct_name} {{")
+    rendered.append(
+        "    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {"
+    )
+    rendered.append("        self.source_timestamp = source_timestamp;")
+    rendered.append("    }")
+    rendered.append("}")
+    rendered.append("")
+    return rendered
+
+
+def validate_events(eventsub: dict[str, Any], warnings: list[str]) -> None:
+    """Nulls out event shapes that cannot be rendered, keeping the catalog,
+    summary counts, and generated Rust consistent."""
+    shared_objects = eventsub.get("shared_objects", {})
+    base_names = set(EVENTSUB_STRUCT_SEED)
+    try:
+        render_shared_event_structs(shared_objects, base_names)
+    except ResponseRenderError as error:
+        warnings.append(f"shared objects: {error}; falling back to untyped events")
+        for item in eventsub["subscriptions"]:
+            item["event"] = None
+        eventsub["shared_objects"] = {}
+        return
+    for item in eventsub["subscriptions"]:
+        key = (item["subscription_type"], item["version"])
+        if item["event"] is None or key in HANDWRITTEN_EVENTS:
+            continue
+        try:
+            render_event_struct(item, set(base_names))
+        except ResponseRenderError as error:
+            warnings.append(f"{item['id']}: {error}; falling back to untyped")
+            item["event"] = None
+
+
 def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
     subscriptions = eventsub["subscriptions"]
+    shared_objects = eventsub.get("shared_objects", {})
     variants = []
     aliases = []
+    typed_blocks: list[str] = []
     match_arms = []
     all_entries = []
 
+    base_names = set(EVENTSUB_STRUCT_SEED)
+    shared_blocks = render_shared_event_structs(shared_objects, base_names)
+
     for item in subscriptions:
-        variant = camel_case(item["subscription_type"].replace(".", "_")) + camel_case(
-            item["version"]
-        )
-        alias = variant + "Event"
+        variant = eventsub_variant(item)
         stability = camel_case(item["stability"])
         subscription_type = item["subscription_type"]
         version = item["version"]
         description = item["description"].replace("\n", " ")
-        variants.append((variant, description))
-        aliases.append((alias, stability))
+        key = (subscription_type, version)
+        handwritten = key in HANDWRITTEN_EVENTS
+        typed = item["event"] is not None and not handwritten
+
         if subscription_type == "channel.chat.message" and version == "1":
-            match_arms.append(
-                f'        ({rust_string(subscription_type)}, Some({rust_string(version)})) => decode_typed_event::<EventSubChatMessage>(event).map(KnownEventSubPayload::{variant}),'
-            )
+            variants.append((variant, description, "EventSubChatMessage"))
+            payload_type = "EventSubChatMessage"
         elif subscription_type == "channel.chat.message_delete" and version == "1":
+            variants.append((variant, description, "EventSubChatMessageDeleted"))
+            payload_type = "EventSubChatMessageDeleted"
+        elif typed:
+            variants.append((variant, description, f"{variant}Event"))
+            payload_type = f"{variant}Event"
+            typed_blocks.extend(render_event_struct(item, set(base_names)))
+        else:
+            variants.append((variant, description, "GenericEventSubPayload"))
+            payload_type = None
+            aliases.append((f"{variant}Event", stability))
+
+        if payload_type is not None:
             match_arms.append(
-                f'        ({rust_string(subscription_type)}, Some({rust_string(version)})) => decode_typed_event::<EventSubChatMessageDeleted>(event).map(KnownEventSubPayload::{variant}),'
+                f'        ({rust_string(subscription_type)}, Some({rust_string(version)})) => decode_typed_event::<{payload_type}>(event, source_timestamp).map(KnownEventSubPayload::{variant}),'
             )
         else:
             match_arms.append(
@@ -474,22 +1212,17 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
     out.append("    pub source_timestamp: Option<OffsetDateTime>,")
     out.append("}")
     out.append("")
+    out.extend(shared_blocks)
+    out.extend(typed_blocks)
     for alias, _ in aliases:
         out.append(f"pub type {alias} = GenericEventSubPayload;")
     out.append("")
     out.append("#[allow(clippy::large_enum_variant)]")
     out.append("#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]")
     out.append("pub enum KnownEventSubPayload {")
-    for variant, description in variants:
-        if variant == "ChannelChatMessage1":
-            out.append(f"    /// {description}")
-            out.append(f"    {variant}(EventSubChatMessage),")
-        elif variant == "ChannelChatMessageDelete1":
-            out.append(f"    /// {description}")
-            out.append(f"    {variant}(EventSubChatMessageDeleted),")
-        else:
-            out.append(f"    /// {description}")
-            out.append(f"    {variant}(GenericEventSubPayload),")
+    for variant, description, payload_type in variants:
+        out.append(f"    /// {description}")
+        out.append(f"    {variant}({payload_type}),")
     out.append("}")
     out.append("")
     out.append("pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[")
@@ -508,10 +1241,13 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
     out.append("    }")
     out.append("}")
     out.append("")
-    out.append(
-        "fn decode_typed_event<T: serde::de::DeserializeOwned>(event: Option<serde_json::Value>) -> Option<T> {"
-    )
-    out.append("    serde_json::from_value(event?).ok()")
+    out.append("fn decode_typed_event<T: serde::de::DeserializeOwned + super::HasSourceTimestamp>(")
+    out.append("    event: Option<serde_json::Value>,")
+    out.append("    source_timestamp: Option<OffsetDateTime>,")
+    out.append(") -> Option<T> {")
+    out.append("    let mut payload: T = serde_json::from_value(event?).ok()?;")
+    out.append("    payload.set_source_timestamp(source_timestamp);")
+    out.append("    Some(payload)")
     out.append("}")
     out.append("")
     out.append("fn decode_generic_event(")
@@ -534,8 +1270,13 @@ def write_json(path: pathlib.Path, value: dict[str, Any]) -> None:
 def build_command(args: argparse.Namespace) -> int:
     reference_html = pathlib.Path(args.reference_html).read_text()
     eventsub_html = pathlib.Path(args.eventsub_html).read_text()
-    helix = parse_helix(reference_html)
+    eventsub_reference_html = pathlib.Path(args.eventsub_reference_html).read_text()
+    warnings: list[str] = []
+    helix = parse_helix(reference_html, warnings)
+    validate_responses(helix, warnings)
     eventsub = parse_eventsub(eventsub_html)
+    attach_eventsub_events(eventsub, eventsub_reference_html, warnings)
+    validate_events(eventsub, warnings)
     auth = {
         "generated_at": now_iso(),
         "source_urls": SOURCE_URLS,
@@ -566,6 +1307,39 @@ def build_command(args: argparse.Namespace) -> int:
             }
         )
     )
+    print(
+        json.dumps(
+            {
+                "typed": sum(
+                    1
+                    for endpoint in helix["endpoints"]
+                    if endpoint["response"] is not None and endpoint["response"]["fields"]
+                ),
+                "unit": sum(
+                    1
+                    for endpoint in helix["endpoints"]
+                    if endpoint["response"] is not None
+                    and not endpoint["response"]["fields"]
+                ),
+                "untyped": [
+                    endpoint["id"]
+                    for endpoint in helix["endpoints"]
+                    if endpoint["response"] is None
+                ],
+                "eventsub_typed": sum(
+                    1 for item in eventsub["subscriptions"] if item["event"] is not None
+                ),
+                "eventsub_untyped": [
+                    item["id"]
+                    for item in eventsub["subscriptions"]
+                    if item["event"] is None
+                ],
+                "warnings": warnings,
+            },
+            indent=2,
+        ),
+        file=sys.stderr,
+    )
     return 0
 
 
@@ -576,6 +1350,20 @@ def load_catalog_dir(path: pathlib.Path) -> dict[str, Any]:
         "auth": json.loads((path / "auth.json").read_text()),
         "summary": json.loads((path / "summary.json").read_text()),
     }
+
+
+def response_field_paths(response: dict[str, Any] | None) -> set[str]:
+    paths: set[str] = set()
+
+    def walk(fields: list[dict[str, Any]], prefix: str) -> None:
+        for field in fields:
+            path = f"{prefix}{field['name']}"
+            paths.add(path)
+            walk(field.get("children", []), f"{path}.")
+
+    if response is not None:
+        walk(response.get("fields") or [], "")
+    return paths
 
 
 def diff_catalogs(old: dict[str, Any], new: dict[str, Any]) -> tuple[str, int]:
@@ -624,6 +1412,15 @@ def diff_catalogs(old: dict[str, Any], new: dict[str, Any]) -> tuple[str, int]:
                     if before.get(key) != after.get(key)
                 )
                 lines.append(f"- `{item_id}` changed fields: {', '.join(differing)}")
+                for shape_key in ("response", "event"):
+                    if shape_key not in differing:
+                        continue
+                    old_paths = response_field_paths(before.get(shape_key))
+                    new_paths = response_field_paths(after.get(shape_key))
+                    for path in sorted(new_paths - old_paths):
+                        lines.append(f"  - {shape_key} field added: `{path}`")
+                    for path in sorted(old_paths - new_paths):
+                        lines.append(f"  - {shape_key} field removed: `{path}`")
             lines.append("")
 
     diff_named("Helix", old["helix"]["endpoints"], new["helix"]["endpoints"])
@@ -669,6 +1466,7 @@ def build_parser() -> argparse.ArgumentParser:
     build = subparsers.add_parser("build", help="Build catalog JSON and generated Rust registries.")
     build.add_argument("--reference-html", required=True)
     build.add_argument("--eventsub-html", required=True)
+    build.add_argument("--eventsub-reference-html", required=True)
     build.add_argument("--catalog-dir", required=True)
     build.add_argument("--helix-rust", required=True)
     build.add_argument("--eventsub-rust", required=True)

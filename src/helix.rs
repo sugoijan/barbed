@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::TwitchIdentity;
-use crate::eventsub::{CreateEventSubSubscriptionRequest, CreateEventSubSubscriptionResponse};
+use crate::eventsub::CreateEventSubSubscriptionRequest;
 use crate::http::{
     HttpResponse, PreparedRequestBuilder, ResponseMeta, append_query_params, form_post_request,
 };
@@ -169,7 +169,7 @@ impl HelixEndpoint {
 }
 
 macro_rules! declare_generated_endpoint {
-    ($request_name:ident, $response_name:ident, $endpoint_const:ident) => {
+    ($request_name:ident, $endpoint_const:ident) => {
         #[derive(Clone, Debug, Default, PartialEq, Eq)]
         pub struct $request_name {
             inner: $crate::helix::HelixEndpointRequest,
@@ -226,8 +226,6 @@ macro_rules! declare_generated_endpoint {
                 $endpoint_const.prepare(&self.inner, client_id, access_token)
             }
         }
-
-        pub type $response_name = $crate::helix::HelixJsonResponse;
     };
 }
 
@@ -254,29 +252,7 @@ pub struct TwitchTokenExchange {
     pub token_type: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
-struct TwitchUsersResponse {
-    data: Vec<TwitchUserRecord>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
-struct TwitchUserRecord {
-    id: String,
-    login: String,
-    display_name: String,
-}
-
 // -- Request builders --
-
-fn bearer_headers(access_token: &str, client_id: &str) -> Vec<(String, String)> {
-    vec![
-        (
-            "Authorization".to_string(),
-            format!("Bearer {access_token}"),
-        ),
-        ("Client-Id".to_string(), client_id.to_string()),
-    ]
-}
 
 pub fn token_exchange_request(
     client_id: &str,
@@ -312,29 +288,21 @@ pub fn token_refresh_request(
     )
 }
 
-pub fn user_lookup_request(access_token: &str, client_id: &str) -> PreparedRequest {
-    PreparedRequest {
-        url: "https://api.twitch.tv/helix/users".to_string(),
-        method: HttpMethod::Get,
-        headers: bearer_headers(access_token, client_id),
-        body: None,
-    }
+pub fn user_lookup_request(
+    access_token: &str,
+    client_id: &str,
+) -> Result<PreparedRequest, HelixError> {
+    users::GetUsersRequest::new().prepare(client_id, Some(access_token))
 }
 
 pub fn user_lookup_by_login_request(
     access_token: &str,
     client_id: &str,
     login: &str,
-) -> PreparedRequest {
-    PreparedRequest {
-        url: format!(
-            "https://api.twitch.tv/helix/users?login={}",
-            crate::http::percent_encode(login)
-        ),
-        method: HttpMethod::Get,
-        headers: bearer_headers(access_token, client_id),
-        body: None,
-    }
+) -> Result<PreparedRequest, HelixError> {
+    users::GetUsersRequest::new()
+        .with_query_param("login", login)
+        .prepare(client_id, Some(access_token))
 }
 
 pub fn create_eventsub_subscription_request(
@@ -342,41 +310,31 @@ pub fn create_eventsub_subscription_request(
     access_token: &str,
     subscription: &CreateEventSubSubscriptionRequest,
 ) -> Result<PreparedRequest, HelixError> {
-    let body = serde_json::to_string(subscription)?;
-    let mut headers = bearer_headers(access_token, client_id);
-    headers.push(("Content-Type".to_string(), "application/json".to_string()));
-    Ok(PreparedRequest {
-        url: "https://api.twitch.tv/helix/eventsub/subscriptions".to_string(),
-        method: HttpMethod::Post,
-        headers,
-        body: Some(body),
-    })
+    eventsub_endpoints::CreateEventsubSubscriptionRequest::new()
+        .with_json_body(serde_json::to_value(subscription)?)
+        .prepare(client_id, Some(access_token))
 }
 
-pub fn list_eventsub_subscriptions_request(client_id: &str, access_token: &str) -> PreparedRequest {
-    PreparedRequest {
-        url: "https://api.twitch.tv/helix/eventsub/subscriptions?type=channel.chat.message"
-            .to_string(),
-        method: HttpMethod::Get,
-        headers: bearer_headers(access_token, client_id),
-        body: None,
+pub fn list_eventsub_subscriptions_request(
+    client_id: &str,
+    access_token: &str,
+    subscription_type: Option<&str>,
+) -> Result<PreparedRequest, HelixError> {
+    let mut request = eventsub_endpoints::GetEventsubSubscriptionsRequest::new();
+    if let Some(subscription_type) = subscription_type {
+        request = request.with_query_param("type", subscription_type);
     }
+    request.prepare(client_id, Some(access_token))
 }
 
 pub fn delete_eventsub_subscription_request(
     client_id: &str,
     access_token: &str,
     subscription_id: &str,
-) -> PreparedRequest {
-    PreparedRequest {
-        url: format!(
-            "https://api.twitch.tv/helix/eventsub/subscriptions?id={}",
-            crate::http::percent_encode(subscription_id)
-        ),
-        method: HttpMethod::Delete,
-        headers: bearer_headers(access_token, client_id),
-        body: None,
-    }
+) -> Result<PreparedRequest, HelixError> {
+    eventsub_endpoints::DeleteEventsubSubscriptionRequest::new()
+        .with_query_param("id", subscription_id)
+        .prepare(client_id, Some(access_token))
 }
 
 // -- Response parsers --
@@ -392,6 +350,26 @@ fn expect_status(response: RawResponse, expected: u16) -> Result<String, HelixEr
     Ok(response.body)
 }
 
+/// Decodes a generated typed response after checking the expected status.
+pub fn parse_typed_response<T: serde::de::DeserializeOwned>(
+    response: RawResponse,
+    expected_status: u16,
+) -> Result<T, HelixError> {
+    serde_json::from_str(&expect_status(response, expected_status)?).map_err(HelixError::from)
+}
+
+/// Checks the expected status of a response whose body is empty.
+pub fn parse_empty_response(response: RawResponse, expected_status: u16) -> Result<(), HelixError> {
+    expect_status(response, expected_status).map(|_| ())
+}
+
+/// Pagination envelope shared by the generated typed responses.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize)]
+pub struct HelixPagination {
+    #[serde(default)]
+    pub cursor: Option<String>,
+}
+
 pub fn parse_token_exchange(response: RawResponse) -> Result<TwitchTokenExchange, HelixError> {
     serde_json::from_str(&expect_status(response, 200)?).map_err(HelixError::from)
 }
@@ -401,7 +379,7 @@ pub fn parse_token_refresh(response: RawResponse) -> Result<TwitchTokenExchange,
 }
 
 pub fn parse_user_lookup(response: RawResponse) -> Result<TwitchIdentity, HelixError> {
-    let users: TwitchUsersResponse = serde_json::from_str(&expect_status(response, 200)?)?;
+    let users = users::GetUsersResponse::parse(response)?;
     let user = users.data.into_iter().next().ok_or(HelixError::NoUsers)?;
     Ok(TwitchIdentity::new(user.id, user.login, user.display_name))
 }
@@ -432,18 +410,18 @@ pub fn build_auth_outcome(
 
 pub fn parse_create_eventsub_subscription(
     response: RawResponse,
-) -> Result<CreateEventSubSubscriptionResponse, HelixError> {
-    serde_json::from_str(&expect_status(response, 202)?).map_err(HelixError::from)
+) -> Result<eventsub_endpoints::CreateEventsubSubscriptionResponse, HelixError> {
+    eventsub_endpoints::CreateEventsubSubscriptionResponse::parse(response)
 }
 
 pub fn parse_list_eventsub_subscriptions(
     response: RawResponse,
-) -> Result<CreateEventSubSubscriptionResponse, HelixError> {
-    serde_json::from_str(&expect_status(response, 200)?).map_err(HelixError::from)
+) -> Result<eventsub_endpoints::GetEventsubSubscriptionsResponse, HelixError> {
+    eventsub_endpoints::GetEventsubSubscriptionsResponse::parse(response)
 }
 
 pub fn parse_delete_eventsub_subscription(response: RawResponse) -> Result<(), HelixError> {
-    expect_status(response, 204).map(|_| ())
+    eventsub_endpoints::DeleteEventsubSubscriptionResponse::parse(response).map(|_| ())
 }
 
 #[cfg(test)]
@@ -472,7 +450,7 @@ mod tests {
 
     #[test]
     fn user_lookup_request_has_auth_headers() {
-        let req = user_lookup_request("my-token", "my-client");
+        let req = user_lookup_request("my-token", "my-client").expect("should prepare");
         assert_eq!(req.method, HttpMethod::Get);
         assert!(
             req.headers
@@ -521,8 +499,20 @@ mod tests {
 
     #[test]
     fn delete_eventsub_request_uses_query_param() {
-        let req = delete_eventsub_subscription_request("cid", "tok", "sub-123");
+        let req =
+            delete_eventsub_subscription_request("cid", "tok", "sub-123").expect("should prepare");
         assert_eq!(req.method, HttpMethod::Delete);
         assert!(req.url.contains("id=sub-123"));
+    }
+
+    #[test]
+    fn list_eventsub_request_filters_by_type() {
+        let req = list_eventsub_subscriptions_request("cid", "tok", Some("channel.chat.message"))
+            .expect("should prepare");
+        assert!(req.url.contains("type=channel.chat.message"));
+
+        let unfiltered =
+            list_eventsub_subscriptions_request("cid", "tok", None).expect("should prepare");
+        assert!(!unfiltered.url.contains("type="));
     }
 }

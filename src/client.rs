@@ -6,7 +6,7 @@ use wasm_bindgen::JsValue;
 use worker::{Fetch, Headers, Method, Request, RequestInit};
 
 #[cfg(feature = "cloudflare-worker")]
-use crate::eventsub::{CreateEventSubSubscriptionRequest, CreateEventSubSubscriptionResponse};
+use crate::eventsub::CreateEventSubSubscriptionRequest;
 #[cfg(feature = "cloudflare-worker")]
 use crate::helix::{
     self, HelixError, HttpMethod, PreparedRequest, RawResponse, TwitchTokenExchange,
@@ -87,7 +87,7 @@ pub async fn exchange_twitch_code(
     let token_raw = send_prepared_request(token_req).await?;
     let exchange = helix::parse_token_exchange(token_raw)?;
 
-    let user_req = helix::user_lookup_request(&exchange.access_token, client_id);
+    let user_req = helix::user_lookup_request(&exchange.access_token, client_id)?;
     let user_raw = send_prepared_request(user_req).await?;
     let identity = helix::parse_user_lookup(user_raw)?;
 
@@ -116,7 +116,7 @@ pub async fn create_eventsub_subscription(
     client_id: &str,
     access_token: &str,
     subscription: &CreateEventSubSubscriptionRequest,
-) -> Result<CreateEventSubSubscriptionResponse, CloudflareWorkerError> {
+) -> Result<helix::eventsub_endpoints::CreateEventsubSubscriptionResponse, CloudflareWorkerError> {
     if client_id.is_empty() || access_token.is_empty() {
         return Err(HelixError::MissingCredentials.into());
     }
@@ -126,17 +126,19 @@ pub async fn create_eventsub_subscription(
     helix::parse_create_eventsub_subscription(raw).map_err(CloudflareWorkerError::from)
 }
 
-/// Lists EventSub subscriptions for `channel.chat.message`.
+/// Lists EventSub subscriptions, optionally filtered by subscription type.
 #[cfg(feature = "cloudflare-worker")]
 pub async fn list_eventsub_subscriptions(
     client_id: &str,
     access_token: &str,
-) -> Result<CreateEventSubSubscriptionResponse, CloudflareWorkerError> {
+    subscription_type: Option<&str>,
+) -> Result<helix::eventsub_endpoints::GetEventsubSubscriptionsResponse, CloudflareWorkerError> {
     if client_id.is_empty() || access_token.is_empty() {
         return Err(HelixError::MissingCredentials.into());
     }
 
-    let req = helix::list_eventsub_subscriptions_request(client_id, access_token);
+    let req =
+        helix::list_eventsub_subscriptions_request(client_id, access_token, subscription_type)?;
     let raw = send_prepared_request(req).await?;
     helix::parse_list_eventsub_subscriptions(raw).map_err(CloudflareWorkerError::from)
 }
@@ -152,7 +154,8 @@ pub async fn delete_eventsub_subscription(
         return Err(HelixError::MissingCredentials.into());
     }
 
-    let req = helix::delete_eventsub_subscription_request(client_id, access_token, subscription_id);
+    let req =
+        helix::delete_eventsub_subscription_request(client_id, access_token, subscription_id)?;
     let raw = send_prepared_request(req).await?;
     helix::parse_delete_eventsub_subscription(raw).map_err(CloudflareWorkerError::from)
 }

@@ -89,3 +89,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: barbed v${{ steps.release_meta.outputs.version }}
           generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

@@ -313,7 +313,7 @@ pub async fn fetch_authenticated_user(
     client_id: &str,
 ) -> Result<TwitchIdentity> {
     let raw =
-        send_prepared_request(http, helix::user_lookup_request(access_token, client_id)).await?;
+        send_prepared_request(http, helix::user_lookup_request(access_token, client_id)?).await?;
     helix::parse_user_lookup(raw).map_err(anyhow::Error::from)
 }
 
@@ -325,7 +325,7 @@ pub async fn fetch_user_by_login(
 ) -> Result<TwitchIdentity> {
     let raw = send_prepared_request(
         http,
-        helix::user_lookup_by_login_request(access_token, client_id, login),
+        helix::user_lookup_by_login_request(access_token, client_id, login)?,
     )
     .await?;
     helix::parse_user_lookup(raw).map_err(anyhow::Error::from)
@@ -544,27 +544,22 @@ async fn create_chat_subscription(
     config: &ChatSubscriptionConfig,
     session_id: &str,
 ) -> Result<()> {
-    create_subscription(
-        http,
-        config,
-        &channel_chat_message_subscription_request(
-            &config.broadcaster_id,
-            &config.user_id,
-            session_id,
-        ),
-    )
-    .await?;
-    if let Err(err) = create_subscription(
-        http,
-        config,
-        &channel_chat_message_delete_subscription_request(
-            &config.broadcaster_id,
-            &config.user_id,
-            session_id,
-        ),
-    )
-    .await
-    {
+    let message_request = channel_chat_message_subscription_request(
+        &config.broadcaster_id,
+        &config.user_id,
+        session_id,
+    );
+    let delete_request = channel_chat_message_delete_subscription_request(
+        &config.broadcaster_id,
+        &config.user_id,
+        session_id,
+    );
+    let (message_result, delete_result) = tokio::join!(
+        create_subscription(http, config, &message_request),
+        create_subscription(http, config, &delete_request),
+    );
+    message_result?;
+    if let Err(err) = delete_result {
         debug!(
             ?err,
             "failed to subscribe to channel.chat.message_delete; continuing without delete events"

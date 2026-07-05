@@ -19,11 +19,39 @@ pub mod ads {
         scopes: &["channel:edit:commercial"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        StartCommercialRequest,
-        StartCommercialResponse,
-        ADS_START_COMMERCIAL
-    );
+    declare_generated_endpoint!(StartCommercialRequest, ADS_START_COMMERCIAL);
+
+    /// Response body for the "Start Commercial" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct StartCommercialResponse {
+        /// An array that contains a single object with the status of your start commercial request.
+        #[serde(default)]
+        pub data: Vec<StartCommercialItem>,
+    }
+
+    /// An array that contains a single object with the status of your start commercial request.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct StartCommercialItem {
+        /// The length of the commercial you requested.
+        #[serde(default)]
+        pub length: i64,
+        /// A message that indicates whether Twitch was able to serve an ad.
+        #[serde(default)]
+        pub message: String,
+        /// The number of seconds you must wait before running another commercial.
+        #[serde(default)]
+        pub retry_after: i64,
+    }
+
+    impl StartCommercialResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Returns ad schedule related information.
     pub const ADS_GET_AD_SCHEDULE: HelixEndpoint = HelixEndpoint {
@@ -38,11 +66,48 @@ pub mod ads {
         scopes: &["channel:read:ads"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetAdScheduleRequest,
-        GetAdScheduleResponse,
-        ADS_GET_AD_SCHEDULE
-    );
+    declare_generated_endpoint!(GetAdScheduleRequest, ADS_GET_AD_SCHEDULE);
+
+    /// Response body for the "Get Ad Schedule" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetAdScheduleResponse {
+        /// A list that contains information related to the channel’s ad schedule.
+        #[serde(default)]
+        pub data: Vec<GetAdScheduleItem>,
+    }
+
+    /// A list that contains information related to the channel’s ad schedule.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetAdScheduleItem {
+        /// The number of snoozes available for the broadcaster.
+        #[serde(default)]
+        pub snooze_count: i64,
+        /// The UTC timestamp when the broadcaster will gain an additional snooze, in RFC3339 format.
+        #[serde(default)]
+        pub snooze_refresh_at: String,
+        /// The UTC timestamp of the broadcaster’s next scheduled ad, in RFC3339 format.
+        #[serde(default)]
+        pub next_ad_at: String,
+        /// The length in seconds of the scheduled upcoming ad break.
+        #[serde(default)]
+        pub duration: i64,
+        /// The UTC timestamp of the broadcaster’s last ad-break, in RFC3339 format.
+        #[serde(default)]
+        pub last_ad_at: String,
+        /// The amount of pre-roll free time remaining for the channel in seconds.
+        #[serde(default)]
+        pub preroll_free_time: i64,
+    }
+
+    impl GetAdScheduleResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Pushes back the timestamp of the upcoming automatic mid-roll ad by 5 minutes.
     pub const ADS_SNOOZE_NEXT_AD: HelixEndpoint = HelixEndpoint {
@@ -57,11 +122,39 @@ pub mod ads {
         scopes: &["channel:manage:ads"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        SnoozeNextAdRequest,
-        SnoozeNextAdResponse,
-        ADS_SNOOZE_NEXT_AD
-    );
+    declare_generated_endpoint!(SnoozeNextAdRequest, ADS_SNOOZE_NEXT_AD);
+
+    /// Response body for the "Snooze Next Ad" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct SnoozeNextAdResponse {
+        /// A list that contains information about the channel’s snoozes and next upcoming ad after successfully snoozing.
+        #[serde(default)]
+        pub data: Vec<SnoozeNextAdItem>,
+    }
+
+    /// A list that contains information about the channel’s snoozes and next upcoming ad after successfully snoozing.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct SnoozeNextAdItem {
+        /// The number of snoozes available for the broadcaster.
+        #[serde(default)]
+        pub snooze_count: i64,
+        /// The UTC timestamp when the broadcaster will gain an additional snooze, in RFC3339 format.
+        #[serde(default)]
+        pub snooze_refresh_at: String,
+        /// The UTC timestamp of the broadcaster’s next scheduled ad, in RFC3339 format.
+        #[serde(default)]
+        pub next_ad_at: String,
+    }
+
+    impl SnoozeNextAdResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod analytics {
@@ -82,9 +175,57 @@ pub mod analytics {
     };
     declare_generated_endpoint!(
         GetExtensionAnalyticsRequest,
-        GetExtensionAnalyticsResponse,
         ANALYTICS_GET_EXTENSION_ANALYTICS
     );
+
+    /// Response body for the "Get Extension Analytics" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionAnalyticsResponse {
+        /// A list of reports.
+        #[serde(default)]
+        pub data: Vec<GetExtensionAnalyticsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// A list of reports.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionAnalyticsItem {
+        /// An ID that identifies the extension that the report was generated for.
+        #[serde(default)]
+        pub extension_id: String,
+        /// The URL that you use to download the report.
+        #[serde(default, rename = "URL")]
+        pub url: String,
+        /// The type of report.
+        #[serde(default)]
+        pub r#type: String,
+        /// The reporting window’s start and end dates, in RFC3339 format.
+        #[serde(default)]
+        pub date_range: GetExtensionAnalyticsDateRange,
+    }
+
+    /// The reporting window’s start and end dates, in RFC3339 format.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionAnalyticsDateRange {
+        /// The reporting window’s start date.
+        #[serde(default)]
+        pub started_at: String,
+        /// The reporting window’s end date.
+        #[serde(default)]
+        pub ended_at: String,
+    }
+
+    impl GetExtensionAnalyticsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets an analytics report for one or more games.
     pub const ANALYTICS_GET_GAME_ANALYTICS: HelixEndpoint = HelixEndpoint {
@@ -99,11 +240,56 @@ pub mod analytics {
         scopes: &["analytics:read:games"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetGameAnalyticsRequest,
-        GetGameAnalyticsResponse,
-        ANALYTICS_GET_GAME_ANALYTICS
-    );
+    declare_generated_endpoint!(GetGameAnalyticsRequest, ANALYTICS_GET_GAME_ANALYTICS);
+
+    /// Response body for the "Get Game Analytics" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGameAnalyticsResponse {
+        /// A list of reports.
+        #[serde(default)]
+        pub data: Vec<GetGameAnalyticsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// A list of reports.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGameAnalyticsItem {
+        /// An ID that identifies the game that the report was generated for.
+        #[serde(default)]
+        pub game_id: String,
+        /// The URL that you use to download the report.
+        #[serde(default, rename = "URL")]
+        pub url: String,
+        /// The type of report.
+        #[serde(default)]
+        pub r#type: String,
+        /// The reporting window’s start and end dates, in RFC3339 format.
+        #[serde(default)]
+        pub date_range: GetGameAnalyticsDateRange,
+    }
+
+    /// The reporting window’s start and end dates, in RFC3339 format.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGameAnalyticsDateRange {
+        /// The reporting window’s start date.
+        #[serde(default)]
+        pub started_at: String,
+        /// The reporting window’s end date.
+        #[serde(default)]
+        pub ended_at: String,
+    }
+
+    impl GetGameAnalyticsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod bits {
@@ -122,11 +308,62 @@ pub mod bits {
         scopes: &["bits:read"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetBitsLeaderboardRequest,
-        GetBitsLeaderboardResponse,
-        BITS_GET_BITS_LEADERBOARD
-    );
+    declare_generated_endpoint!(GetBitsLeaderboardRequest, BITS_GET_BITS_LEADERBOARD);
+
+    /// Response body for the "Get Bits Leaderboard" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetBitsLeaderboardResponse {
+        /// A list of leaderboard leaders.
+        #[serde(default)]
+        pub data: Vec<GetBitsLeaderboardItem>,
+        /// The reporting window’s start and end dates, in RFC3339 format.
+        #[serde(default)]
+        pub date_range: GetBitsLeaderboardDateRange,
+        /// The number of ranked users in data.
+        #[serde(default)]
+        pub total: i64,
+    }
+
+    /// A list of leaderboard leaders.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetBitsLeaderboardItem {
+        /// An ID that identifies a user on the leaderboard.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The user’s position on the leaderboard.
+        #[serde(default)]
+        pub rank: i64,
+        /// The number of Bits the user has cheered.
+        #[serde(default)]
+        pub score: i64,
+    }
+
+    /// The reporting window’s start and end dates, in RFC3339 format.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetBitsLeaderboardDateRange {
+        /// The reporting window’s start date.
+        #[serde(default)]
+        pub started_at: String,
+        /// The reporting window’s end date.
+        #[serde(default)]
+        pub ended_at: String,
+    }
+
+    impl GetBitsLeaderboardResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets a list of Cheermotes that users can use to cheer Bits.
     pub const BITS_GET_CHEERMOTES: HelixEndpoint = HelixEndpoint {
@@ -141,11 +378,227 @@ pub mod bits {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetCheermotesRequest,
-        GetCheermotesResponse,
-        BITS_GET_CHEERMOTES
-    );
+    declare_generated_endpoint!(GetCheermotesRequest, BITS_GET_CHEERMOTES);
+
+    /// Response body for the "Get Cheermotes" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCheermotesResponse {
+        /// The list of Cheermotes.
+        #[serde(default)]
+        pub data: Vec<GetCheermotesItem>,
+    }
+
+    /// The list of Cheermotes.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCheermotesItem {
+        /// The name portion of the Cheermote string that you use in chat to cheer Bits.
+        #[serde(default)]
+        pub prefix: String,
+        /// A list of tier levels that the Cheermote supports.
+        #[serde(default)]
+        pub tiers: Vec<GetCheermotesTiers>,
+        /// The type of Cheermote.
+        #[serde(default)]
+        pub r#type: String,
+        /// The order that the Cheermotes are shown in the Bits card.
+        #[serde(default)]
+        pub order: i64,
+        /// The date and time, in RFC3339 format, when this Cheermote was last updated.
+        #[serde(default)]
+        pub last_updated: String,
+        /// A Boolean value that indicates whether this Cheermote provides a charitable contribution match during charity campaigns.
+        #[serde(default)]
+        pub is_charitable: bool,
+    }
+
+    /// A list of tier levels that the Cheermote supports.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCheermotesTiers {
+        /// The minimum number of Bits that you must cheer at this tier level.
+        #[serde(default)]
+        pub min_bits: i64,
+        /// The tier level.
+        #[serde(default)]
+        pub id: String,
+        /// The hex code of the color associated with this tier level (for example, #979797).
+        #[serde(default)]
+        pub color: String,
+        /// The animated and static image sets for the Cheermote.
+        #[serde(default)]
+        pub images: std::collections::BTreeMap<String, serde_json::Value>,
+        /// A Boolean value that determines whether users can cheer at this tier level.
+        #[serde(default)]
+        pub can_cheer: bool,
+        /// A Boolean value that determines whether this tier level is shown in the Bits card.
+        #[serde(default)]
+        pub show_in_bits_card: bool,
+    }
+
+    impl GetCheermotesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
+
+    /// NEW Gets a list of custom Power-ups that the specified broadcaster created.
+    pub const BITS_GET_CUSTOM_POWER_UP: HelixEndpoint = HelixEndpoint {
+        id: "bits_get_custom_power_up",
+        group: "Bits",
+        name: "Get Custom Power-up",
+        description: "NEW Gets a list of custom Power-ups that the specified broadcaster created.",
+        stability: EndpointStability::New,
+        method: HttpMethod::Get,
+        path: "/bits/custom_power_ups",
+        auth_kind: HelixAuthKind::User,
+        scopes: &["bits:read"],
+        supports_pagination: false,
+    };
+    declare_generated_endpoint!(GetCustomPowerUpRequest, BITS_GET_CUSTOM_POWER_UP);
+
+    /// Response body for the "Get Custom Power-up" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomPowerUpResponse {
+        /// A list of custom Power-ups.
+        #[serde(default)]
+        pub data: Vec<GetCustomPowerUpItem>,
+    }
+
+    /// A list of custom Power-ups.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomPowerUpItem {
+        /// The ID that uniquely identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The ID that uniquely identifies this custom Power-up.
+        #[serde(default)]
+        pub id: String,
+        /// The title of the custom Power-up.
+        #[serde(default)]
+        pub title: String,
+        /// The prompt shown to the viewer when they redeem the custom Power-up if user input is required (see the is_user_input_required field).
+        #[serde(default)]
+        pub prompt: String,
+        /// The amount of Bits for the custom Power-up.
+        #[serde(default)]
+        pub bits: i64,
+        /// A set of custom images for the custom Power-up.
+        #[serde(default)]
+        pub image: GetCustomPowerUpImage,
+        /// A set of default images for the custom Power-up.
+        #[serde(default)]
+        pub default_image: GetCustomPowerUpDefaultImage,
+        /// The background color to use for the custom Power-up.
+        #[serde(default)]
+        pub background_color: String,
+        /// A Boolean value that determines whether the custom Power-up is enabled.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// A Boolean value that determines whether the user must enter information when redeeming the custom Power-up.
+        #[serde(default)]
+        pub is_user_input_required: bool,
+        /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub max_per_stream_setting: GetCustomPowerUpMaxPerStreamSetting,
+        /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub max_per_user_per_stream_setting: GetCustomPowerUpMaxPerUserPerStreamSetting,
+        /// The settings used to determine whether to apply a cooldown period between redemptions and the length of the cooldown.
+        #[serde(default)]
+        pub global_cooldown_setting: GetCustomPowerUpGlobalCooldownSetting,
+        /// A Boolean value that determines whether the custom Power-up is currently paused.
+        #[serde(default)]
+        pub is_paused: bool,
+        /// A Boolean value that determines whether the custom Power-up is currently in stock.
+        #[serde(default)]
+        pub is_in_stock: bool,
+        /// The number of redemptions redeemed during the current live stream.
+        #[serde(default)]
+        pub redemptions_redeemed_current_stream: i64,
+        /// The timestamp of when the cooldown period expires.
+        #[serde(default)]
+        pub cooldown_expires_at: String,
+    }
+
+    /// A set of custom images for the custom Power-up.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomPowerUpImage {
+        /// The URL to a small version of the image.
+        #[serde(default)]
+        pub url_1x: String,
+        /// The URL to a medium version of the image.
+        #[serde(default)]
+        pub url_2x: String,
+        /// The URL to a large version of the image.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    /// A set of default images for the custom Power-up.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomPowerUpDefaultImage {
+        /// The URL to a small version of the image.
+        #[serde(default)]
+        pub url_1x: String,
+        /// The URL to a medium version of the image.
+        #[serde(default)]
+        pub url_2x: String,
+        /// The URL to a large version of the image.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per live stream.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomPowerUpMaxPerStreamSetting {
+        /// A Boolean value that determines whether the custom Power-up applies a limit on the number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The maximum number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub max_per_stream: i64,
+    }
+
+    /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per user per live stream.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomPowerUpMaxPerUserPerStreamSetting {
+        /// A Boolean value that determines whether the custom Power-up applies a limit on the number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The maximum number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub max_per_user_per_stream: i64,
+    }
+
+    /// The settings used to determine whether to apply a cooldown period between redemptions and the length of the cooldown.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomPowerUpGlobalCooldownSetting {
+        /// A Boolean value that determines whether to apply a cooldown period.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The cooldown period, in seconds.
+        #[serde(default)]
+        pub global_cooldown_seconds: i64,
+    }
+
+    impl GetCustomPowerUpResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets an extension’s list of transactions.
     pub const BITS_GET_EXTENSION_TRANSACTIONS: HelixEndpoint = HelixEndpoint {
@@ -162,9 +615,101 @@ pub mod bits {
     };
     declare_generated_endpoint!(
         GetExtensionTransactionsRequest,
-        GetExtensionTransactionsResponse,
         BITS_GET_EXTENSION_TRANSACTIONS
     );
+
+    /// Response body for the "Get Extension Transactions" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionTransactionsResponse {
+        /// The list of transactions.
+        #[serde(default)]
+        pub data: Vec<GetExtensionTransactionsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of transactions.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionTransactionsItem {
+        /// An ID that identifies the transaction.
+        #[serde(default)]
+        pub id: String,
+        /// The UTC date and time (in RFC3339 format) of the transaction.
+        #[serde(default)]
+        pub timestamp: String,
+        /// The ID of the broadcaster that owns the channel where the transaction occurred.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The ID of the user that purchased the digital product.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The type of transaction.
+        #[serde(default)]
+        pub product_type: String,
+        /// Contains details about the digital product.
+        #[serde(default)]
+        pub product_data: GetExtensionTransactionsProductData,
+    }
+
+    /// Contains details about the digital product.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionTransactionsProductData {
+        /// An ID that identifies the digital product.
+        #[serde(default)]
+        pub sku: String,
+        /// Set to twitch.ext.
+        #[serde(default)]
+        pub domain: String,
+        /// Contains details about the digital product’s cost.
+        #[serde(default)]
+        pub cost: GetExtensionTransactionsProductDataCost,
+        /// A Boolean value that determines whether the product is in development.
+        #[serde(default, rename = "inDevelopment")]
+        pub indevelopment: bool,
+        /// The name of the digital product.
+        #[serde(default, rename = "displayName")]
+        pub displayname: String,
+        /// This field is always empty since you may purchase only unexpired products.
+        #[serde(default)]
+        pub expiration: String,
+        /// A Boolean value that determines whether the data was broadcast to all instances of the extension.
+        #[serde(default)]
+        pub broadcast: bool,
+    }
+
+    /// Contains details about the digital product’s cost.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionTransactionsProductDataCost {
+        /// The amount exchanged for the digital product.
+        #[serde(default)]
+        pub amount: i64,
+        /// The type of currency exchanged.
+        #[serde(default)]
+        pub r#type: String,
+    }
+
+    impl GetExtensionTransactionsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod channels {
@@ -185,9 +730,64 @@ pub mod channels {
     };
     declare_generated_endpoint!(
         GetChannelInformationRequest,
-        GetChannelInformationResponse,
         CHANNELS_GET_CHANNEL_INFORMATION
     );
+
+    /// Response body for the "Get Channel Information" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelInformationResponse {
+        /// A list that contains information about the specified channels.
+        #[serde(default)]
+        pub data: Vec<GetChannelInformationItem>,
+    }
+
+    /// A list that contains information about the specified channels.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelInformationItem {
+        /// An ID that uniquely identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s preferred language.
+        #[serde(default)]
+        pub broadcaster_language: String,
+        /// The name of the game that the broadcaster is playing or last played.
+        #[serde(default)]
+        pub game_name: String,
+        /// An ID that uniquely identifies the game that the broadcaster is playing or last played.
+        #[serde(default)]
+        pub game_id: String,
+        /// The title of the stream that the broadcaster is currently streaming or last streamed.
+        #[serde(default)]
+        pub title: String,
+        /// The value of the broadcaster’s stream delay setting, in seconds.
+        #[serde(default)]
+        pub delay: i64,
+        /// The tags applied to the channel.
+        #[serde(default)]
+        pub tags: Vec<String>,
+        /// The CCLs applied to the channel.
+        #[serde(default)]
+        pub content_classification_labels: Vec<String>,
+        /// Boolean flag indicating if the channel has branded content.
+        #[serde(default)]
+        pub is_branded_content: bool,
+    }
+
+    impl GetChannelInformationResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates a channel’s properties.
     pub const CHANNELS_MODIFY_CHANNEL_INFORMATION: HelixEndpoint = HelixEndpoint {
@@ -204,9 +804,23 @@ pub mod channels {
     };
     declare_generated_endpoint!(
         ModifyChannelInformationRequest,
-        ModifyChannelInformationResponse,
         CHANNELS_MODIFY_CHANNEL_INFORMATION
     );
+
+    /// Response for the "Modify Channel Information" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct ModifyChannelInformationResponse;
+
+    impl ModifyChannelInformationResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets the broadcaster’s list editors.
     pub const CHANNELS_GET_CHANNEL_EDITORS: HelixEndpoint = HelixEndpoint {
@@ -221,11 +835,39 @@ pub mod channels {
         scopes: &["channel:read:editors"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetChannelEditorsRequest,
-        GetChannelEditorsResponse,
-        CHANNELS_GET_CHANNEL_EDITORS
-    );
+    declare_generated_endpoint!(GetChannelEditorsRequest, CHANNELS_GET_CHANNEL_EDITORS);
+
+    /// Response body for the "Get Channel Editors" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelEditorsResponse {
+        /// A list of users that are editors for the specified broadcaster.
+        #[serde(default)]
+        pub data: Vec<GetChannelEditorsItem>,
+    }
+
+    /// A list of users that are editors for the specified broadcaster.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelEditorsItem {
+        /// An ID that uniquely identifies a user with editor permissions.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The date and time, in RFC3339 format, when the user became one of the broadcaster’s editors.
+        #[serde(default)]
+        pub created_at: String,
+    }
+
+    impl GetChannelEditorsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets a list of broadcasters that the specified user follows. You can also use this endpoint to see whether a user follows a specific broadcaster.
     pub const CHANNELS_GET_FOLLOWED_CHANNELS: HelixEndpoint = HelixEndpoint {
@@ -240,11 +882,48 @@ pub mod channels {
         scopes: &["user:read:follows"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetFollowedChannelsRequest,
-        GetFollowedChannelsResponse,
-        CHANNELS_GET_FOLLOWED_CHANNELS
-    );
+    declare_generated_endpoint!(GetFollowedChannelsRequest, CHANNELS_GET_FOLLOWED_CHANNELS);
+
+    /// Response body for the "Get Followed Channels" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetFollowedChannelsResponse {
+        /// The list of broadcasters that the user follows.
+        #[serde(default)]
+        pub data: Vec<GetFollowedChannelsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+        /// The total number of broadcasters that the user follows.
+        #[serde(default)]
+        pub total: i64,
+    }
+
+    /// The list of broadcasters that the user follows.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetFollowedChannelsItem {
+        /// An ID that uniquely identifies the broadcaster that this user is following.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The UTC timestamp when the user started following the broadcaster.
+        #[serde(default)]
+        pub followed_at: String,
+    }
+
+    impl GetFollowedChannelsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets a list of users that follow the specified broadcaster. You can also use this endpoint to see whether a specific user follows the broadcaster.
     pub const CHANNELS_GET_CHANNEL_FOLLOWERS: HelixEndpoint = HelixEndpoint {
@@ -259,11 +938,48 @@ pub mod channels {
         scopes: &["moderator:read:followers"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetChannelFollowersRequest,
-        GetChannelFollowersResponse,
-        CHANNELS_GET_CHANNEL_FOLLOWERS
-    );
+    declare_generated_endpoint!(GetChannelFollowersRequest, CHANNELS_GET_CHANNEL_FOLLOWERS);
+
+    /// Response body for the "Get Channel Followers" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelFollowersResponse {
+        /// The list of users that follow the specified broadcaster.
+        #[serde(default)]
+        pub data: Vec<GetChannelFollowersItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+        /// The total number of users that follow this broadcaster.
+        #[serde(default)]
+        pub total: i64,
+    }
+
+    /// The list of users that follow the specified broadcaster.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelFollowersItem {
+        /// The UTC timestamp when the user started following the broadcaster.
+        #[serde(default)]
+        pub followed_at: String,
+        /// An ID that uniquely identifies the user that’s following the broadcaster.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+    }
+
+    impl GetChannelFollowersResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod channel_points {
@@ -284,9 +1000,152 @@ pub mod channel_points {
     };
     declare_generated_endpoint!(
         CreateCustomRewardsRequest,
-        CreateCustomRewardsResponse,
         CHANNEL_POINTS_CREATE_CUSTOM_REWARDS
     );
+
+    /// Response body for the "Create Custom Rewards" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateCustomRewardsResponse {
+        /// A list that contains the single custom reward you created.
+        #[serde(default)]
+        pub data: Vec<CreateCustomRewardsItem>,
+    }
+
+    /// A list that contains the single custom reward you created.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateCustomRewardsItem {
+        /// The ID that uniquely identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The ID that uniquely identifies this custom reward.
+        #[serde(default)]
+        pub id: String,
+        /// The title of the reward.
+        #[serde(default)]
+        pub title: String,
+        /// The prompt shown to the viewer when they redeem the reward if user input is required (see the is_user_input_required field).
+        #[serde(default)]
+        pub prompt: String,
+        /// The cost of the reward in Channel Points.
+        #[serde(default)]
+        pub cost: i64,
+        /// A set of custom images for the reward.
+        #[serde(default)]
+        pub image: CreateCustomRewardsImage,
+        /// A set of default images for the reward.
+        #[serde(default)]
+        pub default_image: CreateCustomRewardsDefaultImage,
+        /// The background color to use for the reward.
+        #[serde(default)]
+        pub background_color: String,
+        /// A Boolean value that determines whether the reward is enabled.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// A Boolean value that determines whether the user must enter information when redeeming the reward.
+        #[serde(default)]
+        pub is_user_input_required: bool,
+        /// The settings used to determine whether to apply a maximum to the number to the redemptions allowed per live stream.
+        #[serde(default)]
+        pub max_per_stream_setting: CreateCustomRewardsMaxPerStreamSetting,
+        /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub max_per_user_per_stream_setting: CreateCustomRewardsMaxPerUserPerStreamSetting,
+        /// The settings used to determine whether to apply a cooldown period between redemptions and the length of the cooldown.
+        #[serde(default)]
+        pub global_cooldown_setting: CreateCustomRewardsGlobalCooldownSetting,
+        /// A Boolean value that determines whether the reward is currently paused.
+        #[serde(default)]
+        pub is_paused: bool,
+        /// A Boolean value that determines whether the reward is currently in stock.
+        #[serde(default)]
+        pub is_in_stock: bool,
+        /// A Boolean value that determines whether redemptions should be set to FULFILLED status immediately when a reward is redeemed.
+        #[serde(default)]
+        pub should_redemptions_skip_request_queue: bool,
+        /// The number of redemptions redeemed during the current live stream.
+        #[serde(default)]
+        pub redemptions_redeemed_current_stream: i64,
+        /// The timestamp of when the cooldown period expires.
+        #[serde(default)]
+        pub cooldown_expires_at: String,
+    }
+
+    /// A set of custom images for the reward.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateCustomRewardsImage {
+        /// The URL to a small version of the image.
+        #[serde(default)]
+        pub url_1x: String,
+        /// The URL to a medium version of the image.
+        #[serde(default)]
+        pub url_2x: String,
+        /// The URL to a large version of the image.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    /// A set of default images for the reward.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateCustomRewardsDefaultImage {
+        /// The URL to a small version of the image.
+        #[serde(default)]
+        pub url_1x: String,
+        /// The URL to a medium version of the image.
+        #[serde(default)]
+        pub url_2x: String,
+        /// The URL to a large version of the image.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    /// The settings used to determine whether to apply a maximum to the number to the redemptions allowed per live stream.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateCustomRewardsMaxPerStreamSetting {
+        /// A Boolean value that determines whether the reward applies a limit on the number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The maximum number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub max_per_stream: i64,
+    }
+
+    /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per user per live stream.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateCustomRewardsMaxPerUserPerStreamSetting {
+        /// A Boolean value that determines whether the reward applies a limit on the number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The maximum number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub max_per_user_per_stream: i64,
+    }
+
+    /// The settings used to determine whether to apply a cooldown period between redemptions and the length of the cooldown.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateCustomRewardsGlobalCooldownSetting {
+        /// A Boolean value that determines whether to apply a cooldown period.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The cooldown period, in seconds.
+        #[serde(default)]
+        pub global_cooldown_seconds: i64,
+    }
+
+    impl CreateCustomRewardsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Deletes a custom reward that the broadcaster created.
     pub const CHANNEL_POINTS_DELETE_CUSTOM_REWARD: HelixEndpoint = HelixEndpoint {
@@ -303,9 +1162,23 @@ pub mod channel_points {
     };
     declare_generated_endpoint!(
         DeleteCustomRewardRequest,
-        DeleteCustomRewardResponse,
         CHANNEL_POINTS_DELETE_CUSTOM_REWARD
     );
+
+    /// Response for the "Delete Custom Reward" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct DeleteCustomRewardResponse;
+
+    impl DeleteCustomRewardResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets a list of custom rewards that the specified broadcaster created.
     pub const CHANNEL_POINTS_GET_CUSTOM_REWARD: HelixEndpoint = HelixEndpoint {
@@ -320,11 +1193,151 @@ pub mod channel_points {
         scopes: &["channel:manage:redemptions", "channel:read:redemptions"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetCustomRewardRequest,
-        GetCustomRewardResponse,
-        CHANNEL_POINTS_GET_CUSTOM_REWARD
-    );
+    declare_generated_endpoint!(GetCustomRewardRequest, CHANNEL_POINTS_GET_CUSTOM_REWARD);
+
+    /// Response body for the "Get Custom Reward" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardResponse {
+        /// A list of custom rewards.
+        #[serde(default)]
+        pub data: Vec<GetCustomRewardItem>,
+    }
+
+    /// A list of custom rewards.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardItem {
+        /// The ID that uniquely identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The ID that uniquely identifies this custom reward.
+        #[serde(default)]
+        pub id: String,
+        /// The title of the reward.
+        #[serde(default)]
+        pub title: String,
+        /// The prompt shown to the viewer when they redeem the reward if user input is required (see the is_user_input_required field).
+        #[serde(default)]
+        pub prompt: String,
+        /// The cost of the reward in Channel Points.
+        #[serde(default)]
+        pub cost: i64,
+        /// A set of custom images for the reward.
+        #[serde(default)]
+        pub image: GetCustomRewardImage,
+        /// A set of default images for the reward.
+        #[serde(default)]
+        pub default_image: GetCustomRewardDefaultImage,
+        /// The background color to use for the reward.
+        #[serde(default)]
+        pub background_color: String,
+        /// A Boolean value that determines whether the reward is enabled.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// A Boolean value that determines whether the user must enter information when redeeming the reward.
+        #[serde(default)]
+        pub is_user_input_required: bool,
+        /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub max_per_stream_setting: GetCustomRewardMaxPerStreamSetting,
+        /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub max_per_user_per_stream_setting: GetCustomRewardMaxPerUserPerStreamSetting,
+        /// The settings used to determine whether to apply a cooldown period between redemptions and the length of the cooldown.
+        #[serde(default)]
+        pub global_cooldown_setting: GetCustomRewardGlobalCooldownSetting,
+        /// A Boolean value that determines whether the reward is currently paused.
+        #[serde(default)]
+        pub is_paused: bool,
+        /// A Boolean value that determines whether the reward is currently in stock.
+        #[serde(default)]
+        pub is_in_stock: bool,
+        /// A Boolean value that determines whether redemptions should be set to FULFILLED status immediately when a reward is redeemed.
+        #[serde(default)]
+        pub should_redemptions_skip_request_queue: bool,
+        /// The number of redemptions redeemed during the current live stream.
+        #[serde(default)]
+        pub redemptions_redeemed_current_stream: i64,
+        /// The timestamp of when the cooldown period expires.
+        #[serde(default)]
+        pub cooldown_expires_at: String,
+    }
+
+    /// A set of custom images for the reward.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardImage {
+        /// The URL to a small version of the image.
+        #[serde(default)]
+        pub url_1x: String,
+        /// The URL to a medium version of the image.
+        #[serde(default)]
+        pub url_2x: String,
+        /// The URL to a large version of the image.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    /// A set of default images for the reward.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardDefaultImage {
+        /// The URL to a small version of the image.
+        #[serde(default)]
+        pub url_1x: String,
+        /// The URL to a medium version of the image.
+        #[serde(default)]
+        pub url_2x: String,
+        /// The URL to a large version of the image.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per live stream.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardMaxPerStreamSetting {
+        /// A Boolean value that determines whether the reward applies a limit on the number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The maximum number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub max_per_stream: i64,
+    }
+
+    /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per user per live stream.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardMaxPerUserPerStreamSetting {
+        /// A Boolean value that determines whether the reward applies a limit on the number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The maximum number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub max_per_user_per_stream: i64,
+    }
+
+    /// The settings used to determine whether to apply a cooldown period between redemptions and the length of the cooldown.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardGlobalCooldownSetting {
+        /// A Boolean value that determines whether to apply a cooldown period.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The cooldown period, in seconds.
+        #[serde(default)]
+        pub global_cooldown_seconds: i64,
+    }
+
+    impl GetCustomRewardResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets a list of redemptions for a custom reward.
     pub const CHANNEL_POINTS_GET_CUSTOM_REWARD_REDEMPTION: HelixEndpoint = HelixEndpoint {
@@ -341,9 +1354,84 @@ pub mod channel_points {
     };
     declare_generated_endpoint!(
         GetCustomRewardRedemptionRequest,
-        GetCustomRewardRedemptionResponse,
         CHANNEL_POINTS_GET_CUSTOM_REWARD_REDEMPTION
     );
+
+    /// Response body for the "Get Custom Reward Redemption" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardRedemptionResponse {
+        /// The list of redemptions for the specified reward.
+        #[serde(default)]
+        pub data: Vec<GetCustomRewardRedemptionItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of redemptions for the specified reward.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardRedemptionItem {
+        /// The ID that uniquely identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The ID that uniquely identifies this redemption.
+        #[serde(default)]
+        pub id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The ID that uniquely identifies the user that redeemed the reward.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The text the user entered at the prompt when they redeemed the reward; otherwise, an empty string if user input was not required.
+        #[serde(default)]
+        pub user_input: String,
+        /// The state of the redemption.
+        #[serde(default)]
+        pub status: String,
+        /// The date and time of when the reward was redeemed, in RFC3339 format.
+        #[serde(default)]
+        pub redeemed_at: String,
+        /// The reward that the user redeemed.
+        #[serde(default)]
+        pub reward: GetCustomRewardRedemptionReward,
+    }
+
+    /// The reward that the user redeemed.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCustomRewardRedemptionReward {
+        /// The ID that uniquely identifies the redeemed reward.
+        #[serde(default)]
+        pub id: String,
+        /// The reward’s title.
+        #[serde(default)]
+        pub title: String,
+        /// The prompt displayed to the viewer if user input is required.
+        #[serde(default)]
+        pub prompt: String,
+        /// The reward’s cost, in Channel Points.
+        #[serde(default)]
+        pub cost: i64,
+    }
+
+    impl GetCustomRewardRedemptionResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates a custom reward.
     pub const CHANNEL_POINTS_UPDATE_CUSTOM_REWARD: HelixEndpoint = HelixEndpoint {
@@ -360,9 +1448,152 @@ pub mod channel_points {
     };
     declare_generated_endpoint!(
         UpdateCustomRewardRequest,
-        UpdateCustomRewardResponse,
         CHANNEL_POINTS_UPDATE_CUSTOM_REWARD
     );
+
+    /// Response body for the "Update Custom Reward" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateCustomRewardResponse {
+        /// The list contains the single reward that you updated.
+        #[serde(default)]
+        pub data: Vec<UpdateCustomRewardItem>,
+    }
+
+    /// The list contains the single reward that you updated.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateCustomRewardItem {
+        /// The ID that uniquely identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The ID that uniquely identifies this custom reward.
+        #[serde(default)]
+        pub id: String,
+        /// The title of the reward.
+        #[serde(default)]
+        pub title: String,
+        /// The prompt shown to the viewer when they redeem the reward if user input is required.
+        #[serde(default)]
+        pub prompt: String,
+        /// The cost of the reward in Channel Points.
+        #[serde(default)]
+        pub cost: i64,
+        /// A set of custom images for the reward.
+        #[serde(default)]
+        pub image: UpdateCustomRewardImage,
+        /// A set of default images for the reward.
+        #[serde(default)]
+        pub default_image: UpdateCustomRewardDefaultImage,
+        /// The background color to use for the reward.
+        #[serde(default)]
+        pub background_color: String,
+        /// A Boolean value that determines whether the reward is enabled.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// A Boolean value that determines whether the user must enter information when they redeem the reward.
+        #[serde(default)]
+        pub is_user_input_required: bool,
+        /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub max_per_stream_setting: UpdateCustomRewardMaxPerStreamSetting,
+        /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub max_per_user_per_stream_setting: UpdateCustomRewardMaxPerUserPerStreamSetting,
+        /// The settings used to determine whether to apply a cooldown period between redemptions and the length of the cooldown.
+        #[serde(default)]
+        pub global_cooldown_setting: UpdateCustomRewardGlobalCooldownSetting,
+        /// A Boolean value that determines whether the reward is currently paused.
+        #[serde(default)]
+        pub is_paused: bool,
+        /// A Boolean value that determines whether the reward is currently in stock.
+        #[serde(default)]
+        pub is_in_stock: bool,
+        /// A Boolean value that determines whether redemptions should be set to FULFILLED status immediately when a reward is redeemed.
+        #[serde(default)]
+        pub should_redemptions_skip_request_queue: bool,
+        /// The number of redemptions redeemed during the current live stream.
+        #[serde(default)]
+        pub redemptions_redeemed_current_stream: i64,
+        /// The timestamp of when the cooldown period expires.
+        #[serde(default)]
+        pub cooldown_expires_at: String,
+    }
+
+    /// A set of custom images for the reward.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateCustomRewardImage {
+        /// The URL to a small version of the image.
+        #[serde(default)]
+        pub url_1x: String,
+        /// The URL to a medium version of the image.
+        #[serde(default)]
+        pub url_2x: String,
+        /// The URL to a large version of the image.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    /// A set of default images for the reward.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateCustomRewardDefaultImage {
+        /// The URL to a small version of the image.
+        #[serde(default)]
+        pub url_1x: String,
+        /// The URL to a medium version of the image.
+        #[serde(default)]
+        pub url_2x: String,
+        /// The URL to a large version of the image.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per live stream.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateCustomRewardMaxPerStreamSetting {
+        /// A Boolean value that determines whether the reward applies a limit on the number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The maximum number of redemptions allowed per live stream.
+        #[serde(default)]
+        pub max_per_stream: i64,
+    }
+
+    /// The settings used to determine whether to apply a maximum to the number of redemptions allowed per user per live stream.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateCustomRewardMaxPerUserPerStreamSetting {
+        /// A Boolean value that determines whether the reward applies a limit on the number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The maximum number of redemptions allowed per user per live stream.
+        #[serde(default)]
+        pub max_per_user_per_stream: i64,
+    }
+
+    /// The settings used to determine whether to apply a cooldown period between redemptions and the length of the cooldown.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateCustomRewardGlobalCooldownSetting {
+        /// A Boolean value that determines whether to apply a cooldown period.
+        #[serde(default)]
+        pub is_enabled: bool,
+        /// The cooldown period, in seconds.
+        #[serde(default)]
+        pub global_cooldown_seconds: i64,
+    }
+
+    impl UpdateCustomRewardResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates a redemption’s status.
     pub const CHANNEL_POINTS_UPDATE_REDEMPTION_STATUS: HelixEndpoint = HelixEndpoint {
@@ -379,9 +1610,81 @@ pub mod channel_points {
     };
     declare_generated_endpoint!(
         UpdateRedemptionStatusRequest,
-        UpdateRedemptionStatusResponse,
         CHANNEL_POINTS_UPDATE_REDEMPTION_STATUS
     );
+
+    /// Response body for the "Update Redemption Status" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateRedemptionStatusResponse {
+        /// The list contains the single redemption that you updated.
+        #[serde(default)]
+        pub data: Vec<UpdateRedemptionStatusItem>,
+    }
+
+    /// The list contains the single redemption that you updated.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateRedemptionStatusItem {
+        /// The ID that uniquely identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The ID that uniquely identifies this redemption..
+        #[serde(default)]
+        pub id: String,
+        /// The ID of the user that redeemed the reward.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// An object that describes the reward that the user redeemed.
+        #[serde(default)]
+        pub reward: UpdateRedemptionStatusReward,
+        /// The text that the user entered at the prompt when they redeemed the reward; otherwise, an empty string if user input was not required.
+        #[serde(default)]
+        pub user_input: String,
+        /// The state of the redemption.
+        #[serde(default)]
+        pub status: String,
+        /// The date and time of when the reward was redeemed, in RFC3339 format.
+        #[serde(default)]
+        pub redeemed_at: String,
+    }
+
+    /// An object that describes the reward that the user redeemed.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateRedemptionStatusReward {
+        /// The ID that uniquely identifies the reward.
+        #[serde(default)]
+        pub id: String,
+        /// The reward’s title.
+        #[serde(default)]
+        pub title: String,
+        /// The prompt displayed to the viewer if user input is required.
+        #[serde(default)]
+        pub prompt: String,
+        /// The reward’s cost, in Channel Points.
+        #[serde(default)]
+        pub cost: i64,
+    }
+
+    impl UpdateRedemptionStatusResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod charity {
@@ -400,11 +1703,88 @@ pub mod charity {
         scopes: &["channel:read:charity"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetCharityCampaignRequest,
-        GetCharityCampaignResponse,
-        CHARITY_GET_CHARITY_CAMPAIGN
-    );
+    declare_generated_endpoint!(GetCharityCampaignRequest, CHARITY_GET_CHARITY_CAMPAIGN);
+
+    /// Response body for the "Get Charity Campaign" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCharityCampaignResponse {
+        /// A list that contains the charity campaign that the broadcaster is currently running.
+        #[serde(default)]
+        pub data: Vec<GetCharityCampaignItem>,
+    }
+
+    /// A list that contains the charity campaign that the broadcaster is currently running.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCharityCampaignItem {
+        /// An ID that identifies the charity campaign.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the broadcaster that’s running the campaign.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The charity’s name.
+        #[serde(default)]
+        pub charity_name: String,
+        /// A description of the charity.
+        #[serde(default)]
+        pub charity_description: String,
+        /// A URL to an image of the charity’s logo.
+        #[serde(default)]
+        pub charity_logo: String,
+        /// A URL to the charity’s website.
+        #[serde(default)]
+        pub charity_website: String,
+        /// The current amount of donations that the campaign has received.
+        #[serde(default)]
+        pub current_amount: GetCharityCampaignCurrentAmount,
+        /// The campaign’s fundraising goal.
+        #[serde(default)]
+        pub target_amount: GetCharityCampaignTargetAmount,
+    }
+
+    /// The current amount of donations that the campaign has received.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCharityCampaignCurrentAmount {
+        /// The monetary amount.
+        #[serde(default)]
+        pub value: i64,
+        /// The number of decimal places used by the currency.
+        #[serde(default)]
+        pub decimal_places: i64,
+        /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+        #[serde(default)]
+        pub currency: String,
+    }
+
+    /// The campaign’s fundraising goal.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCharityCampaignTargetAmount {
+        /// The monetary amount.
+        #[serde(default)]
+        pub value: i64,
+        /// The number of decimal places used by the currency.
+        #[serde(default)]
+        pub decimal_places: i64,
+        /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+        #[serde(default)]
+        pub currency: String,
+    }
+
+    impl GetCharityCampaignResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the list of donations that users have made to the broadcaster’s active charity campaign.
     pub const CHARITY_GET_CHARITY_CAMPAIGN_DONATIONS: HelixEndpoint = HelixEndpoint {
@@ -421,9 +1801,66 @@ pub mod charity {
     };
     declare_generated_endpoint!(
         GetCharityCampaignDonationsRequest,
-        GetCharityCampaignDonationsResponse,
         CHARITY_GET_CHARITY_CAMPAIGN_DONATIONS
     );
+
+    /// Response body for the "Get Charity Campaign Donations" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCharityCampaignDonationsResponse {
+        /// A list that contains the donations that users have made to the broadcaster’s charity campaign.
+        #[serde(default)]
+        pub data: Vec<GetCharityCampaignDonationsItem>,
+        /// An object that contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// A list that contains the donations that users have made to the broadcaster’s charity campaign.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCharityCampaignDonationsItem {
+        /// An ID that identifies the donation.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the charity campaign that the donation applies to.
+        #[serde(default)]
+        pub campaign_id: String,
+        /// An ID that identifies a user that donated money to the campaign.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// An object that contains the amount of money that the user donated.
+        #[serde(default)]
+        pub amount: GetCharityCampaignDonationsAmount,
+    }
+
+    /// An object that contains the amount of money that the user donated.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCharityCampaignDonationsAmount {
+        /// The monetary amount.
+        #[serde(default)]
+        pub value: i64,
+        /// The number of decimal places used by the currency.
+        #[serde(default)]
+        pub decimal_places: i64,
+        /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+        #[serde(default)]
+        pub currency: String,
+    }
+
+    impl GetCharityCampaignDonationsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod chat {
@@ -442,7 +1879,45 @@ pub mod chat {
         scopes: &["moderator:read:chatters"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetChattersRequest, GetChattersResponse, CHAT_GET_CHATTERS);
+    declare_generated_endpoint!(GetChattersRequest, CHAT_GET_CHATTERS);
+
+    /// Response body for the "Get Chatters" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChattersResponse {
+        /// The list of users that are connected to the broadcaster’s chat room.
+        #[serde(default)]
+        pub data: Vec<GetChattersItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+        /// The total number of users that are connected to the broadcaster’s chat room.
+        #[serde(default)]
+        pub total: i64,
+    }
+
+    /// The list of users that are connected to the broadcaster’s chat room.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChattersItem {
+        /// The ID of a user that’s connected to the broadcaster’s chat room.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+    }
+
+    impl GetChattersResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the broadcaster’s list of custom emotes.
     pub const CHAT_GET_CHANNEL_EMOTES: HelixEndpoint = HelixEndpoint {
@@ -457,11 +1932,74 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetChannelEmotesRequest,
-        GetChannelEmotesResponse,
-        CHAT_GET_CHANNEL_EMOTES
-    );
+    declare_generated_endpoint!(GetChannelEmotesRequest, CHAT_GET_CHANNEL_EMOTES);
+
+    /// Response body for the "Get Channel Emotes" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelEmotesResponse {
+        /// The list of emotes that the specified broadcaster created.
+        #[serde(default)]
+        pub data: Vec<GetChannelEmotesItem>,
+        /// A templated URL.
+        #[serde(default)]
+        pub template: String,
+    }
+
+    /// The list of emotes that the specified broadcaster created.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelEmotesItem {
+        /// An ID that identifies this emote.
+        #[serde(default)]
+        pub id: String,
+        /// The name of the emote.
+        #[serde(default)]
+        pub name: String,
+        /// The image URLs for the emote.
+        #[serde(default)]
+        pub images: GetChannelEmotesImages,
+        /// The subscriber tier at which the emote is unlocked.
+        #[serde(default)]
+        pub tier: String,
+        /// The type of emote.
+        #[serde(default)]
+        pub emote_type: String,
+        /// An ID that identifies the emote set that the emote belongs to.
+        #[serde(default)]
+        pub emote_set_id: String,
+        /// The formats that the emote is available in.
+        #[serde(default)]
+        pub format: Vec<String>,
+        /// The sizes that the emote is available in.
+        #[serde(default)]
+        pub scale: Vec<String>,
+        /// The background themes that the emote is available in.
+        #[serde(default)]
+        pub theme_mode: Vec<String>,
+    }
+
+    /// The image URLs for the emote.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelEmotesImages {
+        /// A URL to the small version (28px x 28px) of the emote.
+        #[serde(default)]
+        pub url_1x: String,
+        /// A URL to the medium version (56px x 56px) of the emote.
+        #[serde(default)]
+        pub url_2x: String,
+        /// A URL to the large version (112px x 112px) of the emote.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    impl GetChannelEmotesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets all global emotes.
     pub const CHAT_GET_GLOBAL_EMOTES: HelixEndpoint = HelixEndpoint {
@@ -476,11 +2014,65 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetGlobalEmotesRequest,
-        GetGlobalEmotesResponse,
-        CHAT_GET_GLOBAL_EMOTES
-    );
+    declare_generated_endpoint!(GetGlobalEmotesRequest, CHAT_GET_GLOBAL_EMOTES);
+
+    /// Response body for the "Get Global Emotes" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGlobalEmotesResponse {
+        /// The list of global emotes.
+        #[serde(default)]
+        pub data: Vec<GetGlobalEmotesItem>,
+        /// A templated URL.
+        #[serde(default)]
+        pub template: String,
+    }
+
+    /// The list of global emotes.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGlobalEmotesItem {
+        /// An ID that identifies this emote.
+        #[serde(default)]
+        pub id: String,
+        /// The name of the emote.
+        #[serde(default)]
+        pub name: String,
+        /// The image URLs for the emote.
+        #[serde(default)]
+        pub images: GetGlobalEmotesImages,
+        /// The formats that the emote is available in.
+        #[serde(default)]
+        pub format: Vec<String>,
+        /// The sizes that the emote is available in.
+        #[serde(default)]
+        pub scale: Vec<String>,
+        /// The background themes that the emote is available in.
+        #[serde(default)]
+        pub theme_mode: Vec<String>,
+    }
+
+    /// The image URLs for the emote.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGlobalEmotesImages {
+        /// A URL to the small version (28px x 28px) of the emote.
+        #[serde(default)]
+        pub url_1x: String,
+        /// A URL to the medium version (56px x 56px) of the emote.
+        #[serde(default)]
+        pub url_2x: String,
+        /// A URL to the large version (112px x 112px) of the emote.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    impl GetGlobalEmotesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets emotes for one or more specified emote sets.
     pub const CHAT_GET_EMOTE_SETS: HelixEndpoint = HelixEndpoint {
@@ -495,11 +2087,74 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetEmoteSetsRequest,
-        GetEmoteSetsResponse,
-        CHAT_GET_EMOTE_SETS
-    );
+    declare_generated_endpoint!(GetEmoteSetsRequest, CHAT_GET_EMOTE_SETS);
+
+    /// Response body for the "Get Emote Sets" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetEmoteSetsResponse {
+        /// The list of emotes found in the specified emote sets.
+        #[serde(default)]
+        pub data: Vec<GetEmoteSetsItem>,
+        /// A templated URL.
+        #[serde(default)]
+        pub template: String,
+    }
+
+    /// The list of emotes found in the specified emote sets.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetEmoteSetsItem {
+        /// An ID that uniquely identifies this emote.
+        #[serde(default)]
+        pub id: String,
+        /// The name of the emote.
+        #[serde(default)]
+        pub name: String,
+        /// The image URLs for the emote.
+        #[serde(default)]
+        pub images: GetEmoteSetsImages,
+        /// The type of emote.
+        #[serde(default)]
+        pub emote_type: String,
+        /// An ID that identifies the emote set that the emote belongs to.
+        #[serde(default)]
+        pub emote_set_id: String,
+        /// The ID of the broadcaster who owns the emote.
+        #[serde(default)]
+        pub owner_id: String,
+        /// The formats that the emote is available in.
+        #[serde(default)]
+        pub format: Vec<String>,
+        /// The sizes that the emote is available in.
+        #[serde(default)]
+        pub scale: Vec<String>,
+        /// The background themes that the emote is available in.
+        #[serde(default)]
+        pub theme_mode: Vec<String>,
+    }
+
+    /// The image URLs for the emote.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetEmoteSetsImages {
+        /// A URL to the small version (28px x 28px) of the emote.
+        #[serde(default)]
+        pub url_1x: String,
+        /// A URL to the medium version (56px x 56px) of the emote.
+        #[serde(default)]
+        pub url_2x: String,
+        /// A URL to the large version (112px x 112px) of the emote.
+        #[serde(default)]
+        pub url_4x: String,
+    }
+
+    impl GetEmoteSetsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the broadcaster’s list of custom chat badges.
     pub const CHAT_GET_CHANNEL_CHAT_BADGES: HelixEndpoint = HelixEndpoint {
@@ -514,11 +2169,65 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetChannelChatBadgesRequest,
-        GetChannelChatBadgesResponse,
-        CHAT_GET_CHANNEL_CHAT_BADGES
-    );
+    declare_generated_endpoint!(GetChannelChatBadgesRequest, CHAT_GET_CHANNEL_CHAT_BADGES);
+
+    /// Response body for the "Get Channel Chat Badges" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelChatBadgesResponse {
+        /// The list of chat badges.
+        #[serde(default)]
+        pub data: Vec<GetChannelChatBadgesItem>,
+    }
+
+    /// The list of chat badges.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelChatBadgesItem {
+        /// An ID that identifies this set of chat badges.
+        #[serde(default)]
+        pub set_id: String,
+        /// The list of chat badges in this set.
+        #[serde(default)]
+        pub versions: Vec<GetChannelChatBadgesVersions>,
+    }
+
+    /// The list of chat badges in this set.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelChatBadgesVersions {
+        /// An ID that identifies this version of the badge.
+        #[serde(default)]
+        pub id: String,
+        /// A URL to the small version (18px x 18px) of the badge.
+        #[serde(default)]
+        pub image_url_1x: String,
+        /// A URL to the medium version (36px x 36px) of the badge.
+        #[serde(default)]
+        pub image_url_2x: String,
+        /// A URL to the large version (72px x 72px) of the badge.
+        #[serde(default)]
+        pub image_url_4x: String,
+        /// The title of the badge.
+        #[serde(default)]
+        pub title: String,
+        /// The description of the badge.
+        #[serde(default)]
+        pub description: String,
+        /// The action to take when clicking on the badge.
+        #[serde(default)]
+        pub click_action: String,
+        /// The URL to navigate to when clicking on the badge.
+        #[serde(default)]
+        pub click_url: String,
+    }
+
+    impl GetChannelChatBadgesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets Twitch’s list of chat badges.
     pub const CHAT_GET_GLOBAL_CHAT_BADGES: HelixEndpoint = HelixEndpoint {
@@ -533,11 +2242,65 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetGlobalChatBadgesRequest,
-        GetGlobalChatBadgesResponse,
-        CHAT_GET_GLOBAL_CHAT_BADGES
-    );
+    declare_generated_endpoint!(GetGlobalChatBadgesRequest, CHAT_GET_GLOBAL_CHAT_BADGES);
+
+    /// Response body for the "Get Global Chat Badges" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGlobalChatBadgesResponse {
+        /// The list of chat badges.
+        #[serde(default)]
+        pub data: Vec<GetGlobalChatBadgesItem>,
+    }
+
+    /// The list of chat badges.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGlobalChatBadgesItem {
+        /// An ID that identifies this set of chat badges.
+        #[serde(default)]
+        pub set_id: String,
+        /// The list of chat badges in this set.
+        #[serde(default)]
+        pub versions: Vec<GetGlobalChatBadgesVersions>,
+    }
+
+    /// The list of chat badges in this set.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGlobalChatBadgesVersions {
+        /// An ID that identifies this version of the badge.
+        #[serde(default)]
+        pub id: String,
+        /// A URL to the small version (18px x 18px) of the badge.
+        #[serde(default)]
+        pub image_url_1x: String,
+        /// A URL to the medium version (36px x 36px) of the badge.
+        #[serde(default)]
+        pub image_url_2x: String,
+        /// A URL to the large version (72px x 72px) of the badge.
+        #[serde(default)]
+        pub image_url_4x: String,
+        /// The title of the badge.
+        #[serde(default)]
+        pub title: String,
+        /// The description of the badge.
+        #[serde(default)]
+        pub description: String,
+        /// The action to take when clicking on the badge.
+        #[serde(default)]
+        pub click_action: String,
+        /// The URL to navigate to when clicking on the badge.
+        #[serde(default)]
+        pub click_url: String,
+    }
+
+    impl GetGlobalChatBadgesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the broadcaster’s chat settings.
     pub const CHAT_GET_CHAT_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -552,30 +2315,123 @@ pub mod chat {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetChatSettingsRequest,
-        GetChatSettingsResponse,
-        CHAT_GET_CHAT_SETTINGS
-    );
+    declare_generated_endpoint!(GetChatSettingsRequest, CHAT_GET_CHAT_SETTINGS);
 
-    /// NEW Retrieves the active shared chat session for a channel.
+    /// Response body for the "Get Chat Settings" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChatSettingsResponse {
+        /// The list of chat settings.
+        #[serde(default)]
+        pub data: Vec<GetChatSettingsItem>,
+    }
+
+    /// The list of chat settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChatSettingsItem {
+        /// The ID of the broadcaster specified in the request.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// A Boolean value that determines whether chat messages must contain only emotes.
+        #[serde(default)]
+        pub emote_mode: bool,
+        /// A Boolean value that determines whether the broadcaster restricts the chat room to followers only.
+        #[serde(default)]
+        pub follower_mode: bool,
+        /// The length of time, in minutes, that users must follow the broadcaster before being able to participate in the chat room.
+        #[serde(default)]
+        pub follower_mode_duration: i64,
+        /// The moderator’s ID.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// A Boolean value that determines whether the broadcaster adds a short delay before chat messages appear in the chat room.
+        #[serde(default)]
+        pub non_moderator_chat_delay: bool,
+        /// The amount of time, in seconds, that messages are delayed before appearing in chat.
+        #[serde(default)]
+        pub non_moderator_chat_delay_duration: i64,
+        /// A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
+        #[serde(default)]
+        pub slow_mode: bool,
+        /// The amount of time, in seconds, that users must wait between sending messages.
+        #[serde(default)]
+        pub slow_mode_wait_time: i64,
+        /// A Boolean value that determines whether only users that subscribe to the broadcaster’s channel may talk in the chat room.
+        #[serde(default)]
+        pub subscriber_mode: bool,
+        /// A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
+        #[serde(default)]
+        pub unique_chat_mode: bool,
+    }
+
+    impl GetChatSettingsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
+
+    /// Retrieves the active shared chat session for a channel.
     pub const CHAT_GET_SHARED_CHAT_SESSION: HelixEndpoint = HelixEndpoint {
         id: "chat_get_shared_chat_session",
         group: "Chat",
         name: "Get Shared Chat Session",
-        description: "NEW Retrieves the active shared chat session for a channel.",
-        stability: EndpointStability::New,
+        description: "Retrieves the active shared chat session for a channel.",
+        stability: EndpointStability::Ga,
         method: HttpMethod::Get,
         path: "/shared_chat/session",
         auth_kind: HelixAuthKind::Either,
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetSharedChatSessionRequest,
-        GetSharedChatSessionResponse,
-        CHAT_GET_SHARED_CHAT_SESSION
-    );
+    declare_generated_endpoint!(GetSharedChatSessionRequest, CHAT_GET_SHARED_CHAT_SESSION);
+
+    /// Response body for the "Get Shared Chat Session" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetSharedChatSessionResponse {
+        #[serde(default)]
+        pub data: Vec<GetSharedChatSessionItem>,
+    }
+
+    /// `data` object.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetSharedChatSessionItem {
+        /// The unique identifier for the shared chat session.
+        #[serde(default)]
+        pub session_id: String,
+        /// The User ID of the host channel.
+        #[serde(default)]
+        pub host_broadcaster_id: String,
+        /// The list of participants in the session.
+        #[serde(default)]
+        pub participants: Vec<GetSharedChatSessionParticipants>,
+        /// The UTC date and time (in RFC3339 format) for when the session was created.
+        #[serde(default)]
+        pub created_at: String,
+        /// The UTC date and time (in RFC3339 format) for when the session was last updated.
+        #[serde(default)]
+        pub updated_at: String,
+    }
+
+    /// The list of participants in the session.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetSharedChatSessionParticipants {
+        /// The User ID of the participant channel.
+        #[serde(default)]
+        pub broadcaster_id: String,
+    }
+
+    impl GetSharedChatSessionResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Retrieves emotes available to the user across all channels.
     pub const CHAT_GET_USER_EMOTES: HelixEndpoint = HelixEndpoint {
@@ -590,11 +2446,59 @@ pub mod chat {
         scopes: &["user:read:emotes"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetUserEmotesRequest,
-        GetUserEmotesResponse,
-        CHAT_GET_USER_EMOTES
-    );
+    declare_generated_endpoint!(GetUserEmotesRequest, CHAT_GET_USER_EMOTES);
+
+    /// Response body for the "Get User Emotes" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserEmotesResponse {
+        #[serde(default)]
+        pub data: Vec<GetUserEmotesItem>,
+        /// A templated URL.
+        #[serde(default)]
+        pub template: String,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// `data` object.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserEmotesItem {
+        /// An ID that uniquely identifies this emote.
+        #[serde(default)]
+        pub id: String,
+        /// The case-sensitive name of the emote.
+        #[serde(default)]
+        pub name: String,
+        /// The type of emote.
+        #[serde(default)]
+        pub emote_type: String,
+        /// An ID that identifies the emote set that the emote belongs to.
+        #[serde(default)]
+        pub emote_set_id: String,
+        /// The ID of the broadcaster who owns the emote.
+        #[serde(default)]
+        pub owner_id: String,
+        /// The formats that the emote is available in.
+        #[serde(default)]
+        pub format: Vec<String>,
+        /// The sizes that the emote is available in.
+        #[serde(default)]
+        pub scale: Vec<String>,
+        /// The background themes that the emote is available in.
+        #[serde(default)]
+        pub theme_mode: Vec<String>,
+    }
+
+    impl GetUserEmotesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates the broadcaster’s chat settings.
     pub const CHAT_UPDATE_CHAT_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -609,11 +2513,63 @@ pub mod chat {
         scopes: &["moderator:manage:chat_settings"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        UpdateChatSettingsRequest,
-        UpdateChatSettingsResponse,
-        CHAT_UPDATE_CHAT_SETTINGS
-    );
+    declare_generated_endpoint!(UpdateChatSettingsRequest, CHAT_UPDATE_CHAT_SETTINGS);
+
+    /// Response body for the "Update Chat Settings" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateChatSettingsResponse {
+        /// The list of chat settings.
+        #[serde(default)]
+        pub data: Vec<UpdateChatSettingsItem>,
+    }
+
+    /// The list of chat settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateChatSettingsItem {
+        /// The ID of the broadcaster specified in the request.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// A Boolean value that determines whether chat messages must contain only emotes.
+        #[serde(default)]
+        pub emote_mode: bool,
+        /// A Boolean value that determines whether the broadcaster restricts the chat room to followers only.
+        #[serde(default)]
+        pub follower_mode: bool,
+        /// The length of time, in minutes, that users must follow the broadcaster before being able to participate in the chat room.
+        #[serde(default)]
+        pub follower_mode_duration: i64,
+        /// The moderator’s ID.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// A Boolean value that determines whether the broadcaster adds a short delay before chat messages appear in the chat room.
+        #[serde(default)]
+        pub non_moderator_chat_delay: bool,
+        /// The amount of time, in seconds, that messages are delayed before appearing in chat.
+        #[serde(default)]
+        pub non_moderator_chat_delay_duration: i64,
+        /// A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
+        #[serde(default)]
+        pub slow_mode: bool,
+        /// The amount of time, in seconds, that users must wait between sending messages.
+        #[serde(default)]
+        pub slow_mode_wait_time: i64,
+        /// A Boolean value that determines whether only users that subscribe to the broadcaster’s channel may talk in the chat room.
+        #[serde(default)]
+        pub subscriber_mode: bool,
+        /// A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
+        #[serde(default)]
+        pub unique_chat_mode: bool,
+    }
+
+    impl UpdateChatSettingsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Sends an announcement to the broadcaster’s chat room.
     pub const CHAT_SEND_CHAT_ANNOUNCEMENT: HelixEndpoint = HelixEndpoint {
@@ -628,11 +2584,22 @@ pub mod chat {
         scopes: &["channel:bot", "moderator:manage:announcements", "user:bot"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        SendChatAnnouncementRequest,
-        SendChatAnnouncementResponse,
-        CHAT_SEND_CHAT_ANNOUNCEMENT
-    );
+    declare_generated_endpoint!(SendChatAnnouncementRequest, CHAT_SEND_CHAT_ANNOUNCEMENT);
+
+    /// Response for the "Send Chat Announcement" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct SendChatAnnouncementResponse;
+
+    impl SendChatAnnouncementResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Sends a Shoutout to the specified broadcaster.
     pub const CHAT_SEND_A_SHOUTOUT: HelixEndpoint = HelixEndpoint {
@@ -647,11 +2614,22 @@ pub mod chat {
         scopes: &["channel:bot", "moderator:manage:shoutouts", "user:bot"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        SendAShoutoutRequest,
-        SendAShoutoutResponse,
-        CHAT_SEND_A_SHOUTOUT
-    );
+    declare_generated_endpoint!(SendAShoutoutRequest, CHAT_SEND_A_SHOUTOUT);
+
+    /// Response for the "Send a Shoutout" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct SendAShoutoutResponse;
+
+    impl SendAShoutoutResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Sends a message to the broadcaster’s chat room.
     pub const CHAT_SEND_CHAT_MESSAGE: HelixEndpoint = HelixEndpoint {
@@ -666,11 +2644,297 @@ pub mod chat {
         scopes: &["channel:bot", "user:bot", "user:write:chat"],
         supports_pagination: true,
     };
+    declare_generated_endpoint!(SendChatMessageRequest, CHAT_SEND_CHAT_MESSAGE);
+
+    /// Response body for the "Send Chat Message" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct SendChatMessageResponse {
+        #[serde(default)]
+        pub data: Vec<SendChatMessageItem>,
+    }
+
+    /// `data` object.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct SendChatMessageItem {
+        /// The message id for the message that was sent.
+        #[serde(default)]
+        pub message_id: String,
+        /// If the message passed all checks and was sent.
+        #[serde(default)]
+        pub is_sent: bool,
+        /// The reason the message was dropped, if any.
+        #[serde(default)]
+        pub drop_reason: SendChatMessageDropReason,
+    }
+
+    /// The reason the message was dropped, if any.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct SendChatMessageDropReason {
+        /// Code for why the message was dropped.
+        #[serde(default)]
+        pub code: String,
+        /// Message for why the message was dropped.
+        #[serde(default)]
+        pub message: String,
+    }
+
+    impl SendChatMessageResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
+
+    /// NEW Gets the currently pinned message for the broadcaster’s chat room.
+    pub const CHAT_GET_PINNED_CHAT_MESSAGE: HelixEndpoint = HelixEndpoint {
+        id: "chat_get_pinned_chat_message",
+        group: "Chat",
+        name: "Get Pinned Chat Message",
+        description: "NEW Gets the currently pinned message for the broadcaster’s chat room.",
+        stability: EndpointStability::New,
+        method: HttpMethod::Get,
+        path: "/chat/pins",
+        auth_kind: HelixAuthKind::Either,
+        scopes: &[
+            "channel:bot",
+            "moderator:manage:chat_messages",
+            "moderator:read:chat_messages",
+            "user:bot",
+        ],
+        supports_pagination: false,
+    };
+    declare_generated_endpoint!(GetPinnedChatMessageRequest, CHAT_GET_PINNED_CHAT_MESSAGE);
+
+    /// Response body for the "Get Pinned Chat Message" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPinnedChatMessageResponse {
+        /// Pinned messages.
+        #[serde(default)]
+        pub data: Vec<GetPinnedChatMessageItem>,
+    }
+
+    /// Pinned messages.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPinnedChatMessageItem {
+        /// The ID of the pinned chat message.
+        #[serde(default)]
+        pub message_id: String,
+        /// The ID of the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The ID of the user who sent the pinned message.
+        #[serde(default)]
+        pub sender_user_id: String,
+        /// The login of the user who sent the pinned message.
+        #[serde(default)]
+        pub sender_user_login: String,
+        /// The display name of the user who sent the pinned message.
+        #[serde(default)]
+        pub sender_user_name: String,
+        /// The ID of the user who pinned the message.
+        #[serde(default)]
+        pub pinned_by_user_id: String,
+        /// The login of the user who pinned the message.
+        #[serde(default)]
+        pub pinned_by_user_login: String,
+        /// The display name of the user who pinned the message.
+        #[serde(default)]
+        pub pinned_by_user_name: String,
+        /// The pinned message content.
+        #[serde(default)]
+        pub message: GetPinnedChatMessageMessage,
+        /// RFC3339 timestamp of when the message was pinned.
+        #[serde(default)]
+        pub starts_at: String,
+        /// RFC3339 expiry timestamp.
+        #[serde(default)]
+        pub ends_at: String,
+        /// RFC3339 timestamp of last update.
+        #[serde(default)]
+        pub updated_at: String,
+    }
+
+    /// The pinned message content.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPinnedChatMessageMessage {
+        /// Plain text of the message.
+        #[serde(default)]
+        pub text: String,
+        /// Ordered list of message fragments.
+        #[serde(default)]
+        pub fragments: Vec<GetPinnedChatMessageMessageFragments>,
+    }
+
+    /// Ordered list of message fragments.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPinnedChatMessageMessageFragments {
+        /// The fragment type.
+        #[serde(default)]
+        pub r#type: String,
+        /// Fragment text.
+        #[serde(default)]
+        pub text: String,
+        /// Cheermote metadata.
+        #[serde(default)]
+        pub cheermote: GetPinnedChatMessageMessageFragmentsCheermote,
+        /// Emote metadata.
+        #[serde(default)]
+        pub emote: GetPinnedChatMessageMessageFragmentsEmote,
+        /// Mention metadata.
+        #[serde(default)]
+        pub mention: GetPinnedChatMessageMessageFragmentsMention,
+    }
+
+    /// Cheermote metadata.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPinnedChatMessageMessageFragmentsCheermote {
+        /// The cheermote prefix.
+        #[serde(default)]
+        pub prefix: String,
+        /// The number of bits cheered.
+        #[serde(default)]
+        pub bits: i64,
+        /// The cheermote tier.
+        #[serde(default)]
+        pub tier: i64,
+    }
+
+    /// Emote metadata.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPinnedChatMessageMessageFragmentsEmote {
+        /// The emote ID.
+        #[serde(default)]
+        pub id: String,
+        /// The emote set ID.
+        #[serde(default)]
+        pub emote_set_id: String,
+        /// The ID of the emote owner.
+        #[serde(default)]
+        pub owner_id: String,
+        /// The emote formats available.
+        #[serde(default)]
+        pub format: Vec<String>,
+    }
+
+    /// Mention metadata.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPinnedChatMessageMessageFragmentsMention {
+        /// The mentioned user’s ID.
+        #[serde(default)]
+        pub user_id: String,
+        /// The mentioned user’s login.
+        #[serde(default)]
+        pub user_login: String,
+        /// The mentioned user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+    }
+
+    impl GetPinnedChatMessageResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
+
+    /// NEW Pins a chat message to the specified broadcaster’s chat room.
+    pub const CHAT_PIN_CHAT_MESSAGE: HelixEndpoint = HelixEndpoint {
+        id: "chat_pin_chat_message",
+        group: "Chat",
+        name: "Pin Chat Message",
+        description: "NEW Pins a chat message to the specified broadcaster’s chat room.",
+        stability: EndpointStability::New,
+        method: HttpMethod::Put,
+        path: "/chat/pins",
+        auth_kind: HelixAuthKind::Either,
+        scopes: &["channel:bot", "moderator:manage:chat_messages", "user:bot"],
+        supports_pagination: false,
+    };
+    declare_generated_endpoint!(PinChatMessageRequest, CHAT_PIN_CHAT_MESSAGE);
+
+    /// Response for the "Pin Chat Message" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct PinChatMessageResponse;
+
+    impl PinChatMessageResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
+
+    /// NEW Updates the duration of a pinned chat message.
+    pub const CHAT_UPDATE_PINNED_CHAT_MESSAGE: HelixEndpoint = HelixEndpoint {
+        id: "chat_update_pinned_chat_message",
+        group: "Chat",
+        name: "Update Pinned Chat Message",
+        description: "NEW Updates the duration of a pinned chat message.",
+        stability: EndpointStability::New,
+        method: HttpMethod::Patch,
+        path: "/chat/pins",
+        auth_kind: HelixAuthKind::Either,
+        scopes: &["channel:bot", "moderator:manage:chat_messages", "user:bot"],
+        supports_pagination: false,
+    };
     declare_generated_endpoint!(
-        SendChatMessageRequest,
-        SendChatMessageResponse,
-        CHAT_SEND_CHAT_MESSAGE
+        UpdatePinnedChatMessageRequest,
+        CHAT_UPDATE_PINNED_CHAT_MESSAGE
     );
+
+    /// Response for the "Update Pinned Chat Message" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct UpdatePinnedChatMessageResponse;
+
+    impl UpdatePinnedChatMessageResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
+
+    /// NEW Unpins a pinned chat message from the broadcaster’s chat room.
+    pub const CHAT_UNPIN_CHAT_MESSAGE: HelixEndpoint = HelixEndpoint {
+        id: "chat_unpin_chat_message",
+        group: "Chat",
+        name: "Unpin Chat Message",
+        description: "NEW Unpins a pinned chat message from the broadcaster’s chat room.",
+        stability: EndpointStability::New,
+        method: HttpMethod::Delete,
+        path: "/chat/pins",
+        auth_kind: HelixAuthKind::Either,
+        scopes: &["channel:bot", "moderator:manage:chat_messages", "user:bot"],
+        supports_pagination: false,
+    };
+    declare_generated_endpoint!(UnpinChatMessageRequest, CHAT_UNPIN_CHAT_MESSAGE);
+
+    /// Response for the "Unpin Chat Message" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct UnpinChatMessageResponse;
+
+    impl UnpinChatMessageResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets the color used for the user’s name in chat.
     pub const CHAT_GET_USER_CHAT_COLOR: HelixEndpoint = HelixEndpoint {
@@ -685,11 +2949,42 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetUserChatColorRequest,
-        GetUserChatColorResponse,
-        CHAT_GET_USER_CHAT_COLOR
-    );
+    declare_generated_endpoint!(GetUserChatColorRequest, CHAT_GET_USER_CHAT_COLOR);
+
+    /// Response body for the "Get User Chat Color" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserChatColorResponse {
+        /// The list of users and the color code they use for their name.
+        #[serde(default)]
+        pub data: Vec<GetUserChatColorItem>,
+    }
+
+    /// The list of users and the color code they use for their name.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserChatColorItem {
+        /// An ID that uniquely identifies the user.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The Hex color code that the user uses in chat for their name.
+        #[serde(default)]
+        pub color: String,
+    }
+
+    impl GetUserChatColorResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates the color used for the user’s name in chat.
     pub const CHAT_UPDATE_USER_CHAT_COLOR: HelixEndpoint = HelixEndpoint {
@@ -704,11 +2999,22 @@ pub mod chat {
         scopes: &["user:manage:chat_color"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        UpdateUserChatColorRequest,
-        UpdateUserChatColorResponse,
-        CHAT_UPDATE_USER_CHAT_COLOR
-    );
+    declare_generated_endpoint!(UpdateUserChatColorRequest, CHAT_UPDATE_USER_CHAT_COLOR);
+
+    /// Response for the "Update User Chat Color" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct UpdateUserChatColorResponse;
+
+    impl UpdateUserChatColorResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 }
 
 pub mod clips {
@@ -727,7 +3033,36 @@ pub mod clips {
         scopes: &["clips:edit"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(CreateClipRequest, CreateClipResponse, CLIPS_CREATE_CLIP);
+    declare_generated_endpoint!(CreateClipRequest, CLIPS_CREATE_CLIP);
+
+    /// Response body for the "Create Clip" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateClipResponse {
+        /// A list containing the created clip.
+        #[serde(default)]
+        pub data: Vec<CreateClipItem>,
+    }
+
+    /// A list containing the created clip.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateClipItem {
+        /// An ID that uniquely identifies the clip.
+        #[serde(default)]
+        pub id: String,
+        /// A URL that you can use to edit the clip’s title, identify the part of the clip to publish, and publish the clip.
+        #[serde(default)]
+        pub edit_url: String,
+    }
+
+    impl CreateClipResponse {
+        pub const EXPECTED_STATUS: u16 = 202;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// NEW Creates a clip from the broadcaster’s VOD.
     pub const CLIPS_CREATE_CLIP_FROM_VOD: HelixEndpoint = HelixEndpoint {
@@ -742,11 +3077,36 @@ pub mod clips {
         scopes: &["channel:manage:clips", "editor:manage:clips"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        CreateClipFromVodRequest,
-        CreateClipFromVodResponse,
-        CLIPS_CREATE_CLIP_FROM_VOD
-    );
+    declare_generated_endpoint!(CreateClipFromVodRequest, CLIPS_CREATE_CLIP_FROM_VOD);
+
+    /// Response body for the "Create Clip From VOD" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateClipFromVodResponse {
+        /// A list containing the created clip.
+        #[serde(default)]
+        pub data: Vec<CreateClipFromVodItem>,
+    }
+
+    /// A list containing the created clip.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateClipFromVodItem {
+        /// An ID that uniquely identifies the clip.
+        #[serde(default)]
+        pub id: String,
+        /// A URL you can use to edit the clip’s title, feature the clip, create a portrait version of the clip, download the clip media, and share the clip directly to third-party platforms.
+        #[serde(default)]
+        pub edit_url: String,
+    }
+
+    impl CreateClipFromVodResponse {
+        pub const EXPECTED_STATUS: u16 = 202;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets one or more video clips.
     pub const CLIPS_GET_CLIPS: HelixEndpoint = HelixEndpoint {
@@ -761,7 +3121,84 @@ pub mod clips {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetClipsRequest, GetClipsResponse, CLIPS_GET_CLIPS);
+    declare_generated_endpoint!(GetClipsRequest, CLIPS_GET_CLIPS);
+
+    /// Response body for the "Get Clips" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetClipsResponse {
+        /// The list of video clips.
+        #[serde(default)]
+        pub data: Vec<GetClipsItem>,
+        /// The information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of video clips.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetClipsItem {
+        /// An ID that uniquely identifies the clip.
+        #[serde(default)]
+        pub id: String,
+        /// A URL to the clip.
+        #[serde(default)]
+        pub url: String,
+        /// A URL that you can use in an iframe to embed the clip (see Embedding Video and Clips).
+        #[serde(default)]
+        pub embed_url: String,
+        /// An ID that identifies the broadcaster that the video was clipped from.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// An ID that identifies the user that created the clip.
+        #[serde(default)]
+        pub creator_id: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub creator_name: String,
+        /// An ID that identifies the video that the clip came from.
+        #[serde(default)]
+        pub video_id: String,
+        /// The ID of the game that was being played when the clip was created.
+        #[serde(default)]
+        pub game_id: String,
+        /// The ISO 639-1 two-letter language code that the broadcaster broadcasts in.
+        #[serde(default)]
+        pub language: String,
+        /// The title of the clip.
+        #[serde(default)]
+        pub title: String,
+        /// The number of times the clip has been viewed.
+        #[serde(default)]
+        pub view_count: i64,
+        /// The date and time of when the clip was created.
+        #[serde(default)]
+        pub created_at: String,
+        /// A URL to a thumbnail image of the clip.
+        #[serde(default)]
+        pub thumbnail_url: String,
+        /// The length of the clip, in seconds.
+        #[serde(default)]
+        pub duration: f64,
+        /// The zero-based offset, in seconds, to where the clip starts in the video (VOD).
+        #[serde(default)]
+        pub vod_offset: i64,
+        /// A Boolean value that indicates if the clip is featured or not.
+        #[serde(default)]
+        pub is_featured: bool,
+    }
+
+    impl GetClipsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// NEW Provides URLs to download the video file(s) for the specified clips.
     pub const CLIPS_GET_CLIPS_DOWNLOAD: HelixEndpoint = HelixEndpoint {
@@ -776,11 +3213,39 @@ pub mod clips {
         scopes: &["channel:manage:clips", "editor:manage:clips"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetClipsDownloadRequest,
-        GetClipsDownloadResponse,
-        CLIPS_GET_CLIPS_DOWNLOAD
-    );
+    declare_generated_endpoint!(GetClipsDownloadRequest, CLIPS_GET_CLIPS_DOWNLOAD);
+
+    /// Response body for the "Get Clips Download" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetClipsDownloadResponse {
+        /// List of clips and their download URLs.
+        #[serde(default)]
+        pub data: Vec<GetClipsDownloadItem>,
+    }
+
+    /// List of clips and their download URLs.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetClipsDownloadItem {
+        /// An ID that uniquely identifies the clip.
+        #[serde(default)]
+        pub clip_id: String,
+        /// The landscape URL to download the clip.
+        #[serde(default)]
+        pub landscape_download_url: String,
+        /// The portrait URL to download the clip.
+        #[serde(default)]
+        pub portrait_download_url: String,
+    }
+
+    impl GetClipsDownloadResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod conduits {
@@ -799,11 +3264,36 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetConduitsRequest,
-        GetConduitsResponse,
-        CONDUITS_GET_CONDUITS
-    );
+    declare_generated_endpoint!(GetConduitsRequest, CONDUITS_GET_CONDUITS);
+
+    /// Response body for the "Get Conduits" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetConduitsResponse {
+        /// List of information about the client’s conduits.
+        #[serde(default)]
+        pub data: Vec<GetConduitsItem>,
+    }
+
+    /// List of information about the client’s conduits.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetConduitsItem {
+        /// Conduit ID.
+        #[serde(default)]
+        pub id: String,
+        /// Number of shards associated with this conduit.
+        #[serde(default)]
+        pub shard_count: i64,
+    }
+
+    impl GetConduitsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Creates a new conduit.
     pub const CONDUITS_CREATE_CONDUITS: HelixEndpoint = HelixEndpoint {
@@ -818,11 +3308,36 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        CreateConduitsRequest,
-        CreateConduitsResponse,
-        CONDUITS_CREATE_CONDUITS
-    );
+    declare_generated_endpoint!(CreateConduitsRequest, CONDUITS_CREATE_CONDUITS);
+
+    /// Response body for the "Create Conduits" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateConduitsResponse {
+        /// List of information about the client’s conduits.
+        #[serde(default)]
+        pub data: Vec<CreateConduitsItem>,
+    }
+
+    /// List of information about the client’s conduits.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateConduitsItem {
+        /// Conduit ID.
+        #[serde(default)]
+        pub id: String,
+        /// Number of shards created for this conduit.
+        #[serde(default)]
+        pub shard_count: i64,
+    }
+
+    impl CreateConduitsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates a conduit’s shard count.
     pub const CONDUITS_UPDATE_CONDUITS: HelixEndpoint = HelixEndpoint {
@@ -837,11 +3352,36 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        UpdateConduitsRequest,
-        UpdateConduitsResponse,
-        CONDUITS_UPDATE_CONDUITS
-    );
+    declare_generated_endpoint!(UpdateConduitsRequest, CONDUITS_UPDATE_CONDUITS);
+
+    /// Response body for the "Update Conduits" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateConduitsResponse {
+        /// List of information about the client’s conduits.
+        #[serde(default)]
+        pub data: Vec<UpdateConduitsItem>,
+    }
+
+    /// List of information about the client’s conduits.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateConduitsItem {
+        /// Conduit ID.
+        #[serde(default)]
+        pub id: String,
+        /// Number of shards associated with this conduit after the update.
+        #[serde(default)]
+        pub shard_count: i64,
+    }
+
+    impl UpdateConduitsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Deletes a specified conduit.
     pub const CONDUITS_DELETE_CONDUIT: HelixEndpoint = HelixEndpoint {
@@ -856,11 +3396,22 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        DeleteConduitRequest,
-        DeleteConduitResponse,
-        CONDUITS_DELETE_CONDUIT
-    );
+    declare_generated_endpoint!(DeleteConduitRequest, CONDUITS_DELETE_CONDUIT);
+
+    /// Response for the "Delete Conduit" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct DeleteConduitResponse;
+
+    impl DeleteConduitResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets a lists of all shards for a conduit.
     pub const CONDUITS_GET_CONDUIT_SHARDS: HelixEndpoint = HelixEndpoint {
@@ -875,11 +3426,62 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetConduitShardsRequest,
-        GetConduitShardsResponse,
-        CONDUITS_GET_CONDUIT_SHARDS
-    );
+    declare_generated_endpoint!(GetConduitShardsRequest, CONDUITS_GET_CONDUIT_SHARDS);
+
+    /// Response body for the "Get Conduit Shards" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetConduitShardsResponse {
+        /// List of information about a conduit's shards.
+        #[serde(default)]
+        pub data: Vec<GetConduitShardsItem>,
+        /// Contains information used to page through a list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// List of information about a conduit's shards.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetConduitShardsItem {
+        /// Shard ID.
+        #[serde(default)]
+        pub id: String,
+        /// The shard status.
+        #[serde(default)]
+        pub status: String,
+        /// The transport details used to send the notifications.
+        #[serde(default)]
+        pub transport: GetConduitShardsTransport,
+    }
+
+    /// The transport details used to send the notifications.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetConduitShardsTransport {
+        /// The transport method.
+        #[serde(default)]
+        pub method: String,
+        /// The callback URL where the notifications are sent.
+        #[serde(default)]
+        pub callback: String,
+        /// An ID that identifies the WebSocket that notifications are sent to.
+        #[serde(default)]
+        pub session_id: String,
+        /// The UTC date and time that the WebSocket connection was established.
+        #[serde(default)]
+        pub connected_at: String,
+        /// The UTC date and time that the WebSocket connection was lost.
+        #[serde(default)]
+        pub disconnected_at: String,
+    }
+
+    impl GetConduitShardsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates shard(s) for a conduit.
     pub const CONDUITS_UPDATE_CONDUIT_SHARDS: HelixEndpoint = HelixEndpoint {
@@ -894,11 +3496,76 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        UpdateConduitShardsRequest,
-        UpdateConduitShardsResponse,
-        CONDUITS_UPDATE_CONDUIT_SHARDS
-    );
+    declare_generated_endpoint!(UpdateConduitShardsRequest, CONDUITS_UPDATE_CONDUIT_SHARDS);
+
+    /// Response body for the "Update Conduit Shards" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateConduitShardsResponse {
+        /// List of successful shard updates.
+        #[serde(default)]
+        pub data: Vec<UpdateConduitShardsItem>,
+        /// List of unsuccessful updates.
+        #[serde(default)]
+        pub errors: Vec<UpdateConduitShardsErrors>,
+    }
+
+    /// List of successful shard updates.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateConduitShardsItem {
+        /// Shard ID.
+        #[serde(default)]
+        pub id: String,
+        /// The shard status.
+        #[serde(default)]
+        pub status: String,
+        /// The transport details used to send the notifications.
+        #[serde(default)]
+        pub transport: UpdateConduitShardsTransport,
+    }
+
+    /// The transport details used to send the notifications.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateConduitShardsTransport {
+        /// The transport method.
+        #[serde(default)]
+        pub method: String,
+        /// The callback URL where the notifications are sent.
+        #[serde(default)]
+        pub callback: String,
+        /// An ID that identifies the WebSocket that notifications are sent to.
+        #[serde(default)]
+        pub session_id: String,
+        /// The UTC date and time that the WebSocket connection was established.
+        #[serde(default)]
+        pub connected_at: String,
+        /// The UTC date and time that the WebSocket connection was lost.
+        #[serde(default)]
+        pub disconnected_at: String,
+    }
+
+    /// List of unsuccessful updates.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateConduitShardsErrors {
+        /// Shard ID.
+        #[serde(default)]
+        pub id: String,
+        /// The error that occurred while updating the shard.
+        #[serde(default)]
+        pub message: String,
+        /// Error codes used to represent a specific error condition while attempting to update shards.
+        #[serde(default)]
+        pub code: String,
+    }
+
+    impl UpdateConduitShardsResponse {
+        pub const EXPECTED_STATUS: u16 = 202;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod ccls {
@@ -919,9 +3586,40 @@ pub mod ccls {
     };
     declare_generated_endpoint!(
         GetContentClassificationLabelsRequest,
-        GetContentClassificationLabelsResponse,
         CCLS_GET_CONTENT_CLASSIFICATION_LABELS
     );
+
+    /// Response body for the "Get Content Classification Labels" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetContentClassificationLabelsResponse {
+        /// A list that contains information about the available content classification labels.
+        #[serde(default)]
+        pub data: Vec<GetContentClassificationLabelsItem>,
+    }
+
+    /// A list that contains information about the available content classification labels.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetContentClassificationLabelsItem {
+        /// Unique identifier for the CCL.
+        #[serde(default)]
+        pub id: String,
+        /// Localized description of the CCL.
+        #[serde(default)]
+        pub description: String,
+        /// Localized name of the CCL.
+        #[serde(default)]
+        pub name: String,
+    }
+
+    impl GetContentClassificationLabelsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod entitlements {
@@ -942,9 +3640,55 @@ pub mod entitlements {
     };
     declare_generated_endpoint!(
         GetDropsEntitlementsRequest,
-        GetDropsEntitlementsResponse,
         ENTITLEMENTS_GET_DROPS_ENTITLEMENTS
     );
+
+    /// Response body for the "Get Drops Entitlements" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetDropsEntitlementsResponse {
+        /// The list of entitlements.
+        #[serde(default)]
+        pub data: Vec<GetDropsEntitlementsItem>,
+        /// The information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of entitlements.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetDropsEntitlementsItem {
+        /// An ID that identifies the entitlement.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the benefit (reward).
+        #[serde(default)]
+        pub benefit_id: String,
+        /// The UTC date and time (in RFC3339 format) of when the entitlement was granted.
+        #[serde(default)]
+        pub timestamp: String,
+        /// An ID that identifies the user who was granted the entitlement.
+        #[serde(default)]
+        pub user_id: String,
+        /// An ID that identifies the game the user was playing when the reward was entitled.
+        #[serde(default)]
+        pub game_id: String,
+        /// The entitlement’s fulfillment status.
+        #[serde(default)]
+        pub fulfillment_status: String,
+        /// The UTC date and time (in RFC3339 format) of when the entitlement was last updated.
+        #[serde(default)]
+        pub last_updated: String,
+    }
+
+    impl GetDropsEntitlementsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates the Drop entitlement’s fulfillment status.
     pub const ENTITLEMENTS_UPDATE_DROPS_ENTITLEMENTS: HelixEndpoint = HelixEndpoint {
@@ -961,9 +3705,37 @@ pub mod entitlements {
     };
     declare_generated_endpoint!(
         UpdateDropsEntitlementsRequest,
-        UpdateDropsEntitlementsResponse,
         ENTITLEMENTS_UPDATE_DROPS_ENTITLEMENTS
     );
+
+    /// Response body for the "Update Drops Entitlements" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateDropsEntitlementsResponse {
+        /// A list that indicates which entitlements were successfully updated and those that weren’t.
+        #[serde(default)]
+        pub data: Vec<UpdateDropsEntitlementsItem>,
+    }
+
+    /// A list that indicates which entitlements were successfully updated and those that weren’t.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateDropsEntitlementsItem {
+        /// A string that indicates whether the status of the entitlements in the ids field were successfully updated.
+        #[serde(default)]
+        pub status: String,
+        /// The list of entitlements that the status in the status field applies to.
+        #[serde(default)]
+        pub ids: Vec<String>,
+    }
+
+    impl UpdateDropsEntitlementsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod extensions {
@@ -984,9 +3756,43 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         GetExtensionConfigurationSegmentRequest,
-        GetExtensionConfigurationSegmentResponse,
         EXTENSIONS_GET_EXTENSION_CONFIGURATION_SEGMENT
     );
+
+    /// Response body for the "Get Extension Configuration Segment" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionConfigurationSegmentResponse {
+        /// The list of requested configuration segments.
+        #[serde(default)]
+        pub data: Vec<GetExtensionConfigurationSegmentItem>,
+    }
+
+    /// The list of requested configuration segments.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionConfigurationSegmentItem {
+        /// The type of segment.
+        #[serde(default)]
+        pub segment: String,
+        /// The ID of the broadcaster that installed the extension.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The contents of the segment.
+        #[serde(default)]
+        pub content: String,
+        /// The version number that identifies this definition of the segment’s data.
+        #[serde(default)]
+        pub version: String,
+    }
+
+    impl GetExtensionConfigurationSegmentResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates a configuration segment.
     pub const EXTENSIONS_SET_EXTENSION_CONFIGURATION_SEGMENT: HelixEndpoint = HelixEndpoint {
@@ -1003,9 +3809,23 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         SetExtensionConfigurationSegmentRequest,
-        SetExtensionConfigurationSegmentResponse,
         EXTENSIONS_SET_EXTENSION_CONFIGURATION_SEGMENT
     );
+
+    /// Response for the "Set Extension Configuration Segment" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct SetExtensionConfigurationSegmentResponse;
+
+    impl SetExtensionConfigurationSegmentResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Updates the extension’s required_configuration string.
     pub const EXTENSIONS_SET_EXTENSION_REQUIRED_CONFIGURATION: HelixEndpoint = HelixEndpoint {
@@ -1022,9 +3842,23 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         SetExtensionRequiredConfigurationRequest,
-        SetExtensionRequiredConfigurationResponse,
         EXTENSIONS_SET_EXTENSION_REQUIRED_CONFIGURATION
     );
+
+    /// Response for the "Set Extension Required Configuration" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct SetExtensionRequiredConfigurationResponse;
+
+    impl SetExtensionRequiredConfigurationResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Sends a message to one or more viewers.
     pub const EXTENSIONS_SEND_EXTENSION_PUBSUB_MESSAGE: HelixEndpoint = HelixEndpoint {
@@ -1041,9 +3875,23 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         SendExtensionPubsubMessageRequest,
-        SendExtensionPubsubMessageResponse,
         EXTENSIONS_SEND_EXTENSION_PUBSUB_MESSAGE
     );
+
+    /// Response for the "Send Extension PubSub Message" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct SendExtensionPubsubMessageResponse;
+
+    impl SendExtensionPubsubMessageResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets a list of broadcasters that are streaming live and have installed or activated the extension.
     pub const EXTENSIONS_GET_EXTENSION_LIVE_CHANNELS: HelixEndpoint = HelixEndpoint {
@@ -1060,9 +3908,49 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         GetExtensionLiveChannelsRequest,
-        GetExtensionLiveChannelsResponse,
         EXTENSIONS_GET_EXTENSION_LIVE_CHANNELS
     );
+
+    /// Response body for the "Get Extension Live Channels" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionLiveChannelsResponse {
+        /// The list of broadcasters that are streaming live and that have installed or activated the extension.
+        #[serde(default)]
+        pub data: Vec<GetExtensionLiveChannelsItem>,
+        /// This field contains the cursor used to page through the results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of broadcasters that are streaming live and that have installed or activated the extension.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionLiveChannelsItem {
+        /// The ID of the broadcaster that is streaming live and has installed or activated the extension.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The name of the category or game being streamed.
+        #[serde(default)]
+        pub game_name: String,
+        /// The ID of the category or game being streamed.
+        #[serde(default)]
+        pub game_id: String,
+        /// The title of the broadcaster’s stream.
+        #[serde(default)]
+        pub title: String,
+    }
+
+    impl GetExtensionLiveChannelsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets an extension’s list of shared secrets.
     pub const EXTENSIONS_GET_EXTENSION_SECRETS: HelixEndpoint = HelixEndpoint {
@@ -1077,11 +3965,50 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetExtensionSecretsRequest,
-        GetExtensionSecretsResponse,
-        EXTENSIONS_GET_EXTENSION_SECRETS
-    );
+    declare_generated_endpoint!(GetExtensionSecretsRequest, EXTENSIONS_GET_EXTENSION_SECRETS);
+
+    /// Response body for the "Get Extension Secrets" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionSecretsResponse {
+        /// The list of shared secrets that the extension created.
+        #[serde(default)]
+        pub data: Vec<GetExtensionSecretsItem>,
+    }
+
+    /// The list of shared secrets that the extension created.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionSecretsItem {
+        /// The version number that identifies this definition of the secret’s data.
+        #[serde(default)]
+        pub format_version: i64,
+        /// The list of secrets.
+        #[serde(default)]
+        pub secrets: Vec<GetExtensionSecretsSecrets>,
+    }
+
+    /// The list of secrets.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionSecretsSecrets {
+        /// The raw secret that you use with JWT encoding.
+        #[serde(default)]
+        pub content: String,
+        /// The UTC date and time (in RFC3339 format) that you may begin using this secret to sign a JWT.
+        #[serde(default)]
+        pub active_at: String,
+        /// The UTC date and time (in RFC3339 format) that you must stop using this secret to decode a JWT.
+        #[serde(default)]
+        pub expires_at: String,
+    }
+
+    impl GetExtensionSecretsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Creates a shared secret used to sign and verify JWT tokens.
     pub const EXTENSIONS_CREATE_EXTENSION_SECRET: HelixEndpoint = HelixEndpoint {
@@ -1098,9 +4025,51 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         CreateExtensionSecretRequest,
-        CreateExtensionSecretResponse,
         EXTENSIONS_CREATE_EXTENSION_SECRET
     );
+
+    /// Response body for the "Create Extension Secret" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateExtensionSecretResponse {
+        /// A list that contains the newly added secrets.
+        #[serde(default)]
+        pub data: Vec<CreateExtensionSecretItem>,
+    }
+
+    /// A list that contains the newly added secrets.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateExtensionSecretItem {
+        /// The version number that identifies this definition of the secret’s data.
+        #[serde(default)]
+        pub format_version: i64,
+        /// The list of secrets.
+        #[serde(default)]
+        pub secrets: Vec<CreateExtensionSecretSecrets>,
+    }
+
+    /// The list of secrets.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateExtensionSecretSecrets {
+        /// The raw secret that you use with JWT encoding.
+        #[serde(default)]
+        pub content: String,
+        /// The UTC date and time (in RFC3339 format) that you may begin using this secret to sign a JWT.
+        #[serde(default)]
+        pub active_at: String,
+        /// The UTC date and time (in RFC3339 format) that you must stop using this secret to decode a JWT.
+        #[serde(default)]
+        pub expires_at: String,
+    }
+
+    impl CreateExtensionSecretResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Sends a message to the specified broadcaster’s chat room.
     pub const EXTENSIONS_SEND_EXTENSION_CHAT_MESSAGE: HelixEndpoint = HelixEndpoint {
@@ -1117,9 +4086,23 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         SendExtensionChatMessageRequest,
-        SendExtensionChatMessageResponse,
         EXTENSIONS_SEND_EXTENSION_CHAT_MESSAGE
     );
+
+    /// Response for the "Send Extension Chat Message" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct SendExtensionChatMessageResponse;
+
+    impl SendExtensionChatMessageResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets information about an extension.
     pub const EXTENSIONS_GET_EXTENSIONS: HelixEndpoint = HelixEndpoint {
@@ -1134,11 +4117,189 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetExtensionsRequest,
-        GetExtensionsResponse,
-        EXTENSIONS_GET_EXTENSIONS
-    );
+    declare_generated_endpoint!(GetExtensionsRequest, EXTENSIONS_GET_EXTENSIONS);
+
+    /// Response body for the "Get Extensions" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionsResponse {
+        /// A list that contains the specified extension.
+        #[serde(default)]
+        pub data: Vec<GetExtensionsItem>,
+    }
+
+    /// A list that contains the specified extension.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionsItem {
+        /// The name of the user or organization that owns the extension.
+        #[serde(default)]
+        pub author_name: String,
+        /// A Boolean value that determines whether the extension has features that use Bits.
+        #[serde(default)]
+        pub bits_enabled: bool,
+        /// A Boolean value that determines whether a user can install the extension on their channel.
+        #[serde(default)]
+        pub can_install: bool,
+        /// The location of where the extension’s configuration is stored.
+        #[serde(default)]
+        pub configuration_location: String,
+        /// A longer description of the extension.
+        #[serde(default)]
+        pub description: String,
+        /// A URL to the extension’s Terms of Service.
+        #[serde(default)]
+        pub eula_tos_url: String,
+        /// A Boolean value that determines whether the extension can communicate with the installed channel’s chat.
+        #[serde(default)]
+        pub has_chat_support: bool,
+        /// A URL to the default icon that’s displayed in the Extensions directory.
+        #[serde(default)]
+        pub icon_url: String,
+        /// A dictionary that contains URLs to different sizes of the default icon.
+        #[serde(default)]
+        pub icon_urls: std::collections::BTreeMap<String, String>,
+        /// The extension’s ID.
+        #[serde(default)]
+        pub id: String,
+        /// The extension’s name.
+        #[serde(default)]
+        pub name: String,
+        /// A URL to the extension’s privacy policy.
+        #[serde(default)]
+        pub privacy_policy_url: String,
+        /// A Boolean value that determines whether the extension wants to explicitly ask viewers to link their Twitch identity.
+        #[serde(default)]
+        pub request_identity_link: bool,
+        /// A list of URLs to screenshots that are shown in the Extensions marketplace.
+        #[serde(default)]
+        pub screenshot_urls: Vec<String>,
+        /// The extension’s state.
+        #[serde(default)]
+        pub state: String,
+        /// Indicates whether the extension can view the user’s subscription level on the channel that the extension is installed on.
+        #[serde(default)]
+        pub subscriptions_support_level: String,
+        /// A short description of the extension that streamers see when hovering over the discovery splash screen in the Extensions manager.
+        #[serde(default)]
+        pub summary: String,
+        /// The email address that users use to get support for the extension.
+        #[serde(default)]
+        pub support_email: String,
+        /// The extension’s version number.
+        #[serde(default)]
+        pub version: String,
+        /// A brief description displayed on the channel to explain how the extension works.
+        #[serde(default)]
+        pub viewer_summary: String,
+        /// Describes all views-related information such as how the extension is displayed on mobile devices.
+        #[serde(default)]
+        pub views: GetExtensionsViews,
+        /// Allowlisted configuration URLs for displaying the extension (the allowlist is configured on Twitch’s developer site under the Extensions -> Extension -> Version -> Capabilities).
+        #[serde(default)]
+        pub allowlisted_config_urls: Vec<String>,
+        /// Allowlisted panel URLs for displaying the extension (the allowlist is configured on Twitch’s developer site under the Extensions -> Extension -> Version -> Capabilities).
+        #[serde(default)]
+        pub allowlisted_panel_urls: Vec<String>,
+    }
+
+    /// Describes all views-related information such as how the extension is displayed on mobile devices.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionsViews {
+        /// Describes how the extension is displayed on mobile devices.
+        #[serde(default)]
+        pub mobile: GetExtensionsViewsMobile,
+        /// Describes how the extension is rendered if the extension may be activated as a panel extension.
+        #[serde(default)]
+        pub panel: GetExtensionsViewsPanel,
+        /// Describes how the extension is rendered if the extension may be activated as a video-overlay extension.
+        #[serde(default)]
+        pub video_overlay: GetExtensionsViewsVideoOverlay,
+        /// Describes how the extension is rendered if the extension may be activated as a video-component extension.
+        #[serde(default)]
+        pub component: GetExtensionsViewsComponent,
+        /// Describes the view that is shown to broadcasters while they are configuring your extension within the Extension Manager.
+        #[serde(default)]
+        pub config: GetExtensionsViewsConfig,
+    }
+
+    /// Describes how the extension is displayed on mobile devices.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionsViewsMobile {
+        /// The HTML file that is shown to viewers on mobile devices.
+        #[serde(default)]
+        pub viewer_url: String,
+    }
+
+    /// Describes how the extension is rendered if the extension may be activated as a panel extension.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionsViewsPanel {
+        /// The HTML file that is shown to viewers on the channel page when the extension is activated in a Panel slot.
+        #[serde(default)]
+        pub viewer_url: String,
+        /// The height, in pixels, of the panel component that the extension is rendered in.
+        #[serde(default)]
+        pub height: i64,
+        /// A Boolean value that determines whether the extension can link to non-Twitch domains.
+        #[serde(default)]
+        pub can_link_external_content: bool,
+    }
+
+    /// Describes how the extension is rendered if the extension may be activated as a video-overlay extension.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionsViewsVideoOverlay {
+        /// The HTML file that is shown to viewers on the channel page when the extension is activated on the Video - Overlay slot.
+        #[serde(default)]
+        pub viewer_url: String,
+        /// A Boolean value that determines whether the extension can link to non-Twitch domains.
+        #[serde(default)]
+        pub can_link_external_content: bool,
+    }
+
+    /// Describes how the extension is rendered if the extension may be activated as a video-component extension.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionsViewsComponent {
+        /// The HTML file that is shown to viewers on the channel page when the extension is activated in a Video - Component slot.
+        #[serde(default)]
+        pub viewer_url: String,
+        /// The width value of the ratio (width : height) which determines the extension’s width, and how the extension’s iframe will resize in different video player environments.
+        #[serde(default)]
+        pub aspect_ratio_x: i64,
+        /// The height value of the ratio (width : height) which determines the extension’s height, and how the extension’s iframe will resize in different video player environments.
+        #[serde(default)]
+        pub aspect_ratio_y: i64,
+        /// A Boolean value that determines whether to apply CSS zoom.
+        #[serde(default)]
+        pub autoscale: bool,
+        /// The base width, in pixels, of the extension to use when scaling (see autoscale).
+        #[serde(default)]
+        pub scale_pixels: i64,
+        /// The height as a percent of the maximum height of a video component extension.
+        #[serde(default)]
+        pub target_height: i64,
+        /// A Boolean value that determines whether the extension can link to non-Twitch domains.
+        #[serde(default)]
+        pub can_link_external_content: bool,
+    }
+
+    /// Describes the view that is shown to broadcasters while they are configuring your extension within the Extension Manager.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionsViewsConfig {
+        /// The HTML file shown to broadcasters while they are configuring your extension within the Extension Manager.
+        #[serde(default)]
+        pub viewer_url: String,
+        /// A Boolean value that determines whether the extension can link to non-Twitch domains.
+        #[serde(default)]
+        pub can_link_external_content: bool,
+    }
+
+    impl GetExtensionsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets information about a released extension.
     pub const EXTENSIONS_GET_RELEASED_EXTENSIONS: HelixEndpoint = HelixEndpoint {
@@ -1155,9 +4316,190 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         GetReleasedExtensionsRequest,
-        GetReleasedExtensionsResponse,
         EXTENSIONS_GET_RELEASED_EXTENSIONS
     );
+
+    /// Response body for the "Get Released Extensions" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetReleasedExtensionsResponse {
+        /// A list that contains the specified extension.
+        #[serde(default)]
+        pub data: Vec<GetReleasedExtensionsItem>,
+    }
+
+    /// A list that contains the specified extension.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetReleasedExtensionsItem {
+        /// The name of the user or organization that owns the extension.
+        #[serde(default)]
+        pub author_name: String,
+        /// A Boolean value that determines whether the extension has features that use Bits.
+        #[serde(default)]
+        pub bits_enabled: bool,
+        /// A Boolean value that determines whether a user can install the extension on their channel.
+        #[serde(default)]
+        pub can_install: bool,
+        /// The location of where the extension’s configuration is stored.
+        #[serde(default)]
+        pub configuration_location: String,
+        /// A longer description of the extension.
+        #[serde(default)]
+        pub description: String,
+        /// A URL to the extension’s Terms of Service.
+        #[serde(default)]
+        pub eula_tos_url: String,
+        /// A Boolean value that determines whether the extension can communicate with the installed channel’s chat.
+        #[serde(default)]
+        pub has_chat_support: bool,
+        /// A URL to the default icon that’s displayed in the Extensions directory.
+        #[serde(default)]
+        pub icon_url: String,
+        /// A dictionary that contains URLs to different sizes of the default icon.
+        #[serde(default)]
+        pub icon_urls: std::collections::BTreeMap<String, String>,
+        /// The extension’s ID.
+        #[serde(default)]
+        pub id: String,
+        /// The extension’s name.
+        #[serde(default)]
+        pub name: String,
+        /// A URL to the extension’s privacy policy.
+        #[serde(default)]
+        pub privacy_policy_url: String,
+        /// A Boolean value that determines whether the extension wants to explicitly ask viewers to link their Twitch identity.
+        #[serde(default)]
+        pub request_identity_link: bool,
+        /// A list of URLs to screenshots that are shown in the Extensions marketplace.
+        #[serde(default)]
+        pub screenshot_urls: Vec<String>,
+        /// The extension’s state.
+        #[serde(default)]
+        pub state: String,
+        /// Indicates whether the extension can view the user’s subscription level on the channel that the extension is installed on.
+        #[serde(default)]
+        pub subscriptions_support_level: String,
+        /// A short description of the extension that streamers see when hovering over the discovery splash screen in the Extensions manager.
+        #[serde(default)]
+        pub summary: String,
+        /// The email address that users use to get support for the extension.
+        #[serde(default)]
+        pub support_email: String,
+        /// The extension’s version number.
+        #[serde(default)]
+        pub version: String,
+        /// A brief description displayed on the channel to explain how the extension works.
+        #[serde(default)]
+        pub viewer_summary: String,
+        /// Describes all views-related information such as how the extension is displayed on mobile devices.
+        #[serde(default)]
+        pub views: GetReleasedExtensionsViews,
+        /// Allowlisted configuration URLs for displaying the extension (the allowlist is configured on Twitch’s developer site under the Extensions -> Extension -> Version -> Capabilities).
+        #[serde(default)]
+        pub allowlisted_config_urls: Vec<String>,
+        /// Allowlisted panel URLs for displaying the extension (the allowlist is configured on Twitch’s developer site under the Extensions -> Extension -> Version -> Capabilities).
+        #[serde(default)]
+        pub allowlisted_panel_urls: Vec<String>,
+    }
+
+    /// Describes all views-related information such as how the extension is displayed on mobile devices.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetReleasedExtensionsViews {
+        /// Describes how the extension is displayed on mobile devices.
+        #[serde(default)]
+        pub mobile: GetReleasedExtensionsViewsMobile,
+        /// Describes how the extension is rendered if the extension may be activated as a panel extension.
+        #[serde(default)]
+        pub panel: GetReleasedExtensionsViewsPanel,
+        /// Describes how the extension is rendered if the extension may be activated as a video-overlay extension.
+        #[serde(default)]
+        pub video_overlay: GetReleasedExtensionsViewsVideoOverlay,
+        /// Describes how the extension is rendered if the extension may be activated as a video-component extension.
+        #[serde(default)]
+        pub component: GetReleasedExtensionsViewsComponent,
+        /// Describes the view that is shown to broadcasters while they are configuring your extension within the Extension Manager.
+        #[serde(default)]
+        pub config: GetReleasedExtensionsViewsConfig,
+    }
+
+    /// Describes how the extension is displayed on mobile devices.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetReleasedExtensionsViewsMobile {
+        /// The HTML file that is shown to viewers on mobile devices.
+        #[serde(default)]
+        pub viewer_url: String,
+    }
+
+    /// Describes how the extension is rendered if the extension may be activated as a panel extension.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetReleasedExtensionsViewsPanel {
+        /// The HTML file that is shown to viewers on the channel page when the extension is activated in a Panel slot.
+        #[serde(default)]
+        pub viewer_url: String,
+        /// The height, in pixels, of the panel component that the extension is rendered in.
+        #[serde(default)]
+        pub height: i64,
+        /// A Boolean value that determines whether the extension can link to non-Twitch domains.
+        #[serde(default)]
+        pub can_link_external_content: bool,
+    }
+
+    /// Describes how the extension is rendered if the extension may be activated as a video-overlay extension.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetReleasedExtensionsViewsVideoOverlay {
+        /// The HTML file that is shown to viewers on the channel page when the extension is activated on the Video - Overlay slot.
+        #[serde(default)]
+        pub viewer_url: String,
+        /// A Boolean value that determines whether the extension can link to non-Twitch domains.
+        #[serde(default)]
+        pub can_link_external_content: bool,
+    }
+
+    /// Describes how the extension is rendered if the extension may be activated as a video-component extension.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetReleasedExtensionsViewsComponent {
+        /// The HTML file that is shown to viewers on the channel page when the extension is activated in a Video - Component slot.
+        #[serde(default)]
+        pub viewer_url: String,
+        /// The width value of the ratio (width : height) which determines the extension’s width, and how the extension’s iframe will resize in different video player environments.
+        #[serde(default)]
+        pub aspect_ratio_x: i64,
+        /// The height value of the ratio (width : height) which determines the extension’s height, and how the extension’s iframe will resize in different video player environments.
+        #[serde(default)]
+        pub aspect_ratio_y: i64,
+        /// A Boolean value that determines whether to apply CSS zoom.
+        #[serde(default)]
+        pub autoscale: bool,
+        /// The base width, in pixels, of the extension to use when scaling (see autoscale).
+        #[serde(default)]
+        pub scale_pixels: i64,
+        /// The height as a percent of the maximum height of a video component extension.
+        #[serde(default)]
+        pub target_height: i64,
+        /// A Boolean value that determines whether the extension can link to non-Twitch domains.
+        #[serde(default)]
+        pub can_link_external_content: bool,
+    }
+
+    /// Describes the view that is shown to broadcasters while they are configuring your extension within the Extension Manager.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetReleasedExtensionsViewsConfig {
+        /// The HTML file shown to broadcasters while they are configuring your extension within the Extension Manager.
+        #[serde(default)]
+        pub viewer_url: String,
+        /// A Boolean value that determines whether the extension can link to non-Twitch domains.
+        #[serde(default)]
+        pub can_link_external_content: bool,
+    }
+
+    impl GetReleasedExtensionsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the list of Bits products that belongs to the extension.
     pub const EXTENSIONS_GET_EXTENSION_BITS_PRODUCTS: HelixEndpoint = HelixEndpoint {
@@ -1174,9 +4516,60 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         GetExtensionBitsProductsRequest,
-        GetExtensionBitsProductsResponse,
         EXTENSIONS_GET_EXTENSION_BITS_PRODUCTS
     );
+
+    /// Response body for the "Get Extension Bits Products" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionBitsProductsResponse {
+        /// A list of Bits products that the extension created.
+        #[serde(default)]
+        pub data: Vec<GetExtensionBitsProductsItem>,
+    }
+
+    /// A list of Bits products that the extension created.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionBitsProductsItem {
+        /// The product’s SKU.
+        #[serde(default)]
+        pub sku: String,
+        /// An object that contains the product’s cost information.
+        #[serde(default)]
+        pub cost: GetExtensionBitsProductsCost,
+        /// A Boolean value that indicates whether the product is in development.
+        #[serde(default)]
+        pub in_development: bool,
+        /// The product’s name as displayed in the extension.
+        #[serde(default)]
+        pub display_name: String,
+        /// The date and time, in RFC3339 format, when the product expires.
+        #[serde(default)]
+        pub expiration: String,
+        /// A Boolean value that determines whether Bits product purchase events are broadcast to all instances of an extension on a channel.
+        #[serde(default)]
+        pub is_broadcast: bool,
+    }
+
+    /// An object that contains the product’s cost information.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetExtensionBitsProductsCost {
+        /// The product’s price.
+        #[serde(default)]
+        pub amount: i64,
+        /// The type of currency.
+        #[serde(default)]
+        pub r#type: String,
+    }
+
+    impl GetExtensionBitsProductsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Adds or updates a Bits product that the extension created.
     pub const EXTENSIONS_UPDATE_EXTENSION_BITS_PRODUCT: HelixEndpoint = HelixEndpoint {
@@ -1193,9 +4586,60 @@ pub mod extensions {
     };
     declare_generated_endpoint!(
         UpdateExtensionBitsProductRequest,
-        UpdateExtensionBitsProductResponse,
         EXTENSIONS_UPDATE_EXTENSION_BITS_PRODUCT
     );
+
+    /// Response body for the "Update Extension Bits Product" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateExtensionBitsProductResponse {
+        /// A list of Bits products that the extension created.
+        #[serde(default)]
+        pub data: Vec<UpdateExtensionBitsProductItem>,
+    }
+
+    /// A list of Bits products that the extension created.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateExtensionBitsProductItem {
+        /// The product's SKU.
+        #[serde(default)]
+        pub sku: String,
+        /// An object that contains the product's cost information.
+        #[serde(default)]
+        pub cost: UpdateExtensionBitsProductCost,
+        /// A Boolean value that indicates whether the product is in development.
+        #[serde(default)]
+        pub in_development: bool,
+        /// The product's name as displayed in the extension.
+        #[serde(default)]
+        pub display_name: String,
+        /// The date and time, in RFC3339 format, when the product expires.
+        #[serde(default)]
+        pub expiration: String,
+        /// A Boolean value that determines whether Bits product purchase events are broadcast to all instances of an extension on a channel.
+        #[serde(default)]
+        pub is_broadcast: bool,
+    }
+
+    /// An object that contains the product's cost information.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateExtensionBitsProductCost {
+        /// The product's price.
+        #[serde(default)]
+        pub amount: i64,
+        /// The type of currency.
+        #[serde(default)]
+        pub r#type: String,
+    }
+
+    impl UpdateExtensionBitsProductResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod eventsub {
@@ -1216,9 +4660,84 @@ pub mod eventsub {
     };
     declare_generated_endpoint!(
         CreateEventsubSubscriptionRequest,
-        CreateEventsubSubscriptionResponse,
         EVENTSUB_CREATE_EVENTSUB_SUBSCRIPTION
     );
+
+    /// Response body for the "Create EventSub Subscription" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateEventsubSubscriptionResponse {
+        /// A list that contains the single subscription that you created.
+        #[serde(default)]
+        pub data: Vec<CreateEventsubSubscriptionItem>,
+        /// The total number of subscriptions you’ve created.
+        #[serde(default)]
+        pub total: i64,
+        /// The sum of all of your subscription costs.
+        #[serde(default)]
+        pub total_cost: i64,
+        /// The maximum total cost that you’re allowed to incur for all subscriptions you create.
+        #[serde(default)]
+        pub max_total_cost: i64,
+    }
+
+    /// A list that contains the single subscription that you created.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateEventsubSubscriptionItem {
+        /// An ID that identifies the subscription.
+        #[serde(default)]
+        pub id: String,
+        /// The subscription’s status.
+        #[serde(default)]
+        pub status: String,
+        /// The subscription’s type.
+        #[serde(default)]
+        pub r#type: String,
+        /// The version number that identifies this definition of the subscription’s data.
+        #[serde(default)]
+        pub version: String,
+        /// The subscription’s parameter values.
+        #[serde(default)]
+        pub condition: serde_json::Value,
+        /// The date and time (in RFC3339 format) of when the subscription was created.
+        #[serde(default)]
+        pub created_at: String,
+        /// The transport details used to send the notifications.
+        #[serde(default)]
+        pub transport: CreateEventsubSubscriptionTransport,
+        /// The amount that the subscription counts against your limit.
+        #[serde(default)]
+        pub cost: i64,
+    }
+
+    /// The transport details used to send the notifications.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateEventsubSubscriptionTransport {
+        /// The transport method.
+        #[serde(default)]
+        pub method: String,
+        /// The callback URL where the notifications are sent.
+        #[serde(default)]
+        pub callback: String,
+        /// An ID that identifies the WebSocket that notifications are sent to.
+        #[serde(default)]
+        pub session_id: String,
+        /// The UTC date and time that the WebSocket connection was established.
+        #[serde(default)]
+        pub connected_at: String,
+        /// An ID that identifies the conduit to send notifications to.
+        #[serde(default)]
+        pub conduit_id: String,
+    }
+
+    impl CreateEventsubSubscriptionResponse {
+        pub const EXPECTED_STATUS: u16 = 202;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Deletes an EventSub subscription.
     pub const EVENTSUB_DELETE_EVENTSUB_SUBSCRIPTION: HelixEndpoint = HelixEndpoint {
@@ -1235,9 +4754,23 @@ pub mod eventsub {
     };
     declare_generated_endpoint!(
         DeleteEventsubSubscriptionRequest,
-        DeleteEventsubSubscriptionResponse,
         EVENTSUB_DELETE_EVENTSUB_SUBSCRIPTION
     );
+
+    /// Response for the "Delete EventSub Subscription" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct DeleteEventsubSubscriptionResponse;
+
+    impl DeleteEventsubSubscriptionResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets a list of EventSub subscriptions that the client in the access token created.
     pub const EVENTSUB_GET_EVENTSUB_SUBSCRIPTIONS: HelixEndpoint = HelixEndpoint {
@@ -1254,9 +4787,87 @@ pub mod eventsub {
     };
     declare_generated_endpoint!(
         GetEventsubSubscriptionsRequest,
-        GetEventsubSubscriptionsResponse,
         EVENTSUB_GET_EVENTSUB_SUBSCRIPTIONS
     );
+
+    /// Response body for the "Get EventSub Subscriptions" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetEventsubSubscriptionsResponse {
+        /// The list of subscriptions.
+        #[serde(default)]
+        pub data: Vec<GetEventsubSubscriptionsItem>,
+        /// The total number of subscriptions that you've created.
+        #[serde(default)]
+        pub total: i64,
+        /// The sum of all of your subscription costs.
+        #[serde(default)]
+        pub total_cost: i64,
+        /// The maximum total cost that you're allowed to incur for all subscriptions that you create.
+        #[serde(default)]
+        pub max_total_cost: i64,
+        /// An object that contains the cursor used to get the next page of subscriptions.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of subscriptions.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetEventsubSubscriptionsItem {
+        /// An ID that identifies the subscription.
+        #[serde(default)]
+        pub id: String,
+        /// The subscription's status.
+        #[serde(default)]
+        pub status: String,
+        /// The subscription's type.
+        #[serde(default)]
+        pub r#type: String,
+        /// The version number that identifies this definition of the subscription's data.
+        #[serde(default)]
+        pub version: String,
+        /// The subscription's parameter values.
+        #[serde(default)]
+        pub condition: serde_json::Value,
+        /// The date and time (in RFC3339 format) of when the subscription was created.
+        #[serde(default)]
+        pub created_at: String,
+        /// The transport details used to send the notifications.
+        #[serde(default)]
+        pub transport: GetEventsubSubscriptionsTransport,
+        /// The amount that the subscription counts against your limit.
+        #[serde(default)]
+        pub cost: i64,
+    }
+
+    /// The transport details used to send the notifications.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetEventsubSubscriptionsTransport {
+        /// The transport method.
+        #[serde(default)]
+        pub method: String,
+        /// The callback URL where the notifications are sent.
+        #[serde(default)]
+        pub callback: String,
+        /// An ID that identifies the WebSocket that notifications are sent to.
+        #[serde(default)]
+        pub session_id: String,
+        /// The UTC date and time that the WebSocket connection was established.
+        #[serde(default)]
+        pub connected_at: String,
+        /// The UTC date and time that the WebSocket connection was lost.
+        #[serde(default)]
+        pub disconnected_at: String,
+    }
+
+    impl GetEventsubSubscriptionsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod games {
@@ -1275,7 +4886,45 @@ pub mod games {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetTopGamesRequest, GetTopGamesResponse, GAMES_GET_TOP_GAMES);
+    declare_generated_endpoint!(GetTopGamesRequest, GAMES_GET_TOP_GAMES);
+
+    /// Response body for the "Get Top Games" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetTopGamesResponse {
+        /// The list of broadcasts.
+        #[serde(default)]
+        pub data: Vec<GetTopGamesItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of broadcasts.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetTopGamesItem {
+        /// An ID that identifies the category or game.
+        #[serde(default)]
+        pub id: String,
+        /// The category’s or game’s name.
+        #[serde(default)]
+        pub name: String,
+        /// A URL to the category’s or game’s box art.
+        #[serde(default)]
+        pub box_art_url: String,
+        /// The ID that IGDB uses to identify this game.
+        #[serde(default)]
+        pub igdb_id: String,
+    }
+
+    impl GetTopGamesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets information about specified games.
     pub const GAMES_GET_GAMES: HelixEndpoint = HelixEndpoint {
@@ -1290,7 +4939,42 @@ pub mod games {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetGamesRequest, GetGamesResponse, GAMES_GET_GAMES);
+    declare_generated_endpoint!(GetGamesRequest, GAMES_GET_GAMES);
+
+    /// Response body for the "Get Games" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGamesResponse {
+        /// The list of categories and games.
+        #[serde(default)]
+        pub data: Vec<GetGamesItem>,
+    }
+
+    /// The list of categories and games.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGamesItem {
+        /// An ID that identifies the category or game.
+        #[serde(default)]
+        pub id: String,
+        /// The category’s or game’s name.
+        #[serde(default)]
+        pub name: String,
+        /// A URL to the category’s or game’s box art.
+        #[serde(default)]
+        pub box_art_url: String,
+        /// The ID that IGDB uses to identify this game.
+        #[serde(default)]
+        pub igdb_id: String,
+    }
+
+    impl GetGamesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod goals {
@@ -1309,11 +4993,57 @@ pub mod goals {
         scopes: &["channel:read:goals"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetCreatorGoalsRequest,
-        GetCreatorGoalsResponse,
-        GOALS_GET_CREATOR_GOALS
-    );
+    declare_generated_endpoint!(GetCreatorGoalsRequest, GOALS_GET_CREATOR_GOALS);
+
+    /// Response body for the "Get Creator Goals" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCreatorGoalsResponse {
+        /// The list of goals.
+        #[serde(default)]
+        pub data: Vec<GetCreatorGoalsItem>,
+    }
+
+    /// The list of goals.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetCreatorGoalsItem {
+        /// An ID that identifies this goal.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the broadcaster that created the goal.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The type of goal.
+        #[serde(default)]
+        pub r#type: String,
+        /// A description of the goal.
+        #[serde(default)]
+        pub description: String,
+        /// The goal’s current value.
+        #[serde(default)]
+        pub current_amount: i64,
+        /// The goal’s target value.
+        #[serde(default)]
+        pub target_amount: i64,
+        /// The UTC date and time (in RFC3339 format) that the broadcaster created the goal.
+        #[serde(default)]
+        pub created_at: String,
+    }
+
+    impl GetCreatorGoalsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod guest_star {
@@ -1339,9 +5069,38 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         GetChannelGuestStarSettingsRequest,
-        GetChannelGuestStarSettingsResponse,
         GUEST_STAR_GET_CHANNEL_GUEST_STAR_SETTINGS
     );
+
+    /// Response body for the "Get Channel Guest Star Settings" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelGuestStarSettingsResponse {
+        /// Flag determining if Guest Star moderators have access to control whether a guest is live once assigned to a slot.
+        #[serde(default)]
+        pub is_moderator_send_live_enabled: bool,
+        /// Number of slots the Guest Star call interface will allow the host to add to a call.
+        #[serde(default)]
+        pub slot_count: i64,
+        /// Flag determining if Browser Sources subscribed to sessions on this channel should output audio.
+        #[serde(default)]
+        pub is_browser_source_audio_enabled: bool,
+        /// This setting determines how the guests within a session should be laid out within the browser source.
+        #[serde(default)]
+        pub group_layout: String,
+        /// View only token to generate browser source URLs.
+        #[serde(default)]
+        pub browser_source_token: String,
+    }
+
+    impl GetChannelGuestStarSettingsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// BETA Mutates the channel settings for configuration of the Guest Star feature for a particular host.
     pub const GUEST_STAR_UPDATE_CHANNEL_GUEST_STAR_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -1358,9 +5117,23 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         UpdateChannelGuestStarSettingsRequest,
-        UpdateChannelGuestStarSettingsResponse,
         GUEST_STAR_UPDATE_CHANNEL_GUEST_STAR_SETTINGS
     );
+
+    /// Response for the "Update Channel Guest Star Settings" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct UpdateChannelGuestStarSettingsResponse;
+
+    impl UpdateChannelGuestStarSettingsResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// BETA Gets information about an ongoing Guest Star session for a particular channel.
     pub const GUEST_STAR_GET_GUEST_STAR_SESSION: HelixEndpoint = HelixEndpoint {
@@ -1382,9 +5155,92 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         GetGuestStarSessionRequest,
-        GetGuestStarSessionResponse,
         GUEST_STAR_GET_GUEST_STAR_SESSION
     );
+
+    /// Response body for the "Get Guest Star Session" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGuestStarSessionResponse {
+        /// Summary of the session details.
+        #[serde(default)]
+        pub data: Vec<GetGuestStarSessionItem>,
+    }
+
+    /// Summary of the session details.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGuestStarSessionItem {
+        /// ID uniquely representing the Guest Star session.
+        #[serde(default)]
+        pub id: String,
+        /// List of guests currently interacting with the Guest Star session.
+        #[serde(default)]
+        pub guests: serde_json::Value,
+        /// ID representing this guest’s slot assignment.
+        #[serde(default)]
+        pub slot_id: String,
+        /// Flag determining whether or not the guest is visible in the browser source in the host’s streaming software.
+        #[serde(default)]
+        pub is_live: bool,
+        /// User ID of the guest assigned to this slot.
+        #[serde(default)]
+        pub user_id: String,
+        /// Display name of the guest assigned to this slot.
+        #[serde(default)]
+        pub user_display_name: String,
+        /// Login of the guest assigned to this slot.
+        #[serde(default)]
+        pub user_login: String,
+        /// Value from 0 to 100 representing the host’s volume setting for this guest.
+        #[serde(default)]
+        pub volume: i64,
+        /// Timestamp when this guest was assigned a slot in the session.
+        #[serde(default)]
+        pub assigned_at: String,
+        /// Information about the guest’s audio settings.
+        #[serde(default)]
+        pub audio_settings: GetGuestStarSessionAudioSettings,
+        /// Information about the guest’s video settings.
+        #[serde(default)]
+        pub video_settings: GetGuestStarSessionVideoSettings,
+    }
+
+    /// Information about the guest’s audio settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGuestStarSessionAudioSettings {
+        /// Flag determining whether the host is allowing the guest’s audio to be seen or heard within the session.
+        #[serde(default)]
+        pub is_host_enabled: bool,
+        /// Flag determining whether the guest is allowing their audio to be transmitted to the session.
+        #[serde(default)]
+        pub is_guest_enabled: bool,
+        /// Flag determining whether the guest has an appropriate audio device available to be transmitted to the session.
+        #[serde(default)]
+        pub is_available: bool,
+    }
+
+    /// Information about the guest’s video settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGuestStarSessionVideoSettings {
+        /// Flag determining whether the host is allowing the guest’s video to be seen or heard within the session.
+        #[serde(default)]
+        pub is_host_enabled: bool,
+        /// Flag determining whether the guest is allowing their video to be transmitted to the session.
+        #[serde(default)]
+        pub is_guest_enabled: bool,
+        /// Flag determining whether the guest has an appropriate video device available to be transmitted to the session.
+        #[serde(default)]
+        pub is_available: bool,
+    }
+
+    impl GetGuestStarSessionResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// BETA Programmatically creates a Guest Star session on behalf of the broadcaster.
     pub const GUEST_STAR_CREATE_GUEST_STAR_SESSION: HelixEndpoint = HelixEndpoint {
@@ -1401,9 +5257,92 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         CreateGuestStarSessionRequest,
-        CreateGuestStarSessionResponse,
         GUEST_STAR_CREATE_GUEST_STAR_SESSION
     );
+
+    /// Response body for the "Create Guest Star Session" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateGuestStarSessionResponse {
+        /// Summary of the session details.
+        #[serde(default)]
+        pub data: Vec<CreateGuestStarSessionItem>,
+    }
+
+    /// Summary of the session details.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateGuestStarSessionItem {
+        /// ID uniquely representing the Guest Star session.
+        #[serde(default)]
+        pub id: String,
+        /// List of guests currently interacting with the Guest Star session.
+        #[serde(default)]
+        pub guests: serde_json::Value,
+        /// ID representing this guest’s slot assignment.
+        #[serde(default)]
+        pub slot_id: String,
+        /// Flag determining whether or not the guest is visible in the browser source in the host’s streaming software.
+        #[serde(default)]
+        pub is_live: bool,
+        /// User ID of the guest assigned to this slot.
+        #[serde(default)]
+        pub user_id: String,
+        /// Display name of the guest assigned to this slot.
+        #[serde(default)]
+        pub user_display_name: String,
+        /// Login of the guest assigned to this slot.
+        #[serde(default)]
+        pub user_login: String,
+        /// Value from 0 to 100 representing the host’s volume setting for this guest.
+        #[serde(default)]
+        pub volume: i64,
+        /// Timestamp when this guest was assigned a slot in the session.
+        #[serde(default)]
+        pub assigned_at: String,
+        /// Information about the guest’s audio settings.
+        #[serde(default)]
+        pub audio_settings: CreateGuestStarSessionAudioSettings,
+        /// Information about the guest’s video settings.
+        #[serde(default)]
+        pub video_settings: CreateGuestStarSessionVideoSettings,
+    }
+
+    /// Information about the guest’s audio settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateGuestStarSessionAudioSettings {
+        /// Flag determining whether the host is allowing the guest’s audio to be seen or heard within the session.
+        #[serde(default)]
+        pub is_host_enabled: bool,
+        /// Flag determining whether the guest is allowing their audio to be transmitted to the session.
+        #[serde(default)]
+        pub is_guest_enabled: bool,
+        /// Flag determining whether the guest has an appropriate audio device available to be transmitted to the session.
+        #[serde(default)]
+        pub is_available: bool,
+    }
+
+    /// Information about the guest’s video settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateGuestStarSessionVideoSettings {
+        /// Flag determining whether the host is allowing the guest’s video to be seen or heard within the session.
+        #[serde(default)]
+        pub is_host_enabled: bool,
+        /// Flag determining whether the guest is allowing their video to be transmitted to the session.
+        #[serde(default)]
+        pub is_guest_enabled: bool,
+        /// Flag determining whether the guest has an appropriate video device available to be transmitted to the session.
+        #[serde(default)]
+        pub is_available: bool,
+    }
+
+    impl CreateGuestStarSessionResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// BETA Programmatically ends a Guest Star session on behalf of the broadcaster.
     pub const GUEST_STAR_END_GUEST_STAR_SESSION: HelixEndpoint = HelixEndpoint {
@@ -1420,9 +5359,92 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         EndGuestStarSessionRequest,
-        EndGuestStarSessionResponse,
         GUEST_STAR_END_GUEST_STAR_SESSION
     );
+
+    /// Response body for the "End Guest Star Session" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndGuestStarSessionResponse {
+        /// Summary of the session details when the session was ended.
+        #[serde(default)]
+        pub data: Vec<EndGuestStarSessionItem>,
+    }
+
+    /// Summary of the session details when the session was ended.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndGuestStarSessionItem {
+        /// ID uniquely representing the Guest Star session.
+        #[serde(default)]
+        pub id: String,
+        /// List of guests currently interacting with the Guest Star session.
+        #[serde(default)]
+        pub guests: serde_json::Value,
+        /// ID representing this guest’s slot assignment.
+        #[serde(default)]
+        pub slot_id: String,
+        /// Flag determining whether or not the guest is visible in the browser source in the host’s streaming software.
+        #[serde(default)]
+        pub is_live: bool,
+        /// User ID of the guest assigned to this slot.
+        #[serde(default)]
+        pub user_id: String,
+        /// Display name of the guest assigned to this slot.
+        #[serde(default)]
+        pub user_display_name: String,
+        /// Login of the guest assigned to this slot.
+        #[serde(default)]
+        pub user_login: String,
+        /// Value from 0 to 100 representing the host’s volume setting for this guest.
+        #[serde(default)]
+        pub volume: i64,
+        /// Timestamp when this guest was assigned a slot in the session.
+        #[serde(default)]
+        pub assigned_at: String,
+        /// Information about the guest’s audio settings.
+        #[serde(default)]
+        pub audio_settings: EndGuestStarSessionAudioSettings,
+        /// Information about the guest’s video settings.
+        #[serde(default)]
+        pub video_settings: EndGuestStarSessionVideoSettings,
+    }
+
+    /// Information about the guest’s audio settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndGuestStarSessionAudioSettings {
+        /// Flag determining whether the host is allowing the guest’s audio to be seen or heard within the session.
+        #[serde(default)]
+        pub is_host_enabled: bool,
+        /// Flag determining whether the guest is allowing their audio to be transmitted to the session.
+        #[serde(default)]
+        pub is_guest_enabled: bool,
+        /// Flag determining whether the guest has an appropriate audio device available to be transmitted to the session.
+        #[serde(default)]
+        pub is_available: bool,
+    }
+
+    /// Information about the guest’s video settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndGuestStarSessionVideoSettings {
+        /// Flag determining whether the host is allowing the guest’s video to be seen or heard within the session.
+        #[serde(default)]
+        pub is_host_enabled: bool,
+        /// Flag determining whether the guest is allowing their video to be transmitted to the session.
+        #[serde(default)]
+        pub is_guest_enabled: bool,
+        /// Flag determining whether the guest has an appropriate video device available to be transmitted to the session.
+        #[serde(default)]
+        pub is_available: bool,
+    }
+
+    impl EndGuestStarSessionResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// BETA Provides the caller with a list of pending invites to a Guest Star session.
     pub const GUEST_STAR_GET_GUEST_STAR_INVITES: HelixEndpoint = HelixEndpoint {
@@ -1444,9 +5466,52 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         GetGuestStarInvitesRequest,
-        GetGuestStarInvitesResponse,
         GUEST_STAR_GET_GUEST_STAR_INVITES
     );
+
+    /// Response body for the "Get Guest Star Invites" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGuestStarInvitesResponse {
+        /// A list of invite objects describing the invited user as well as their ready status.
+        #[serde(default)]
+        pub data: Vec<GetGuestStarInvitesItem>,
+    }
+
+    /// A list of invite objects describing the invited user as well as their ready status.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetGuestStarInvitesItem {
+        /// Twitch User ID corresponding to the invited guest.
+        #[serde(default)]
+        pub user_id: String,
+        /// Timestamp when this user was invited to the session.
+        #[serde(default)]
+        pub invited_at: String,
+        /// Status representing the invited user’s join state.
+        #[serde(default)]
+        pub status: String,
+        /// Flag signaling that the invited user has chosen to disable their local video device.
+        #[serde(default)]
+        pub is_video_enabled: bool,
+        /// Flag signaling that the invited user has chosen to disable their local audio device.
+        #[serde(default)]
+        pub is_audio_enabled: bool,
+        /// Flag signaling that the invited user has a video device available for sharing.
+        #[serde(default)]
+        pub is_video_available: bool,
+        /// Flag signaling that the invited user has an audio device available for sharing.
+        #[serde(default)]
+        pub is_audio_available: bool,
+    }
+
+    impl GetGuestStarInvitesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// BETA Sends an invite to a specified guest on behalf of the broadcaster for a Guest Star session in progress.
     pub const GUEST_STAR_SEND_GUEST_STAR_INVITE: HelixEndpoint = HelixEndpoint {
@@ -1463,9 +5528,23 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         SendGuestStarInviteRequest,
-        SendGuestStarInviteResponse,
         GUEST_STAR_SEND_GUEST_STAR_INVITE
     );
+
+    /// Response for the "Send Guest Star Invite" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct SendGuestStarInviteResponse;
+
+    impl SendGuestStarInviteResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// BETA Revokes a previously sent invite for a Guest Star session.
     pub const GUEST_STAR_DELETE_GUEST_STAR_INVITE: HelixEndpoint = HelixEndpoint {
@@ -1482,9 +5561,23 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         DeleteGuestStarInviteRequest,
-        DeleteGuestStarInviteResponse,
         GUEST_STAR_DELETE_GUEST_STAR_INVITE
     );
+
+    /// Response for the "Delete Guest Star Invite" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct DeleteGuestStarInviteResponse;
+
+    impl DeleteGuestStarInviteResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// BETA Allows a previously invited user to be assigned a slot within the active Guest Star session.
     pub const GUEST_STAR_ASSIGN_GUEST_STAR_SLOT: HelixEndpoint = HelixEndpoint {
@@ -1501,9 +5594,23 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         AssignGuestStarSlotRequest,
-        AssignGuestStarSlotResponse,
         GUEST_STAR_ASSIGN_GUEST_STAR_SLOT
     );
+
+    /// Response for the "Assign Guest Star Slot" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct AssignGuestStarSlotResponse;
+
+    impl AssignGuestStarSlotResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// BETA Allows a user to update the assigned slot for a particular user within the active Guest Star session.
     pub const GUEST_STAR_UPDATE_GUEST_STAR_SLOT: HelixEndpoint = HelixEndpoint {
@@ -1520,9 +5627,23 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         UpdateGuestStarSlotRequest,
-        UpdateGuestStarSlotResponse,
         GUEST_STAR_UPDATE_GUEST_STAR_SLOT
     );
+
+    /// Response for the "Update Guest Star Slot" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct UpdateGuestStarSlotResponse;
+
+    impl UpdateGuestStarSlotResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// BETA Allows a caller to remove a slot assignment from a user participating in an active Guest Star session.
     pub const GUEST_STAR_DELETE_GUEST_STAR_SLOT: HelixEndpoint = HelixEndpoint {
@@ -1539,9 +5660,23 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         DeleteGuestStarSlotRequest,
-        DeleteGuestStarSlotResponse,
         GUEST_STAR_DELETE_GUEST_STAR_SLOT
     );
+
+    /// Response for the "Delete Guest Star Slot" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct DeleteGuestStarSlotResponse;
+
+    impl DeleteGuestStarSlotResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// BETA Allows a user to update slot settings for a particular guest within a Guest Star session.
     pub const GUEST_STAR_UPDATE_GUEST_STAR_SLOT_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -1558,32 +5693,44 @@ pub mod guest_star {
     };
     declare_generated_endpoint!(
         UpdateGuestStarSlotSettingsRequest,
-        UpdateGuestStarSlotSettingsResponse,
         GUEST_STAR_UPDATE_GUEST_STAR_SLOT_SETTINGS
     );
+
+    /// Response for the "Update Guest Star Slot Settings" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct UpdateGuestStarSlotSettingsResponse;
+
+    impl UpdateGuestStarSlotSettingsResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 }
 
 pub mod hype_train {
     use super::*;
 
-    /// NEW Gets the status of a Hype Train for the specified broadcaster.
+    /// Gets the status of a Hype Train for the specified broadcaster.
     pub const HYPE_TRAIN_GET_HYPE_TRAIN_STATUS: HelixEndpoint = HelixEndpoint {
         id: "hype_train_get_hype_train_status",
         group: "Hype Train",
         name: "Get Hype Train Status",
-        description: "NEW Gets the status of a Hype Train for the specified broadcaster.",
-        stability: EndpointStability::New,
+        description: "Gets the status of a Hype Train for the specified broadcaster.",
+        stability: EndpointStability::Ga,
         method: HttpMethod::Get,
         path: "/hypetrain/status",
         auth_kind: HelixAuthKind::User,
         scopes: &["channel:read:hype_train"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetHypeTrainStatusRequest,
-        GetHypeTrainStatusResponse,
-        HYPE_TRAIN_GET_HYPE_TRAIN_STATUS
-    );
+    declare_generated_endpoint!(GetHypeTrainStatusRequest, HYPE_TRAIN_GET_HYPE_TRAIN_STATUS);
+
+    pub type GetHypeTrainStatusResponse = crate::helix::HelixJsonResponse;
 }
 
 pub mod moderation {
@@ -1602,11 +5749,36 @@ pub mod moderation {
         scopes: &["moderation:read"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        CheckAutomodStatusRequest,
-        CheckAutomodStatusResponse,
-        MODERATION_CHECK_AUTOMOD_STATUS
-    );
+    declare_generated_endpoint!(CheckAutomodStatusRequest, MODERATION_CHECK_AUTOMOD_STATUS);
+
+    /// Response body for the "Check AutoMod Status" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CheckAutomodStatusResponse {
+        /// The list of messages and whether Twitch would approve them for chat.
+        #[serde(default)]
+        pub data: Vec<CheckAutomodStatusItem>,
+    }
+
+    /// The list of messages and whether Twitch would approve them for chat.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CheckAutomodStatusItem {
+        /// The caller-defined ID passed in the request.
+        #[serde(default)]
+        pub msg_id: String,
+        /// A Boolean value that indicates whether Twitch would approve the message for chat or hold it for moderator review or block it from chat.
+        #[serde(default)]
+        pub is_permitted: bool,
+    }
+
+    impl CheckAutomodStatusResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Allow or deny the message that AutoMod flagged for review.
     pub const MODERATION_MANAGE_HELD_AUTOMOD_MESSAGES: HelixEndpoint = HelixEndpoint {
@@ -1623,9 +5795,23 @@ pub mod moderation {
     };
     declare_generated_endpoint!(
         ManageHeldAutomodMessagesRequest,
-        ManageHeldAutomodMessagesResponse,
         MODERATION_MANAGE_HELD_AUTOMOD_MESSAGES
     );
+
+    /// Response for the "Manage Held AutoMod Messages" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct ManageHeldAutomodMessagesResponse;
+
+    impl ManageHeldAutomodMessagesResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets the broadcaster’s AutoMod settings.
     pub const MODERATION_GET_AUTOMOD_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -1643,11 +5829,63 @@ pub mod moderation {
         ],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetAutomodSettingsRequest,
-        GetAutomodSettingsResponse,
-        MODERATION_GET_AUTOMOD_SETTINGS
-    );
+    declare_generated_endpoint!(GetAutomodSettingsRequest, MODERATION_GET_AUTOMOD_SETTINGS);
+
+    /// Response body for the "Get AutoMod Settings" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetAutomodSettingsResponse {
+        /// The list of AutoMod settings.
+        #[serde(default)]
+        pub data: Vec<GetAutomodSettingsItem>,
+    }
+
+    /// The list of AutoMod settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetAutomodSettingsItem {
+        /// The broadcaster’s ID.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The moderator’s ID.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The default AutoMod level for the broadcaster.
+        #[serde(default)]
+        pub overall_level: i64,
+        /// The Automod level for discrimination against disability.
+        #[serde(default)]
+        pub disability: i64,
+        /// The Automod level for hostility involving aggression.
+        #[serde(default)]
+        pub aggression: i64,
+        /// The AutoMod level for discrimination based on sexuality, sex, or gender.
+        #[serde(default)]
+        pub sexuality_sex_or_gender: i64,
+        /// The Automod level for discrimination against women.
+        #[serde(default)]
+        pub misogyny: i64,
+        /// The Automod level for hostility involving name calling or insults.
+        #[serde(default)]
+        pub bullying: i64,
+        /// The Automod level for profanity.
+        #[serde(default)]
+        pub swearing: i64,
+        /// The Automod level for racial discrimination.
+        #[serde(default)]
+        pub race_ethnicity_or_religion: i64,
+        /// The Automod level for sexual content.
+        #[serde(default)]
+        pub sex_based_terms: i64,
+    }
+
+    impl GetAutomodSettingsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates the broadcaster’s AutoMod settings.
     pub const MODERATION_UPDATE_AUTOMOD_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -1664,9 +5902,64 @@ pub mod moderation {
     };
     declare_generated_endpoint!(
         UpdateAutomodSettingsRequest,
-        UpdateAutomodSettingsResponse,
         MODERATION_UPDATE_AUTOMOD_SETTINGS
     );
+
+    /// Response body for the "Update AutoMod Settings" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateAutomodSettingsResponse {
+        /// The list of AutoMod settings.
+        #[serde(default)]
+        pub data: Vec<UpdateAutomodSettingsItem>,
+    }
+
+    /// The list of AutoMod settings.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateAutomodSettingsItem {
+        /// The broadcaster’s ID.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The moderator’s ID.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The default AutoMod level for the broadcaster.
+        #[serde(default)]
+        pub overall_level: i64,
+        /// The Automod level for discrimination against disability.
+        #[serde(default)]
+        pub disability: i64,
+        /// The Automod level for hostility involving aggression.
+        #[serde(default)]
+        pub aggression: i64,
+        /// The AutoMod level for discrimination based on sexuality, sex, or gender.
+        #[serde(default)]
+        pub sexuality_sex_or_gender: i64,
+        /// The Automod level for discrimination against women.
+        #[serde(default)]
+        pub misogyny: i64,
+        /// The Automod level for hostility involving name calling or insults.
+        #[serde(default)]
+        pub bullying: i64,
+        /// The Automod level for profanity.
+        #[serde(default)]
+        pub swearing: i64,
+        /// The Automod level for racial discrimination.
+        #[serde(default)]
+        pub race_ethnicity_or_religion: i64,
+        /// The Automod level for sexual content.
+        #[serde(default)]
+        pub sex_based_terms: i64,
+    }
+
+    impl UpdateAutomodSettingsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets all users that the broadcaster banned or put in a timeout.
     pub const MODERATION_GET_BANNED_USERS: HelixEndpoint = HelixEndpoint {
@@ -1681,11 +5974,60 @@ pub mod moderation {
         scopes: &["moderation:read", "moderator:manage:banned_users"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetBannedUsersRequest,
-        GetBannedUsersResponse,
-        MODERATION_GET_BANNED_USERS
-    );
+    declare_generated_endpoint!(GetBannedUsersRequest, MODERATION_GET_BANNED_USERS);
+
+    /// Response body for the "Get Banned Users" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetBannedUsersResponse {
+        /// The list of users that were banned or put in a timeout.
+        #[serde(default)]
+        pub data: Vec<GetBannedUsersItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of users that were banned or put in a timeout.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetBannedUsersItem {
+        /// The ID of the banned user.
+        #[serde(default)]
+        pub user_id: String,
+        /// The banned user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The banned user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The UTC date and time (in RFC3339 format) of when the timeout expires, or an empty string if the user is permanently banned.
+        #[serde(default)]
+        pub expires_at: String,
+        /// The UTC date and time (in RFC3339 format) of when the user was banned.
+        #[serde(default)]
+        pub created_at: String,
+        /// The reason the user was banned or put in a timeout if the moderator provided one.
+        #[serde(default)]
+        pub reason: String,
+        /// The ID of the moderator that banned the user or put them in a timeout.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The moderator’s login name.
+        #[serde(default)]
+        pub moderator_login: String,
+        /// The moderator’s display name.
+        #[serde(default)]
+        pub moderator_name: String,
+    }
+
+    impl GetBannedUsersResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Bans a user from participating in a broadcaster’s chat room or puts them in a timeout.
     pub const MODERATION_BAN_USER: HelixEndpoint = HelixEndpoint {
@@ -1700,7 +6042,45 @@ pub mod moderation {
         scopes: &["moderator:manage:banned_users", "user:bot"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(BanUserRequest, BanUserResponse, MODERATION_BAN_USER);
+    declare_generated_endpoint!(BanUserRequest, MODERATION_BAN_USER);
+
+    /// Response body for the "Ban User" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct BanUserResponse {
+        /// A list that contains the user you successfully banned or put in a timeout.
+        #[serde(default)]
+        pub data: Vec<BanUserItem>,
+    }
+
+    /// A list that contains the user you successfully banned or put in a timeout.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct BanUserItem {
+        /// The broadcaster whose chat room the user was banned from chatting in.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The moderator that banned or put the user in the timeout.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The user that was banned or put in a timeout.
+        #[serde(default)]
+        pub user_id: String,
+        /// The UTC date and time (in RFC3339 format) that the ban or timeout was placed.
+        #[serde(default)]
+        pub created_at: String,
+        /// The UTC date and time (in RFC3339 format) that the timeout will end.
+        #[serde(default)]
+        pub end_time: String,
+    }
+
+    impl BanUserResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Removes the ban or timeout that was placed on the specified user.
     pub const MODERATION_UNBAN_USER: HelixEndpoint = HelixEndpoint {
@@ -1715,7 +6095,22 @@ pub mod moderation {
         scopes: &["moderator:manage:banned_users", "user:bot"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UnbanUserRequest, UnbanUserResponse, MODERATION_UNBAN_USER);
+    declare_generated_endpoint!(UnbanUserRequest, MODERATION_UNBAN_USER);
+
+    /// Response for the "Unban User" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct UnbanUserResponse;
+
+    impl UnbanUserResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets a list of unban requests for a broadcaster’s channel.
     pub const MODERATION_GET_UNBAN_REQUESTS: HelixEndpoint = HelixEndpoint {
@@ -1733,11 +6128,78 @@ pub mod moderation {
         ],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetUnbanRequestsRequest,
-        GetUnbanRequestsResponse,
-        MODERATION_GET_UNBAN_REQUESTS
-    );
+    declare_generated_endpoint!(GetUnbanRequestsRequest, MODERATION_GET_UNBAN_REQUESTS);
+
+    /// Response body for the "Get Unban Requests" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUnbanRequestsResponse {
+        /// A list that contains information about the channel's unban requests.
+        #[serde(default)]
+        pub data: Vec<GetUnbanRequestsItem>,
+        /// Contains information used to page through a list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// A list that contains information about the channel's unban requests.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUnbanRequestsItem {
+        /// Unban request ID.
+        #[serde(default)]
+        pub id: String,
+        /// User ID of broadcaster whose channel is receiving the unban request.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster's display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster's login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// User ID of moderator who approved/denied the request.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The moderator's login name.
+        #[serde(default)]
+        pub moderator_login: String,
+        /// The moderator's display name.
+        #[serde(default)]
+        pub moderator_name: String,
+        /// User ID of the requestor who is asking for an unban.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user's login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user's display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// Text of the request from the requesting user.
+        #[serde(default)]
+        pub text: String,
+        /// Status of the request.
+        #[serde(default)]
+        pub status: String,
+        /// Timestamp of when the unban request was created.
+        #[serde(default)]
+        pub created_at: String,
+        /// Timestamp of when moderator/broadcaster approved or denied the request.
+        #[serde(default)]
+        pub resolved_at: String,
+        /// Text input by the resolver (moderator) of the unban.
+        #[serde(default)]
+        pub resolution_text: String,
+    }
+
+    impl GetUnbanRequestsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Resolves an unban request by approving or denying it.
     pub const MODERATION_RESOLVE_UNBAN_REQUESTS: HelixEndpoint = HelixEndpoint {
@@ -1754,9 +6216,75 @@ pub mod moderation {
     };
     declare_generated_endpoint!(
         ResolveUnbanRequestsRequest,
-        ResolveUnbanRequestsResponse,
         MODERATION_RESOLVE_UNBAN_REQUESTS
     );
+
+    /// Response body for the "Resolve Unban Requests" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct ResolveUnbanRequestsResponse {
+        #[serde(default)]
+        pub data: Vec<ResolveUnbanRequestsItem>,
+    }
+
+    /// `data` object.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct ResolveUnbanRequestsItem {
+        /// Unban request ID.
+        #[serde(default)]
+        pub id: String,
+        /// User ID of broadcaster whose channel is receiving the unban request.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// User ID of moderator who approved/denied the request.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The moderator’s login name.
+        #[serde(default)]
+        pub moderator_login: String,
+        /// The moderator’s display name.
+        #[serde(default)]
+        pub moderator_name: String,
+        /// User ID of the requestor who is asking for an unban.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// Text of the request from the requesting user.
+        #[serde(default)]
+        pub text: String,
+        /// Status of the request.
+        #[serde(default)]
+        pub status: String,
+        /// Timestamp of when the unban request was created.
+        #[serde(default)]
+        pub created_at: String,
+        /// Timestamp of when moderator/broadcaster approved or denied the request.
+        #[serde(default)]
+        pub resolved_at: String,
+        /// Text input by the resolver (moderator) of the unban request.
+        #[serde(default)]
+        pub resolution_text: String,
+    }
+
+    impl ResolveUnbanRequestsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the broadcaster’s list of non-private, blocked words or phrases.
     pub const MODERATION_GET_BLOCKED_TERMS: HelixEndpoint = HelixEndpoint {
@@ -1774,11 +6302,54 @@ pub mod moderation {
         ],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetBlockedTermsRequest,
-        GetBlockedTermsResponse,
-        MODERATION_GET_BLOCKED_TERMS
-    );
+    declare_generated_endpoint!(GetBlockedTermsRequest, MODERATION_GET_BLOCKED_TERMS);
+
+    /// Response body for the "Get Blocked Terms" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetBlockedTermsResponse {
+        /// The list of blocked terms.
+        #[serde(default)]
+        pub data: Vec<GetBlockedTermsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of blocked terms.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetBlockedTermsItem {
+        /// The broadcaster that owns the list of blocked terms.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The moderator that blocked the word or phrase from being used in the broadcaster’s chat room.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// An ID that identifies this blocked term.
+        #[serde(default)]
+        pub id: String,
+        /// The blocked word or phrase.
+        #[serde(default)]
+        pub text: String,
+        /// The UTC date and time (in RFC3339 format) that the term was blocked.
+        #[serde(default)]
+        pub created_at: String,
+        /// The UTC date and time (in RFC3339 format) that the term was updated.
+        #[serde(default)]
+        pub updated_at: String,
+        /// The UTC date and time (in RFC3339 format) that the blocked term is set to expire.
+        #[serde(default)]
+        pub expires_at: String,
+    }
+
+    impl GetBlockedTermsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Adds a word or phrase to the broadcaster’s list of blocked terms.
     pub const MODERATION_ADD_BLOCKED_TERM: HelixEndpoint = HelixEndpoint {
@@ -1793,11 +6364,51 @@ pub mod moderation {
         scopes: &["moderator:manage:blocked_terms"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        AddBlockedTermRequest,
-        AddBlockedTermResponse,
-        MODERATION_ADD_BLOCKED_TERM
-    );
+    declare_generated_endpoint!(AddBlockedTermRequest, MODERATION_ADD_BLOCKED_TERM);
+
+    /// Response body for the "Add Blocked Term" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct AddBlockedTermResponse {
+        /// A list that contains the single blocked term that the broadcaster added.
+        #[serde(default)]
+        pub data: Vec<AddBlockedTermItem>,
+    }
+
+    /// A list that contains the single blocked term that the broadcaster added.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct AddBlockedTermItem {
+        /// The broadcaster that owns the list of blocked terms.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The moderator that blocked the word or phrase from being used in the broadcaster’s chat room.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// An ID that identifies this blocked term.
+        #[serde(default)]
+        pub id: String,
+        /// The blocked word or phrase.
+        #[serde(default)]
+        pub text: String,
+        /// The UTC date and time (in RFC3339 format) that the term was blocked.
+        #[serde(default)]
+        pub created_at: String,
+        /// The UTC date and time (in RFC3339 format) that the term was updated.
+        #[serde(default)]
+        pub updated_at: String,
+        /// The UTC date and time (in RFC3339 format) that the blocked term is set to expire.
+        #[serde(default)]
+        pub expires_at: String,
+    }
+
+    impl AddBlockedTermResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Removes the word or phrase from the broadcaster’s list of blocked terms.
     pub const MODERATION_REMOVE_BLOCKED_TERM: HelixEndpoint = HelixEndpoint {
@@ -1812,11 +6423,22 @@ pub mod moderation {
         scopes: &["moderator:manage:blocked_terms"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        RemoveBlockedTermRequest,
-        RemoveBlockedTermResponse,
-        MODERATION_REMOVE_BLOCKED_TERM
-    );
+    declare_generated_endpoint!(RemoveBlockedTermRequest, MODERATION_REMOVE_BLOCKED_TERM);
+
+    /// Response for the "Remove Blocked Term" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct RemoveBlockedTermResponse;
+
+    impl RemoveBlockedTermResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Removes a single chat message or all chat messages from the broadcaster’s chat room.
     pub const MODERATION_DELETE_CHAT_MESSAGES: HelixEndpoint = HelixEndpoint {
@@ -1831,11 +6453,22 @@ pub mod moderation {
         scopes: &["moderator:manage:chat_messages"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        DeleteChatMessagesRequest,
-        DeleteChatMessagesResponse,
-        MODERATION_DELETE_CHAT_MESSAGES
-    );
+    declare_generated_endpoint!(DeleteChatMessagesRequest, MODERATION_DELETE_CHAT_MESSAGES);
+
+    /// Response for the "Delete Chat Messages" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct DeleteChatMessagesResponse;
+
+    impl DeleteChatMessagesResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets a list of channels that the specified user has moderator privileges in.
     pub const MODERATION_GET_MODERATED_CHANNELS: HelixEndpoint = HelixEndpoint {
@@ -1852,9 +6485,43 @@ pub mod moderation {
     };
     declare_generated_endpoint!(
         GetModeratedChannelsRequest,
-        GetModeratedChannelsResponse,
         MODERATION_GET_MODERATED_CHANNELS
     );
+
+    /// Response body for the "Get Moderated Channels" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetModeratedChannelsResponse {
+        /// The list of channels that the user has moderator privileges in.
+        #[serde(default)]
+        pub data: Vec<GetModeratedChannelsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of channels that the user has moderator privileges in.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetModeratedChannelsItem {
+        /// An ID that uniquely identifies the channel this user can moderate.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The channel’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The channels’ display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+    }
+
+    impl GetModeratedChannelsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets all users allowed to moderate the broadcaster’s chat room.
     pub const MODERATION_GET_MODERATORS: HelixEndpoint = HelixEndpoint {
@@ -1869,11 +6536,42 @@ pub mod moderation {
         scopes: &["channel:manage:moderators", "moderation:read"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetModeratorsRequest,
-        GetModeratorsResponse,
-        MODERATION_GET_MODERATORS
-    );
+    declare_generated_endpoint!(GetModeratorsRequest, MODERATION_GET_MODERATORS);
+
+    /// Response body for the "Get Moderators" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetModeratorsResponse {
+        /// The list of moderators.
+        #[serde(default)]
+        pub data: Vec<GetModeratorsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of moderators.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetModeratorsItem {
+        /// The ID of the user that has permission to moderate the broadcaster’s channel.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+    }
+
+    impl GetModeratorsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Adds a moderator to the broadcaster’s chat room.
     pub const MODERATION_ADD_CHANNEL_MODERATOR: HelixEndpoint = HelixEndpoint {
@@ -1888,11 +6586,22 @@ pub mod moderation {
         scopes: &["channel:manage:moderators"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        AddChannelModeratorRequest,
-        AddChannelModeratorResponse,
-        MODERATION_ADD_CHANNEL_MODERATOR
-    );
+    declare_generated_endpoint!(AddChannelModeratorRequest, MODERATION_ADD_CHANNEL_MODERATOR);
+
+    /// Response for the "Add Channel Moderator" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct AddChannelModeratorResponse;
+
+    impl AddChannelModeratorResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Removes a moderator from the broadcaster’s chat room.
     pub const MODERATION_REMOVE_CHANNEL_MODERATOR: HelixEndpoint = HelixEndpoint {
@@ -1909,9 +6618,23 @@ pub mod moderation {
     };
     declare_generated_endpoint!(
         RemoveChannelModeratorRequest,
-        RemoveChannelModeratorResponse,
         MODERATION_REMOVE_CHANNEL_MODERATOR
     );
+
+    /// Response for the "Remove Channel Moderator" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct RemoveChannelModeratorResponse;
+
+    impl RemoveChannelModeratorResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets a list of the broadcaster’s VIPs.
     pub const MODERATION_GET_VIPS: HelixEndpoint = HelixEndpoint {
@@ -1926,7 +6649,42 @@ pub mod moderation {
         scopes: &["channel:manage:vips", "channel:read:vips"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetVipsRequest, GetVipsResponse, MODERATION_GET_VIPS);
+    declare_generated_endpoint!(GetVipsRequest, MODERATION_GET_VIPS);
+
+    /// Response body for the "Get VIPs" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetVipsResponse {
+        /// The list of VIPs.
+        #[serde(default)]
+        pub data: Vec<GetVipsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of VIPs.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetVipsItem {
+        /// An ID that uniquely identifies the VIP user.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+    }
+
+    impl GetVipsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Adds the specified user as a VIP in the broadcaster’s channel.
     pub const MODERATION_ADD_CHANNEL_VIP: HelixEndpoint = HelixEndpoint {
@@ -1941,11 +6699,22 @@ pub mod moderation {
         scopes: &["channel:manage:vips"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        AddChannelVipRequest,
-        AddChannelVipResponse,
-        MODERATION_ADD_CHANNEL_VIP
-    );
+    declare_generated_endpoint!(AddChannelVipRequest, MODERATION_ADD_CHANNEL_VIP);
+
+    /// Response for the "Add Channel VIP" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct AddChannelVipResponse;
+
+    impl AddChannelVipResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Removes the specified user as a VIP in the broadcaster’s channel.
     pub const MODERATION_REMOVE_CHANNEL_VIP: HelixEndpoint = HelixEndpoint {
@@ -1960,11 +6729,22 @@ pub mod moderation {
         scopes: &["channel:manage:vips"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        RemoveChannelVipRequest,
-        RemoveChannelVipResponse,
-        MODERATION_REMOVE_CHANNEL_VIP
-    );
+    declare_generated_endpoint!(RemoveChannelVipRequest, MODERATION_REMOVE_CHANNEL_VIP);
+
+    /// Response for the "Remove Channel VIP" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct RemoveChannelVipResponse;
+
+    impl RemoveChannelVipResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Activates or deactivates the broadcaster’s Shield Mode.
     pub const MODERATION_UPDATE_SHIELD_MODE_STATUS: HelixEndpoint = HelixEndpoint {
@@ -1981,9 +6761,46 @@ pub mod moderation {
     };
     declare_generated_endpoint!(
         UpdateShieldModeStatusRequest,
-        UpdateShieldModeStatusResponse,
         MODERATION_UPDATE_SHIELD_MODE_STATUS
     );
+
+    /// Response body for the "Update Shield Mode Status" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateShieldModeStatusResponse {
+        /// A list that contains a single object with the broadcaster’s updated Shield Mode status.
+        #[serde(default)]
+        pub data: Vec<UpdateShieldModeStatusItem>,
+    }
+
+    /// A list that contains a single object with the broadcaster’s updated Shield Mode status.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateShieldModeStatusItem {
+        /// A Boolean value that determines whether Shield Mode is active.
+        #[serde(default)]
+        pub is_active: bool,
+        /// An ID that identifies the moderator that last activated Shield Mode.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The moderator’s login name.
+        #[serde(default)]
+        pub moderator_login: String,
+        /// The moderator’s display name.
+        #[serde(default)]
+        pub moderator_name: String,
+        /// The UTC timestamp (in RFC3339 format) of when Shield Mode was last activated.
+        #[serde(default)]
+        pub last_activated_at: String,
+    }
+
+    impl UpdateShieldModeStatusResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the broadcaster’s Shield Mode activation status.
     pub const MODERATION_GET_SHIELD_MODE_STATUS: HelixEndpoint = HelixEndpoint {
@@ -2000,9 +6817,46 @@ pub mod moderation {
     };
     declare_generated_endpoint!(
         GetShieldModeStatusRequest,
-        GetShieldModeStatusResponse,
         MODERATION_GET_SHIELD_MODE_STATUS
     );
+
+    /// Response body for the "Get Shield Mode Status" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetShieldModeStatusResponse {
+        /// A list that contains a single object with the broadcaster’s Shield Mode status.
+        #[serde(default)]
+        pub data: Vec<GetShieldModeStatusItem>,
+    }
+
+    /// A list that contains a single object with the broadcaster’s Shield Mode status.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetShieldModeStatusItem {
+        /// A Boolean value that determines whether Shield Mode is active.
+        #[serde(default)]
+        pub is_active: bool,
+        /// An ID that identifies the moderator that last activated Shield Mode.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The moderator’s login name.
+        #[serde(default)]
+        pub moderator_login: String,
+        /// The moderator’s display name.
+        #[serde(default)]
+        pub moderator_name: String,
+        /// The UTC timestamp (in RFC3339 format) of when Shield Mode was last activated.
+        #[serde(default)]
+        pub last_activated_at: String,
+    }
+
+    impl GetShieldModeStatusResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Warns a user in the specified broadcaster’s chat room, preventing them from chat interaction until the warning is acknowledged.
     pub const MODERATION_WARN_CHAT_USER: HelixEndpoint = HelixEndpoint {
@@ -2017,11 +6871,42 @@ pub mod moderation {
         scopes: &["moderator:manage:warnings"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        WarnChatUserRequest,
-        WarnChatUserResponse,
-        MODERATION_WARN_CHAT_USER
-    );
+    declare_generated_endpoint!(WarnChatUserRequest, MODERATION_WARN_CHAT_USER);
+
+    /// Response body for the "Warn Chat User" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct WarnChatUserResponse {
+        /// A list that contains information about the warning.
+        #[serde(default)]
+        pub data: Vec<WarnChatUserItem>,
+    }
+
+    /// A list that contains information about the warning.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct WarnChatUserItem {
+        /// The ID of the channel in which the warning will take effect.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The ID of the warned user.
+        #[serde(default)]
+        pub user_id: String,
+        /// The ID of the user who applied the warning.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The reason provided for warning.
+        #[serde(default)]
+        pub reason: String,
+    }
+
+    impl WarnChatUserResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// NEW Adds a suspicious user status to a chatter on the broadcaster’s channel.
     pub const MODERATION_ADD_SUSPICIOUS_STATUS_TO_CHAT_USER: HelixEndpoint = HelixEndpoint {
@@ -2038,9 +6923,49 @@ pub mod moderation {
     };
     declare_generated_endpoint!(
         AddSuspiciousStatusToChatUserRequest,
-        AddSuspiciousStatusToChatUserResponse,
         MODERATION_ADD_SUSPICIOUS_STATUS_TO_CHAT_USER
     );
+
+    /// Response body for the "Add Suspicious Status to Chat User" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct AddSuspiciousStatusToChatUserResponse {
+        /// An array with one object containing information about the suspicious user action.
+        #[serde(default)]
+        pub data: Vec<AddSuspiciousStatusToChatUserItem>,
+    }
+
+    /// An array with one object containing information about the suspicious user action.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct AddSuspiciousStatusToChatUserItem {
+        /// The ID of the user being given the suspicious status.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user ID of the broadcaster indicating in which channel the status is being applied.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The user ID of the moderator who applied the last status.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The timestamp of the last time this user’s status was updated.
+        #[serde(default)]
+        pub updated_at: String,
+        /// The type of suspicious status.
+        #[serde(default)]
+        pub status: String,
+        /// An array of strings representing the type(s) of suspicious user this is.
+        #[serde(default)]
+        pub types: Vec<serde_json::Value>,
+    }
+
+    impl AddSuspiciousStatusToChatUserResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// NEW Remove a suspicious user status from a chatter on broadcaster’s channel.
     pub const MODERATION_REMOVE_SUSPICIOUS_STATUS_FROM_CHAT_USER: HelixEndpoint = HelixEndpoint {
@@ -2057,9 +6982,49 @@ pub mod moderation {
     };
     declare_generated_endpoint!(
         RemoveSuspiciousStatusFromChatUserRequest,
-        RemoveSuspiciousStatusFromChatUserResponse,
         MODERATION_REMOVE_SUSPICIOUS_STATUS_FROM_CHAT_USER
     );
+
+    /// Response body for the "Remove Suspicious Status From Chat User" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct RemoveSuspiciousStatusFromChatUserResponse {
+        /// An array with one object containing information about the suspicious user action.
+        #[serde(default)]
+        pub data: Vec<RemoveSuspiciousStatusFromChatUserItem>,
+    }
+
+    /// An array with one object containing information about the suspicious user action.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct RemoveSuspiciousStatusFromChatUserItem {
+        /// The ID of the user having the suspicious status removed.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user ID of the broadcaster indicating in which channel the status is being removed.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The user ID of the moderator who modified the last status.
+        #[serde(default)]
+        pub moderator_id: String,
+        /// The timestamp of the last time this user’s status was updated.
+        #[serde(default)]
+        pub updated_at: String,
+        /// The type of suspicious status.
+        #[serde(default)]
+        pub status: String,
+        /// An array of strings representing the type(s) of suspicious user this is.
+        #[serde(default)]
+        pub types: Vec<serde_json::Value>,
+    }
+
+    impl RemoveSuspiciousStatusFromChatUserResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod polls {
@@ -2078,7 +7043,95 @@ pub mod polls {
         scopes: &["channel:manage:polls", "channel:read:polls"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetPollsRequest, GetPollsResponse, POLLS_GET_POLLS);
+    declare_generated_endpoint!(GetPollsRequest, POLLS_GET_POLLS);
+
+    /// Response body for the "Get Polls" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPollsResponse {
+        /// A list of polls.
+        #[serde(default)]
+        pub data: Vec<GetPollsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// A list of polls.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPollsItem {
+        /// An ID that identifies the poll.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the broadcaster that created the poll.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster's display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster's login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The question that viewers are voting on.
+        #[serde(default)]
+        pub title: String,
+        /// A list of choices that viewers can choose from.
+        #[serde(default)]
+        pub choices: Vec<GetPollsChoices>,
+        /// Not used; will be set to false.
+        #[serde(default)]
+        pub bits_voting_enabled: bool,
+        /// Not used; will be set to 0.
+        #[serde(default)]
+        pub bits_per_vote: i64,
+        /// A Boolean value that indicates whether viewers may cast additional votes using Channel Points.
+        #[serde(default)]
+        pub channel_points_voting_enabled: bool,
+        /// The number of points the viewer must spend to cast one additional vote.
+        #[serde(default)]
+        pub channel_points_per_vote: i64,
+        /// The poll's status.
+        #[serde(default)]
+        pub status: String,
+        /// The length of time (in seconds) that the poll will run for.
+        #[serde(default)]
+        pub duration: i64,
+        /// The UTC date and time (in RFC3339 format) of when the poll began.
+        #[serde(default)]
+        pub started_at: String,
+        /// The UTC date and time (in RFC3339 format) of when the poll ended.
+        #[serde(default)]
+        pub ended_at: String,
+    }
+
+    /// A list of choices that viewers can choose from.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPollsChoices {
+        /// An ID that identifies this choice.
+        #[serde(default)]
+        pub id: String,
+        /// The choice's title.
+        #[serde(default)]
+        pub title: String,
+        /// The total number of votes cast for this choice.
+        #[serde(default)]
+        pub votes: i64,
+        /// The number of votes cast using Channel Points.
+        #[serde(default)]
+        pub channel_points_votes: i64,
+        /// Not used; will be set to 0.
+        #[serde(default)]
+        pub bits_votes: i64,
+    }
+
+    impl GetPollsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Creates a poll that viewers in the broadcaster’s channel can vote on.
     pub const POLLS_CREATE_POLL: HelixEndpoint = HelixEndpoint {
@@ -2093,7 +7146,92 @@ pub mod polls {
         scopes: &["channel:manage:polls"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(CreatePollRequest, CreatePollResponse, POLLS_CREATE_POLL);
+    declare_generated_endpoint!(CreatePollRequest, POLLS_CREATE_POLL);
+
+    /// Response body for the "Create Poll" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreatePollResponse {
+        /// A list that contains the single poll that you created.
+        #[serde(default)]
+        pub data: Vec<CreatePollItem>,
+    }
+
+    /// A list that contains the single poll that you created.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreatePollItem {
+        /// An ID that identifies the poll.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the broadcaster that created the poll.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The question that viewers are voting on.
+        #[serde(default)]
+        pub title: String,
+        /// A list of choices that viewers can choose from.
+        #[serde(default)]
+        pub choices: Vec<CreatePollChoices>,
+        /// Not used; will be set to false.
+        #[serde(default)]
+        pub bits_voting_enabled: bool,
+        /// Not used; will be set to 0.
+        #[serde(default)]
+        pub bits_per_vote: i64,
+        /// A Boolean value that indicates whether viewers may cast additional votes using Channel Points.
+        #[serde(default)]
+        pub channel_points_voting_enabled: bool,
+        /// The number of points the viewer must spend to cast one additional vote.
+        #[serde(default)]
+        pub channel_points_per_vote: i64,
+        /// The poll’s status.
+        #[serde(default)]
+        pub status: String,
+        /// The length of time (in seconds) that the poll will run for.
+        #[serde(default)]
+        pub duration: i64,
+        /// The UTC date and time (in RFC3339 format) of when the poll began.
+        #[serde(default)]
+        pub started_at: String,
+        /// The UTC date and time (in RFC3339 format) of when the poll ended.
+        #[serde(default)]
+        pub ended_at: String,
+    }
+
+    /// A list of choices that viewers can choose from.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreatePollChoices {
+        /// An ID that identifies this choice.
+        #[serde(default)]
+        pub id: String,
+        /// The choice’s title.
+        #[serde(default)]
+        pub title: String,
+        /// The total number of votes cast for this choice.
+        #[serde(default)]
+        pub votes: i64,
+        /// The number of votes cast using Channel Points.
+        #[serde(default)]
+        pub channel_points_votes: i64,
+        /// Not used; will be set to 0.
+        #[serde(default)]
+        pub bits_votes: i64,
+    }
+
+    impl CreatePollResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// End an active poll.
     pub const POLLS_END_POLL: HelixEndpoint = HelixEndpoint {
@@ -2108,7 +7246,92 @@ pub mod polls {
         scopes: &["channel:manage:polls"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(EndPollRequest, EndPollResponse, POLLS_END_POLL);
+    declare_generated_endpoint!(EndPollRequest, POLLS_END_POLL);
+
+    /// Response body for the "End Poll" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndPollResponse {
+        /// A list that contains the poll that you ended.
+        #[serde(default)]
+        pub data: Vec<EndPollItem>,
+    }
+
+    /// A list that contains the poll that you ended.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndPollItem {
+        /// An ID that identifies the poll.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the broadcaster that created the poll.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The question that viewers are voting on.
+        #[serde(default)]
+        pub title: String,
+        /// A list of choices that viewers can choose from.
+        #[serde(default)]
+        pub choices: Vec<EndPollChoices>,
+        /// Not used; will be set to false.
+        #[serde(default)]
+        pub bits_voting_enabled: bool,
+        /// Not used; will be set to 0.
+        #[serde(default)]
+        pub bits_per_vote: i64,
+        /// A Boolean value that indicates whether viewers may cast additional votes using Channel Points.
+        #[serde(default)]
+        pub channel_points_voting_enabled: bool,
+        /// The number of points the viewer must spend to cast one additional vote.
+        #[serde(default)]
+        pub channel_points_per_vote: i64,
+        /// The poll’s status.
+        #[serde(default)]
+        pub status: String,
+        /// The length of time (in seconds) that the poll will run for.
+        #[serde(default)]
+        pub duration: i64,
+        /// The UTC date and time (in RFC3339 format) of when the poll began.
+        #[serde(default)]
+        pub started_at: String,
+        /// The UTC date and time (in RFC3339 format) of when the poll ended.
+        #[serde(default)]
+        pub ended_at: String,
+    }
+
+    /// A list of choices that viewers can choose from.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndPollChoices {
+        /// An ID that identifies this choice.
+        #[serde(default)]
+        pub id: String,
+        /// The choice’s title.
+        #[serde(default)]
+        pub title: String,
+        /// The total number of votes cast for this choice.
+        #[serde(default)]
+        pub votes: i64,
+        /// The number of votes cast using Channel Points.
+        #[serde(default)]
+        pub channel_points_votes: i64,
+        /// Not used; will be set to 0.
+        #[serde(default)]
+        pub bits_votes: i64,
+    }
+
+    impl EndPollResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod predictions {
@@ -2127,11 +7350,112 @@ pub mod predictions {
         scopes: &["channel:manage:predictions", "channel:read:predictions"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetPredictionsRequest,
-        GetPredictionsResponse,
-        PREDICTIONS_GET_PREDICTIONS
-    );
+    declare_generated_endpoint!(GetPredictionsRequest, PREDICTIONS_GET_PREDICTIONS);
+
+    /// Response body for the "Get Predictions" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPredictionsResponse {
+        /// The broadcaster’s list of Channel Points Predictions.
+        #[serde(default)]
+        pub data: Vec<GetPredictionsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The broadcaster’s list of Channel Points Predictions.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPredictionsItem {
+        /// An ID that identifies this prediction.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the broadcaster that created the prediction.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The question that the prediction asks.
+        #[serde(default)]
+        pub title: String,
+        /// The ID of the winning outcome.
+        #[serde(default)]
+        pub winning_outcome_id: String,
+        /// The list of possible outcomes for the prediction.
+        #[serde(default)]
+        pub outcomes: Vec<GetPredictionsOutcomes>,
+        /// The length of time (in seconds) that the prediction will run for.
+        #[serde(default)]
+        pub prediction_window: i64,
+        /// The prediction’s status.
+        #[serde(default)]
+        pub status: String,
+        /// The UTC date and time of when the Prediction began.
+        #[serde(default)]
+        pub created_at: String,
+        /// The UTC date and time of when the Prediction ended.
+        #[serde(default)]
+        pub ended_at: String,
+        /// The UTC date and time of when the Prediction was locked.
+        #[serde(default)]
+        pub locked_at: String,
+    }
+
+    /// The list of possible outcomes for the prediction.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPredictionsOutcomes {
+        /// An ID that identifies this outcome.
+        #[serde(default)]
+        pub id: String,
+        /// The outcome’s text.
+        #[serde(default)]
+        pub title: String,
+        /// The number of unique viewers that chose this outcome.
+        #[serde(default)]
+        pub users: i64,
+        /// The number of Channel Points spent by viewers on this outcome.
+        #[serde(default)]
+        pub channel_points: i64,
+        /// A list of viewers who were the top predictors; otherwise, null if none.
+        #[serde(default)]
+        pub top_predictors: Vec<GetPredictionsOutcomesTopPredictors>,
+        /// The color that visually identifies this outcome in the UX.
+        #[serde(default)]
+        pub color: String,
+    }
+
+    /// A list of viewers who were the top predictors; otherwise, null if none.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetPredictionsOutcomesTopPredictors {
+        /// An ID that identifies the viewer.
+        #[serde(default)]
+        pub user_id: String,
+        /// The viewer’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The viewer’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The number of Channel Points the viewer spent.
+        #[serde(default)]
+        pub channel_points_used: i64,
+        /// The number of Channel Points distributed to the viewer.
+        #[serde(default)]
+        pub channel_points_won: i64,
+    }
+
+    impl GetPredictionsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Create a Channel Points Prediction.
     pub const PREDICTIONS_CREATE_PREDICTION: HelixEndpoint = HelixEndpoint {
@@ -2146,11 +7470,109 @@ pub mod predictions {
         scopes: &["channel:manage:predictions"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        CreatePredictionRequest,
-        CreatePredictionResponse,
-        PREDICTIONS_CREATE_PREDICTION
-    );
+    declare_generated_endpoint!(CreatePredictionRequest, PREDICTIONS_CREATE_PREDICTION);
+
+    /// Response body for the "Create Prediction" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreatePredictionResponse {
+        /// A list that contains the single prediction that you created.
+        #[serde(default)]
+        pub data: Vec<CreatePredictionItem>,
+    }
+
+    /// A list that contains the single prediction that you created.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreatePredictionItem {
+        /// An ID that identifies this prediction.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the broadcaster that created the prediction.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The question that the prediction asks.
+        #[serde(default)]
+        pub title: String,
+        /// The ID of the winning outcome.
+        #[serde(default)]
+        pub winning_outcome_id: String,
+        /// The list of possible outcomes for the prediction.
+        #[serde(default)]
+        pub outcomes: Vec<CreatePredictionOutcomes>,
+        /// The length of time (in seconds) that the prediction will run for.
+        #[serde(default)]
+        pub prediction_window: i64,
+        /// The prediction’s status.
+        #[serde(default)]
+        pub status: String,
+        /// The UTC date and time of when the Prediction began.
+        #[serde(default)]
+        pub created_at: String,
+        /// The UTC date and time of when the Prediction ended.
+        #[serde(default)]
+        pub ended_at: String,
+        /// The UTC date and time of when the Prediction was locked.
+        #[serde(default)]
+        pub locked_at: String,
+    }
+
+    /// The list of possible outcomes for the prediction.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreatePredictionOutcomes {
+        /// An ID that identifies this outcome.
+        #[serde(default)]
+        pub id: String,
+        /// The outcome’s text.
+        #[serde(default)]
+        pub title: String,
+        /// The number of unique viewers that chose this outcome.
+        #[serde(default)]
+        pub users: i64,
+        /// The number of Channel Points spent by viewers on this outcome.
+        #[serde(default)]
+        pub channel_points: i64,
+        /// A list of viewers who were the top predictors; otherwise, null if none.
+        #[serde(default)]
+        pub top_predictors: Vec<CreatePredictionOutcomesTopPredictors>,
+        /// The color that visually identifies this outcome in the UX.
+        #[serde(default)]
+        pub color: String,
+    }
+
+    /// A list of viewers who were the top predictors; otherwise, null if none.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreatePredictionOutcomesTopPredictors {
+        /// An ID that identifies the viewer.
+        #[serde(default)]
+        pub user_id: String,
+        /// The viewer’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The viewer’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The number of Channel Points the viewer spent.
+        #[serde(default)]
+        pub channel_points_used: i64,
+        /// The number of Channel Points distributed to the viewer.
+        #[serde(default)]
+        pub channel_points_won: i64,
+    }
+
+    impl CreatePredictionResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Locks, resolves, or cancels a Channel Points Prediction.
     pub const PREDICTIONS_END_PREDICTION: HelixEndpoint = HelixEndpoint {
@@ -2165,11 +7587,109 @@ pub mod predictions {
         scopes: &["channel:manage:predictions"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        EndPredictionRequest,
-        EndPredictionResponse,
-        PREDICTIONS_END_PREDICTION
-    );
+    declare_generated_endpoint!(EndPredictionRequest, PREDICTIONS_END_PREDICTION);
+
+    /// Response body for the "End Prediction" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndPredictionResponse {
+        /// A list that contains the single prediction that you updated.
+        #[serde(default)]
+        pub data: Vec<EndPredictionItem>,
+    }
+
+    /// A list that contains the single prediction that you updated.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndPredictionItem {
+        /// An ID that identifies this prediction.
+        #[serde(default)]
+        pub id: String,
+        /// An ID that identifies the broadcaster that created the prediction.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The question that the prediction asks.
+        #[serde(default)]
+        pub title: String,
+        /// The ID of the winning outcome.
+        #[serde(default)]
+        pub winning_outcome_id: String,
+        /// The list of possible outcomes for the prediction.
+        #[serde(default)]
+        pub outcomes: Vec<EndPredictionOutcomes>,
+        /// The length of time (in seconds) that the prediction will run for.
+        #[serde(default)]
+        pub prediction_window: i64,
+        /// The prediction’s status.
+        #[serde(default)]
+        pub status: String,
+        /// The UTC date and time of when the Prediction began.
+        #[serde(default)]
+        pub created_at: String,
+        /// The UTC date and time of when the Prediction ended.
+        #[serde(default)]
+        pub ended_at: String,
+        /// The UTC date and time of when the Prediction was locked.
+        #[serde(default)]
+        pub locked_at: String,
+    }
+
+    /// The list of possible outcomes for the prediction.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndPredictionOutcomes {
+        /// An ID that identifies this outcome.
+        #[serde(default)]
+        pub id: String,
+        /// The outcome’s text.
+        #[serde(default)]
+        pub title: String,
+        /// The number of unique viewers that chose this outcome.
+        #[serde(default)]
+        pub users: i64,
+        /// The number of Channel Points spent by viewers on this outcome.
+        #[serde(default)]
+        pub channel_points: i64,
+        /// A list of viewers who were the top predictors; otherwise, null if none.
+        #[serde(default)]
+        pub top_predictors: Vec<EndPredictionOutcomesTopPredictors>,
+        /// The color that visually identifies this outcome in the UX.
+        #[serde(default)]
+        pub color: String,
+    }
+
+    /// A list of viewers who were the top predictors; otherwise, null if none.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct EndPredictionOutcomesTopPredictors {
+        /// An ID that identifies the viewer.
+        #[serde(default)]
+        pub user_id: String,
+        /// The viewer’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The viewer’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The number of Channel Points the viewer spent.
+        #[serde(default)]
+        pub channel_points_used: i64,
+        /// The number of Channel Points distributed to the viewer.
+        #[serde(default)]
+        pub channel_points_won: i64,
+    }
+
+    impl EndPredictionResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod raids {
@@ -2188,7 +7708,36 @@ pub mod raids {
         scopes: &["channel:manage:raids"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(StartARaidRequest, StartARaidResponse, RAIDS_START_A_RAID);
+    declare_generated_endpoint!(StartARaidRequest, RAIDS_START_A_RAID);
+
+    /// Response body for the "Start a raid" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct StartARaidResponse {
+        /// A list that contains a single object with information about the pending raid.
+        #[serde(default)]
+        pub data: Vec<StartARaidItem>,
+    }
+
+    /// A list that contains a single object with information about the pending raid.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct StartARaidItem {
+        /// The UTC date and time, in RFC3339 format, of when the raid was requested.
+        #[serde(default)]
+        pub created_at: String,
+        /// IMPORTANT This field is deprecated and returns only false.
+        #[serde(default)]
+        pub is_mature: bool,
+    }
+
+    impl StartARaidResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Cancel a pending raid.
     pub const RAIDS_CANCEL_A_RAID: HelixEndpoint = HelixEndpoint {
@@ -2203,7 +7752,22 @@ pub mod raids {
         scopes: &["channel:manage:raids"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CancelARaidRequest, CancelARaidResponse, RAIDS_CANCEL_A_RAID);
+    declare_generated_endpoint!(CancelARaidRequest, RAIDS_CANCEL_A_RAID);
+
+    /// Response for the "Cancel a raid" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct CancelARaidResponse;
+
+    impl CancelARaidResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 }
 
 pub mod schedule {
@@ -2224,9 +7788,105 @@ pub mod schedule {
     };
     declare_generated_endpoint!(
         GetChannelStreamScheduleRequest,
-        GetChannelStreamScheduleResponse,
         SCHEDULE_GET_CHANNEL_STREAM_SCHEDULE
     );
+
+    /// Response body for the "Get Channel Stream Schedule" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelStreamScheduleResponse {
+        /// The broadcaster’s streaming schedule.
+        #[serde(default)]
+        pub data: GetChannelStreamScheduleItem,
+    }
+
+    /// The broadcaster’s streaming schedule.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelStreamScheduleItem {
+        /// The list of broadcasts in the broadcaster’s streaming schedule.
+        #[serde(default)]
+        pub segments: Vec<GetChannelStreamScheduleSegments>,
+        /// The ID of the broadcaster that owns the broadcast schedule.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The dates when the broadcaster is on vacation and not streaming.
+        #[serde(default)]
+        pub vacation: GetChannelStreamScheduleVacation,
+        /// The information used to page through a list of results.
+        #[serde(default)]
+        pub pagination: GetChannelStreamSchedulePagination,
+    }
+
+    /// The list of broadcasts in the broadcaster’s streaming schedule.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelStreamScheduleSegments {
+        /// An ID that identifies this broadcast segment.
+        #[serde(default)]
+        pub id: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcast starts.
+        #[serde(default)]
+        pub start_time: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcast ends.
+        #[serde(default)]
+        pub end_time: String,
+        /// The broadcast segment’s title.
+        #[serde(default)]
+        pub title: String,
+        /// Indicates whether the broadcaster canceled this segment of a recurring broadcast.
+        #[serde(default)]
+        pub canceled_until: String,
+        /// The type of content that the broadcaster plans to stream or null if not specified.
+        #[serde(default)]
+        pub category: GetChannelStreamScheduleSegmentsCategory,
+        /// A Boolean value that determines whether the broadcast is part of a recurring series that streams at the same time each week or is a one-time broadcast.
+        #[serde(default)]
+        pub is_recurring: bool,
+    }
+
+    /// The type of content that the broadcaster plans to stream or null if not specified.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelStreamScheduleSegmentsCategory {
+        /// An ID that identifies the category that best represents the content that the broadcaster plans to stream.
+        #[serde(default)]
+        pub id: String,
+        /// The name of the category.
+        #[serde(default)]
+        pub name: String,
+    }
+
+    /// The dates when the broadcaster is on vacation and not streaming.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelStreamScheduleVacation {
+        /// The UTC date and time (in RFC3339 format) of when the broadcaster’s vacation starts.
+        #[serde(default)]
+        pub start_time: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcaster’s vacation ends.
+        #[serde(default)]
+        pub end_time: String,
+    }
+
+    /// The information used to page through a list of results.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelStreamSchedulePagination {
+        /// The cursor used to get the next page of results.
+        #[serde(default)]
+        pub cursor: String,
+    }
+
+    impl GetChannelStreamScheduleResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the broadcaster’s streaming schedule as an iCalendar.
     pub const SCHEDULE_GET_CHANNEL_ICALENDAR: HelixEndpoint = HelixEndpoint {
@@ -2241,11 +7901,9 @@ pub mod schedule {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetChannelIcalendarRequest,
-        GetChannelIcalendarResponse,
-        SCHEDULE_GET_CHANNEL_ICALENDAR
-    );
+    declare_generated_endpoint!(GetChannelIcalendarRequest, SCHEDULE_GET_CHANNEL_ICALENDAR);
+
+    pub type GetChannelIcalendarResponse = crate::helix::HelixJsonResponse;
 
     /// Updates the broadcaster’s schedule settings, such as scheduling a vacation.
     pub const SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE: HelixEndpoint = HelixEndpoint {
@@ -2262,9 +7920,23 @@ pub mod schedule {
     };
     declare_generated_endpoint!(
         UpdateChannelStreamScheduleRequest,
-        UpdateChannelStreamScheduleResponse,
         SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE
     );
+
+    /// Response for the "Update Channel Stream Schedule" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct UpdateChannelStreamScheduleResponse;
+
+    impl UpdateChannelStreamScheduleResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Adds a single or recurring broadcast to the broadcaster’s streaming schedule.
     pub const SCHEDULE_CREATE_CHANNEL_STREAM_SCHEDULE_SEGMENT: HelixEndpoint = HelixEndpoint {
@@ -2281,9 +7953,94 @@ pub mod schedule {
     };
     declare_generated_endpoint!(
         CreateChannelStreamScheduleSegmentRequest,
-        CreateChannelStreamScheduleSegmentResponse,
         SCHEDULE_CREATE_CHANNEL_STREAM_SCHEDULE_SEGMENT
     );
+
+    /// Response body for the "Create Channel Stream Schedule Segment" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateChannelStreamScheduleSegmentResponse {
+        /// The broadcaster’s streaming scheduled.
+        #[serde(default)]
+        pub data: CreateChannelStreamScheduleSegmentItem,
+    }
+
+    /// The broadcaster’s streaming scheduled.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateChannelStreamScheduleSegmentItem {
+        /// A list that contains the single broadcast segment that you added.
+        #[serde(default)]
+        pub segments: Vec<CreateChannelStreamScheduleSegmentSegments>,
+        /// The ID of the broadcaster that owns the broadcast schedule.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The dates when the broadcaster is on vacation and not streaming.
+        #[serde(default)]
+        pub vacation: CreateChannelStreamScheduleSegmentVacation,
+    }
+
+    /// A list that contains the single broadcast segment that you added.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateChannelStreamScheduleSegmentSegments {
+        /// An ID that identifies this broadcast segment.
+        #[serde(default)]
+        pub id: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcast starts.
+        #[serde(default)]
+        pub start_time: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcast ends.
+        #[serde(default)]
+        pub end_time: String,
+        /// The broadcast segment’s title.
+        #[serde(default)]
+        pub title: String,
+        /// Indicates whether the broadcaster canceled this segment of a recurring broadcast.
+        #[serde(default)]
+        pub canceled_until: String,
+        /// The type of content that the broadcaster plans to stream or null if not specified.
+        #[serde(default)]
+        pub category: CreateChannelStreamScheduleSegmentSegmentsCategory,
+        /// A Boolean value that determines whether the broadcast is part of a recurring series that streams at the same time each week or is a one-time broadcast.
+        #[serde(default)]
+        pub is_recurring: bool,
+    }
+
+    /// The type of content that the broadcaster plans to stream or null if not specified.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateChannelStreamScheduleSegmentSegmentsCategory {
+        /// An ID that identifies the category that best represents the content that the broadcaster plans to stream.
+        #[serde(default)]
+        pub id: String,
+        /// The name of the category.
+        #[serde(default)]
+        pub name: String,
+    }
+
+    /// The dates when the broadcaster is on vacation and not streaming.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateChannelStreamScheduleSegmentVacation {
+        /// The UTC date and time (in RFC3339 format) of when the broadcaster’s vacation starts.
+        #[serde(default)]
+        pub start_time: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcaster’s vacation ends.
+        #[serde(default)]
+        pub end_time: String,
+    }
+
+    impl CreateChannelStreamScheduleSegmentResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates a scheduled broadcast segment.
     pub const SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE_SEGMENT: HelixEndpoint = HelixEndpoint {
@@ -2300,9 +8057,94 @@ pub mod schedule {
     };
     declare_generated_endpoint!(
         UpdateChannelStreamScheduleSegmentRequest,
-        UpdateChannelStreamScheduleSegmentResponse,
         SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE_SEGMENT
     );
+
+    /// Response body for the "Update Channel Stream Schedule Segment" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateChannelStreamScheduleSegmentResponse {
+        /// The broadcaster’s streaming scheduled.
+        #[serde(default)]
+        pub data: UpdateChannelStreamScheduleSegmentItem,
+    }
+
+    /// The broadcaster’s streaming scheduled.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateChannelStreamScheduleSegmentItem {
+        /// A list that contains the single broadcast segment that you updated.
+        #[serde(default)]
+        pub segments: Vec<UpdateChannelStreamScheduleSegmentSegments>,
+        /// The ID of the broadcaster that owns the broadcast schedule.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The dates when the broadcaster is on vacation and not streaming.
+        #[serde(default)]
+        pub vacation: UpdateChannelStreamScheduleSegmentVacation,
+    }
+
+    /// A list that contains the single broadcast segment that you updated.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateChannelStreamScheduleSegmentSegments {
+        /// An ID that identifies this broadcast segment.
+        #[serde(default)]
+        pub id: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcast starts.
+        #[serde(default)]
+        pub start_time: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcast ends.
+        #[serde(default)]
+        pub end_time: String,
+        /// The broadcast segment’s title.
+        #[serde(default)]
+        pub title: String,
+        /// Indicates whether the broadcaster canceled this segment of a recurring broadcast.
+        #[serde(default)]
+        pub canceled_until: String,
+        /// The type of content that the broadcaster plans to stream or null if not specified.
+        #[serde(default)]
+        pub category: UpdateChannelStreamScheduleSegmentSegmentsCategory,
+        /// A Boolean value that determines whether the broadcast is part of a recurring series that streams at the same time each week or is a one-time broadcast.
+        #[serde(default)]
+        pub is_recurring: bool,
+    }
+
+    /// The type of content that the broadcaster plans to stream or null if not specified.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateChannelStreamScheduleSegmentSegmentsCategory {
+        /// An ID that identifies the category that best represents the content that the broadcaster plans to stream.
+        #[serde(default)]
+        pub id: String,
+        /// The name of the category.
+        #[serde(default)]
+        pub name: String,
+    }
+
+    /// The dates when the broadcaster is on vacation and not streaming.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateChannelStreamScheduleSegmentVacation {
+        /// The UTC date and time (in RFC3339 format) of when the broadcaster’s vacation starts.
+        #[serde(default)]
+        pub start_time: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcaster’s vacation ends.
+        #[serde(default)]
+        pub end_time: String,
+    }
+
+    impl UpdateChannelStreamScheduleSegmentResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Deletes a broadcast from the broadcaster’s streaming schedule.
     pub const SCHEDULE_DELETE_CHANNEL_STREAM_SCHEDULE_SEGMENT: HelixEndpoint = HelixEndpoint {
@@ -2319,9 +8161,23 @@ pub mod schedule {
     };
     declare_generated_endpoint!(
         DeleteChannelStreamScheduleSegmentRequest,
-        DeleteChannelStreamScheduleSegmentResponse,
         SCHEDULE_DELETE_CHANNEL_STREAM_SCHEDULE_SEGMENT
     );
+
+    /// Response for the "Delete Channel Stream Schedule Segment" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct DeleteChannelStreamScheduleSegmentResponse;
+
+    impl DeleteChannelStreamScheduleSegmentResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 }
 
 pub mod search {
@@ -2340,11 +8196,42 @@ pub mod search {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        SearchCategoriesRequest,
-        SearchCategoriesResponse,
-        SEARCH_SEARCH_CATEGORIES
-    );
+    declare_generated_endpoint!(SearchCategoriesRequest, SEARCH_SEARCH_CATEGORIES);
+
+    /// Response body for the "Search Categories" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct SearchCategoriesResponse {
+        /// The list of games or categories that match the query.
+        #[serde(default)]
+        pub data: Vec<SearchCategoriesItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of games or categories that match the query.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct SearchCategoriesItem {
+        /// A URL to an image of the game’s box art or streaming category.
+        #[serde(default)]
+        pub box_art_url: String,
+        /// The name of the game or category.
+        #[serde(default)]
+        pub name: String,
+        /// An ID that uniquely identifies the game or category.
+        #[serde(default)]
+        pub id: String,
+    }
+
+    impl SearchCategoriesResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the channels that match the specified query and have streamed content within the past 6 months.
     pub const SEARCH_SEARCH_CHANNELS: HelixEndpoint = HelixEndpoint {
@@ -2359,11 +8246,69 @@ pub mod search {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        SearchChannelsRequest,
-        SearchChannelsResponse,
-        SEARCH_SEARCH_CHANNELS
-    );
+    declare_generated_endpoint!(SearchChannelsRequest, SEARCH_SEARCH_CHANNELS);
+
+    /// Response body for the "Search Channels" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct SearchChannelsResponse {
+        /// The list of channels that match the query.
+        #[serde(default)]
+        pub data: Vec<SearchChannelsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of channels that match the query.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct SearchChannelsItem {
+        /// The ISO 639-1 two-letter language code of the language used by the broadcaster.
+        #[serde(default)]
+        pub broadcaster_language: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub display_name: String,
+        /// The ID of the game that the broadcaster is playing or last played.
+        #[serde(default)]
+        pub game_id: String,
+        /// The name of the game that the broadcaster is playing or last played.
+        #[serde(default)]
+        pub game_name: String,
+        /// An ID that uniquely identifies the channel (this is the broadcaster’s ID).
+        #[serde(default)]
+        pub id: String,
+        /// A Boolean value that determines whether the broadcaster is streaming live.
+        #[serde(default)]
+        pub is_live: bool,
+        /// IMPORTANT As of February 28, 2023, this field is deprecated and returns only an empty array.
+        #[serde(default)]
+        pub tag_ids: Vec<String>,
+        /// The tags applied to the channel.
+        #[serde(default)]
+        pub tags: Vec<String>,
+        /// A URL to a thumbnail of the broadcaster’s profile image.
+        #[serde(default)]
+        pub thumbnail_url: String,
+        /// The stream’s title.
+        #[serde(default)]
+        pub title: String,
+        /// The UTC date and time (in RFC3339 format) of when the broadcaster started streaming.
+        #[serde(default)]
+        pub started_at: String,
+    }
+
+    impl SearchChannelsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod streams {
@@ -2377,16 +8322,38 @@ pub mod streams {
         description: "Gets the channel’s stream key.",
         stability: EndpointStability::Ga,
         method: HttpMethod::Get,
-        path: "/get-stream-key",
+        path: "/streams/key",
         auth_kind: HelixAuthKind::User,
         scopes: &["channel:read:stream_key"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetStreamKeyRequest,
-        GetStreamKeyResponse,
-        STREAMS_GET_STREAM_KEY
-    );
+    declare_generated_endpoint!(GetStreamKeyRequest, STREAMS_GET_STREAM_KEY);
+
+    /// Response body for the "Get Stream Key" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetStreamKeyResponse {
+        /// A list that contains the channel’s stream key.
+        #[serde(default)]
+        pub data: Vec<GetStreamKeyItem>,
+    }
+
+    /// A list that contains the channel’s stream key.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetStreamKeyItem {
+        /// The channel’s stream key.
+        #[serde(default)]
+        pub stream_key: String,
+    }
+
+    impl GetStreamKeyResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets a list of all streams.
     pub const STREAMS_GET_STREAMS: HelixEndpoint = HelixEndpoint {
@@ -2401,7 +8368,78 @@ pub mod streams {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetStreamsRequest, GetStreamsResponse, STREAMS_GET_STREAMS);
+    declare_generated_endpoint!(GetStreamsRequest, STREAMS_GET_STREAMS);
+
+    /// Response body for the "Get Streams" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetStreamsResponse {
+        /// The list of streams.
+        #[serde(default)]
+        pub data: Vec<GetStreamsItem>,
+        /// The information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of streams.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetStreamsItem {
+        /// An ID that identifies the stream.
+        #[serde(default)]
+        pub id: String,
+        /// The ID of the user that’s broadcasting the stream.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The ID of the category or game being streamed.
+        #[serde(default)]
+        pub game_id: String,
+        /// The name of the category or game being streamed.
+        #[serde(default)]
+        pub game_name: String,
+        /// The type of stream.
+        #[serde(default)]
+        pub r#type: String,
+        /// The stream’s title.
+        #[serde(default)]
+        pub title: String,
+        /// The tags applied to the stream.
+        #[serde(default)]
+        pub tags: Vec<String>,
+        /// The number of users watching the stream.
+        #[serde(default)]
+        pub viewer_count: i64,
+        /// The UTC date and time (in RFC3339 format) of when the broadcast began.
+        #[serde(default)]
+        pub started_at: String,
+        /// The language that the stream uses.
+        #[serde(default)]
+        pub language: String,
+        /// A URL to an image of a frame from the last 5 minutes of the stream.
+        #[serde(default)]
+        pub thumbnail_url: String,
+        /// IMPORTANT As of February 28, 2023, this field is deprecated and returns only an empty array.
+        #[serde(default)]
+        pub tag_ids: Vec<String>,
+        /// IMPORTANT This field is deprecated and returns only false.
+        #[serde(default)]
+        pub is_mature: bool,
+    }
+
+    impl GetStreamsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the list of broadcasters that the user follows and that are streaming live.
     pub const STREAMS_GET_FOLLOWED_STREAMS: HelixEndpoint = HelixEndpoint {
@@ -2416,11 +8454,78 @@ pub mod streams {
         scopes: &["user:read:follows"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetFollowedStreamsRequest,
-        GetFollowedStreamsResponse,
-        STREAMS_GET_FOLLOWED_STREAMS
-    );
+    declare_generated_endpoint!(GetFollowedStreamsRequest, STREAMS_GET_FOLLOWED_STREAMS);
+
+    /// Response body for the "Get Followed Streams" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetFollowedStreamsResponse {
+        /// The list of live streams of broadcasters that the specified user follows.
+        #[serde(default)]
+        pub data: Vec<GetFollowedStreamsItem>,
+        /// The information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of live streams of broadcasters that the specified user follows.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetFollowedStreamsItem {
+        /// An ID that identifies the stream.
+        #[serde(default)]
+        pub id: String,
+        /// The ID of the user that’s broadcasting the stream.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The ID of the category or game being played.
+        #[serde(default)]
+        pub game_id: String,
+        /// The ID of the category or game being played.
+        #[serde(default)]
+        pub game_name: String,
+        /// The type of stream.
+        #[serde(default)]
+        pub r#type: String,
+        /// The stream’s title.
+        #[serde(default)]
+        pub title: String,
+        /// The number of users watching the stream.
+        #[serde(default)]
+        pub viewer_count: i64,
+        /// The UTC date and time (in RFC3339 format) of when the broadcast began.
+        #[serde(default)]
+        pub started_at: String,
+        /// The language that the stream uses.
+        #[serde(default)]
+        pub language: String,
+        /// A URL to an image of a frame from the last 5 minutes of the stream.
+        #[serde(default)]
+        pub thumbnail_url: String,
+        /// IMPORTANT As of February 28, 2023, this field is deprecated and returns only an empty array.
+        #[serde(default)]
+        pub tag_ids: Vec<String>,
+        /// The tags applied to the stream.
+        #[serde(default)]
+        pub tags: Vec<String>,
+        /// IMPORTANT This field is deprecated and returns only false.
+        #[serde(default)]
+        pub is_mature: bool,
+    }
+
+    impl GetFollowedStreamsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Adds a marker to a live stream.
     pub const STREAMS_CREATE_STREAM_MARKER: HelixEndpoint = HelixEndpoint {
@@ -2435,11 +8540,42 @@ pub mod streams {
         scopes: &["channel:manage:broadcast"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        CreateStreamMarkerRequest,
-        CreateStreamMarkerResponse,
-        STREAMS_CREATE_STREAM_MARKER
-    );
+    declare_generated_endpoint!(CreateStreamMarkerRequest, STREAMS_CREATE_STREAM_MARKER);
+
+    /// Response body for the "Create Stream Marker" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateStreamMarkerResponse {
+        /// A list that contains the single marker that you added.
+        #[serde(default)]
+        pub data: Vec<CreateStreamMarkerItem>,
+    }
+
+    /// A list that contains the single marker that you added.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CreateStreamMarkerItem {
+        /// An ID that identifies this marker.
+        #[serde(default)]
+        pub id: String,
+        /// The UTC date and time (in RFC3339 format) of when the user created the marker.
+        #[serde(default)]
+        pub created_at: String,
+        /// The relative offset (in seconds) of the marker from the beginning of the stream.
+        #[serde(default)]
+        pub position_seconds: i64,
+        /// A description that the user gave the marker to help them remember why they marked the location.
+        #[serde(default)]
+        pub description: String,
+    }
+
+    impl CreateStreamMarkerResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets a list of markers from the user’s most recent stream or from the specified VOD/video.
     pub const STREAMS_GET_STREAM_MARKERS: HelixEndpoint = HelixEndpoint {
@@ -2454,11 +8590,71 @@ pub mod streams {
         scopes: &["channel:manage:broadcast", "user:read:broadcast"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetStreamMarkersRequest,
-        GetStreamMarkersResponse,
-        STREAMS_GET_STREAM_MARKERS
-    );
+    declare_generated_endpoint!(GetStreamMarkersRequest, STREAMS_GET_STREAM_MARKERS);
+
+    /// Response body for the "Get Stream Markers" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetStreamMarkersResponse {
+        /// The list of markers grouped by the user that created the marks.
+        #[serde(default)]
+        pub data: Vec<GetStreamMarkersItem>,
+        /// The information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of markers grouped by the user that created the marks.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetStreamMarkersItem {
+        /// The ID of the user that created the marker.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// A list of videos that contain markers.
+        #[serde(default)]
+        pub videos: Vec<serde_json::Value>,
+        /// An ID that identifies this video.
+        #[serde(default)]
+        pub video_id: String,
+        /// The list of markers in this video.
+        #[serde(default)]
+        pub markers: Vec<GetStreamMarkersMarkers>,
+    }
+
+    /// The list of markers in this video.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetStreamMarkersMarkers {
+        /// An ID that identifies this marker.
+        #[serde(default)]
+        pub id: String,
+        /// The UTC date and time (in RFC3339 format) of when the user created the marker.
+        #[serde(default)]
+        pub created_at: String,
+        /// The description that the user gave the marker to help them remember why they marked the location.
+        #[serde(default)]
+        pub description: String,
+        /// The relative offset (in seconds) of the marker from the beginning of the stream.
+        #[serde(default)]
+        pub position_seconds: i64,
+        /// A URL that opens the video in Twitch Highlighter.
+        #[serde(default)]
+        pub url: String,
+    }
+
+    impl GetStreamMarkersResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod subscriptions {
@@ -2479,9 +8675,76 @@ pub mod subscriptions {
     };
     declare_generated_endpoint!(
         GetBroadcasterSubscriptionsRequest,
-        GetBroadcasterSubscriptionsResponse,
         SUBSCRIPTIONS_GET_BROADCASTER_SUBSCRIPTIONS
     );
+
+    /// Response body for the "Get Broadcaster Subscriptions" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetBroadcasterSubscriptionsResponse {
+        /// The list of users that subscribe to the broadcaster.
+        #[serde(default)]
+        pub data: Vec<GetBroadcasterSubscriptionsItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+        /// The current number of subscriber points earned by this broadcaster.
+        #[serde(default)]
+        pub points: i64,
+        /// The total number of users that subscribe to this broadcaster.
+        #[serde(default)]
+        pub total: i64,
+    }
+
+    /// The list of users that subscribe to the broadcaster.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetBroadcasterSubscriptionsItem {
+        /// An ID that identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The ID of the user that gifted the subscription to the user.
+        #[serde(default)]
+        pub gifter_id: String,
+        /// The gifter’s login name.
+        #[serde(default)]
+        pub gifter_login: String,
+        /// The gifter’s display name.
+        #[serde(default)]
+        pub gifter_name: String,
+        /// A Boolean value that determines whether the subscription is a gift subscription.
+        #[serde(default)]
+        pub is_gift: bool,
+        /// The name of the subscription.
+        #[serde(default)]
+        pub plan_name: String,
+        /// The type of subscription.
+        #[serde(default)]
+        pub tier: String,
+        /// An ID that identifies the subscribing user.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+    }
+
+    impl GetBroadcasterSubscriptionsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Checks whether the user subscribes to the broadcaster’s channel.
     pub const SUBSCRIPTIONS_CHECK_USER_SUBSCRIPTION: HelixEndpoint = HelixEndpoint {
@@ -2492,15 +8755,61 @@ pub mod subscriptions {
         stability: EndpointStability::Ga,
         method: HttpMethod::Get,
         path: "/subscriptions/user",
-        auth_kind: HelixAuthKind::Either,
+        auth_kind: HelixAuthKind::User,
         scopes: &["user:read:subscriptions"],
         supports_pagination: false,
     };
     declare_generated_endpoint!(
         CheckUserSubscriptionRequest,
-        CheckUserSubscriptionResponse,
         SUBSCRIPTIONS_CHECK_USER_SUBSCRIPTION
     );
+
+    /// Response body for the "Check User Subscription" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CheckUserSubscriptionResponse {
+        /// A list that contains a single object with information about the user’s subscription.
+        #[serde(default)]
+        pub data: Vec<CheckUserSubscriptionItem>,
+    }
+
+    /// A list that contains a single object with information about the user’s subscription.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct CheckUserSubscriptionItem {
+        /// An ID that identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// The ID of the user that gifted the subscription.
+        #[serde(default)]
+        pub gifter_id: String,
+        /// The gifter’s login name.
+        #[serde(default)]
+        pub gifter_login: String,
+        /// The gifter’s display name.
+        #[serde(default)]
+        pub gifter_name: String,
+        /// A Boolean value that determines whether the subscription is a gift subscription.
+        #[serde(default)]
+        pub is_gift: bool,
+        /// The type of subscription.
+        #[serde(default)]
+        pub tier: String,
+    }
+
+    impl CheckUserSubscriptionResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod tags {
@@ -2519,11 +8828,45 @@ pub mod tags {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetAllStreamTagsRequest,
-        GetAllStreamTagsResponse,
-        TAGS_GET_ALL_STREAM_TAGS
-    );
+    declare_generated_endpoint!(GetAllStreamTagsRequest, TAGS_GET_ALL_STREAM_TAGS);
+
+    /// Response body for the "Get All Stream Tags" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetAllStreamTagsResponse {
+        /// The list of stream tags that the broadcaster can apply to their channel.
+        #[serde(default)]
+        pub data: Vec<GetAllStreamTagsItem>,
+        /// The information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of stream tags that the broadcaster can apply to their channel.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetAllStreamTagsItem {
+        /// An ID that identifies this tag.
+        #[serde(default)]
+        pub tag_id: String,
+        /// A Boolean value that determines whether the tag is an automatic tag.
+        #[serde(default)]
+        pub is_auto: bool,
+        /// A dictionary that contains the localized names of the tag.
+        #[serde(default)]
+        pub localization_names: std::collections::BTreeMap<String, String>,
+        /// A dictionary that contains the localized descriptions of the tag.
+        #[serde(default)]
+        pub localization_descriptions: std::collections::BTreeMap<String, String>,
+    }
+
+    impl GetAllStreamTagsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the list of stream tags that the broadcaster or Twitch added to their channel.
     pub const TAGS_GET_STREAM_TAGS: HelixEndpoint = HelixEndpoint {
@@ -2538,11 +8881,42 @@ pub mod tags {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetStreamTagsRequest,
-        GetStreamTagsResponse,
-        TAGS_GET_STREAM_TAGS
-    );
+    declare_generated_endpoint!(GetStreamTagsRequest, TAGS_GET_STREAM_TAGS);
+
+    /// Response body for the "Get Stream Tags" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetStreamTagsResponse {
+        /// The list of stream tags.
+        #[serde(default)]
+        pub data: Vec<GetStreamTagsItem>,
+    }
+
+    /// The list of stream tags.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetStreamTagsItem {
+        /// An ID that identifies this tag.
+        #[serde(default)]
+        pub tag_id: String,
+        /// A Boolean value that determines whether the tag is an automatic tag.
+        #[serde(default)]
+        pub is_auto: bool,
+        /// A dictionary that contains the localized names of the tag.
+        #[serde(default)]
+        pub localization_names: std::collections::BTreeMap<String, String>,
+        /// A dictionary that contains the localized descriptions of the tag.
+        #[serde(default)]
+        pub localization_descriptions: std::collections::BTreeMap<String, String>,
+    }
+
+    impl GetStreamTagsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod teams {
@@ -2561,11 +8935,66 @@ pub mod teams {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetChannelTeamsRequest,
-        GetChannelTeamsResponse,
-        TEAMS_GET_CHANNEL_TEAMS
-    );
+    declare_generated_endpoint!(GetChannelTeamsRequest, TEAMS_GET_CHANNEL_TEAMS);
+
+    /// Response body for the "Get Channel Teams" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelTeamsResponse {
+        /// The list of teams that the broadcaster is a member of.
+        #[serde(default)]
+        pub data: Vec<GetChannelTeamsItem>,
+    }
+
+    /// The list of teams that the broadcaster is a member of.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetChannelTeamsItem {
+        /// An ID that identifies the broadcaster.
+        #[serde(default)]
+        pub broadcaster_id: String,
+        /// The broadcaster’s login name.
+        #[serde(default)]
+        pub broadcaster_login: String,
+        /// The broadcaster’s display name.
+        #[serde(default)]
+        pub broadcaster_name: String,
+        /// A URL to the team’s background image.
+        #[serde(default)]
+        pub background_image_url: String,
+        /// A URL to the team’s banner.
+        #[serde(default)]
+        pub banner: String,
+        /// The UTC date and time (in RFC3339 format) of when the team was created.
+        #[serde(default)]
+        pub created_at: String,
+        /// The UTC date and time (in RFC3339 format) of the last time the team was updated.
+        #[serde(default)]
+        pub updated_at: String,
+        /// The team’s description.
+        #[serde(default)]
+        pub info: String,
+        /// A URL to a thumbnail image of the team’s logo.
+        #[serde(default)]
+        pub thumbnail_url: String,
+        /// The team’s name.
+        #[serde(default)]
+        pub team_name: String,
+        /// The team’s display name.
+        #[serde(default)]
+        pub team_display_name: String,
+        /// An ID that identifies the team.
+        #[serde(default)]
+        pub id: String,
+    }
+
+    impl GetChannelTeamsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets information about the specified Twitch team.
     pub const TEAMS_GET_TEAMS: HelixEndpoint = HelixEndpoint {
@@ -2580,7 +9009,74 @@ pub mod teams {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetTeamsRequest, GetTeamsResponse, TEAMS_GET_TEAMS);
+    declare_generated_endpoint!(GetTeamsRequest, TEAMS_GET_TEAMS);
+
+    /// Response body for the "Get Teams" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetTeamsResponse {
+        /// A list that contains the single team that you requested.
+        #[serde(default)]
+        pub data: Vec<GetTeamsItem>,
+    }
+
+    /// A list that contains the single team that you requested.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetTeamsItem {
+        /// The list of team members.
+        #[serde(default)]
+        pub users: Vec<GetTeamsUsers>,
+        /// A URL to the team’s background image.
+        #[serde(default)]
+        pub background_image_url: String,
+        /// A URL to the team’s banner.
+        #[serde(default)]
+        pub banner: String,
+        /// The UTC date and time (in RFC3339 format) of when the team was created.
+        #[serde(default)]
+        pub created_at: String,
+        /// The UTC date and time (in RFC3339 format) of the last time the team was updated.
+        #[serde(default)]
+        pub updated_at: String,
+        /// The team’s description.
+        #[serde(default)]
+        pub info: String,
+        /// A URL to a thumbnail image of the team’s logo.
+        #[serde(default)]
+        pub thumbnail_url: String,
+        /// The team’s name.
+        #[serde(default)]
+        pub team_name: String,
+        /// The team’s display name.
+        #[serde(default)]
+        pub team_display_name: String,
+        /// An ID that identifies the team.
+        #[serde(default)]
+        pub id: String,
+    }
+
+    /// The list of team members.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetTeamsUsers {
+        /// An ID that identifies the team member.
+        #[serde(default)]
+        pub user_id: String,
+        /// The team member’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The team member’s display name.
+        #[serde(default)]
+        pub user_name: String,
+    }
+
+    impl GetTeamsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod users {
@@ -2599,7 +9095,63 @@ pub mod users {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetUsersRequest, GetUsersResponse, USERS_GET_USERS);
+    declare_generated_endpoint!(GetUsersRequest, USERS_GET_USERS);
+
+    /// Response body for the "Get Users" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUsersResponse {
+        /// The list of users.
+        #[serde(default)]
+        pub data: Vec<GetUsersItem>,
+    }
+
+    /// The list of users.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUsersItem {
+        /// An ID that identifies the user.
+        #[serde(default)]
+        pub id: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub login: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub display_name: String,
+        /// The type of user.
+        #[serde(default)]
+        pub r#type: String,
+        /// The type of broadcaster.
+        #[serde(default)]
+        pub broadcaster_type: String,
+        /// The user’s description of their channel.
+        #[serde(default)]
+        pub description: String,
+        /// A URL to the user’s profile image.
+        #[serde(default)]
+        pub profile_image_url: String,
+        /// A URL to the user’s offline image.
+        #[serde(default)]
+        pub offline_image_url: String,
+        /// The number of times the user’s channel has been viewed.
+        #[serde(default)]
+        pub view_count: i64,
+        /// The user’s verified email address.
+        #[serde(default)]
+        pub email: String,
+        /// The UTC date and time that the user’s account was created.
+        #[serde(default)]
+        pub created_at: String,
+    }
+
+    impl GetUsersResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates the user’s information.
     pub const USERS_UPDATE_USER: HelixEndpoint = HelixEndpoint {
@@ -2614,7 +9166,63 @@ pub mod users {
         scopes: &["user:edit"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateUserRequest, UpdateUserResponse, USERS_UPDATE_USER);
+    declare_generated_endpoint!(UpdateUserRequest, USERS_UPDATE_USER);
+
+    /// Response body for the "Update User" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateUserResponse {
+        /// A list contains the single user that you updated.
+        #[serde(default)]
+        pub data: Vec<UpdateUserItem>,
+    }
+
+    /// A list contains the single user that you updated.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateUserItem {
+        /// An ID that identifies the user.
+        #[serde(default)]
+        pub id: String,
+        /// The user's login name.
+        #[serde(default)]
+        pub login: String,
+        /// The user's display name.
+        #[serde(default)]
+        pub display_name: String,
+        /// The type of user.
+        #[serde(default)]
+        pub r#type: String,
+        /// The type of broadcaster.
+        #[serde(default)]
+        pub broadcaster_type: String,
+        /// The user's description of their channel.
+        #[serde(default)]
+        pub description: String,
+        /// A URL to the user's profile image.
+        #[serde(default)]
+        pub profile_image_url: String,
+        /// A URL to the user's offline image.
+        #[serde(default)]
+        pub offline_image_url: String,
+        /// The number of times the user's channel has been viewed.
+        #[serde(default)]
+        pub view_count: i64,
+        /// The user's verified email address.
+        #[serde(default)]
+        pub email: String,
+        /// The UTC date and time that the user's account was created.
+        #[serde(default)]
+        pub created_at: String,
+    }
+
+    impl UpdateUserResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// NEW Gets the authorization scopes that the specified user has granted the application.
     pub const USERS_GET_AUTHORIZATION_BY_USER: HelixEndpoint = HelixEndpoint {
@@ -2631,9 +9239,46 @@ pub mod users {
     };
     declare_generated_endpoint!(
         GetAuthorizationByUserRequest,
-        GetAuthorizationByUserResponse,
         USERS_GET_AUTHORIZATION_BY_USER
     );
+
+    /// Response body for the "Get Authorization By User" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetAuthorizationByUserResponse {
+        /// List of users and their authorized scopes.
+        #[serde(default)]
+        pub data: Vec<GetAuthorizationByUserItem>,
+    }
+
+    /// List of users and their authorized scopes.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetAuthorizationByUserItem {
+        /// The user’s ID.
+        #[serde(default)]
+        pub user_id: String,
+        /// The user’s display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// An array of all the scopes the user has granted to the client ID.
+        #[serde(default)]
+        pub scopes: Vec<String>,
+        /// A boolean indicating whether or not the specified user has authorized this application.
+        #[serde(default)]
+        pub has_authorized: bool,
+    }
+
+    impl GetAuthorizationByUserResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the list of users that the broadcaster has blocked.
     pub const USERS_GET_USER_BLOCK_LIST: HelixEndpoint = HelixEndpoint {
@@ -2648,11 +9293,42 @@ pub mod users {
         scopes: &["user:read:blocked_users"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(
-        GetUserBlockListRequest,
-        GetUserBlockListResponse,
-        USERS_GET_USER_BLOCK_LIST
-    );
+    declare_generated_endpoint!(GetUserBlockListRequest, USERS_GET_USER_BLOCK_LIST);
+
+    /// Response body for the "Get User Block List" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserBlockListResponse {
+        /// The list of blocked users.
+        #[serde(default)]
+        pub data: Vec<GetUserBlockListItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of blocked users.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserBlockListItem {
+        /// An ID that identifies the blocked user.
+        #[serde(default)]
+        pub user_id: String,
+        /// The blocked user’s login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The blocked user’s display name.
+        #[serde(default)]
+        pub display_name: String,
+    }
+
+    impl GetUserBlockListResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Blocks the specified user from interacting with or having contact with the broadcaster.
     pub const USERS_BLOCK_USER: HelixEndpoint = HelixEndpoint {
@@ -2667,7 +9343,22 @@ pub mod users {
         scopes: &["user:manage:blocked_users"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(BlockUserRequest, BlockUserResponse, USERS_BLOCK_USER);
+    declare_generated_endpoint!(BlockUserRequest, USERS_BLOCK_USER);
+
+    /// Response for the "Block User" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct BlockUserResponse;
+
+    impl BlockUserResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Removes the user from the broadcaster’s list of blocked users.
     pub const USERS_UNBLOCK_USER: HelixEndpoint = HelixEndpoint {
@@ -2682,7 +9373,22 @@ pub mod users {
         scopes: &["user:manage:blocked_users"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UnblockUserRequest, UnblockUserResponse, USERS_UNBLOCK_USER);
+    declare_generated_endpoint!(UnblockUserRequest, USERS_UNBLOCK_USER);
+
+    /// Response for the "Unblock User" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct UnblockUserResponse;
+
+    impl UnblockUserResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 
     /// Gets a list of all extensions (both active and inactive) that the broadcaster has installed.
     pub const USERS_GET_USER_EXTENSIONS: HelixEndpoint = HelixEndpoint {
@@ -2697,11 +9403,45 @@ pub mod users {
         scopes: &["user:edit:broadcast", "user:read:broadcast"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        GetUserExtensionsRequest,
-        GetUserExtensionsResponse,
-        USERS_GET_USER_EXTENSIONS
-    );
+    declare_generated_endpoint!(GetUserExtensionsRequest, USERS_GET_USER_EXTENSIONS);
+
+    /// Response body for the "Get User Extensions" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserExtensionsResponse {
+        /// The list of extensions that the user has installed.
+        #[serde(default)]
+        pub data: Vec<GetUserExtensionsItem>,
+    }
+
+    /// The list of extensions that the user has installed.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserExtensionsItem {
+        /// An ID that identifies the extension.
+        #[serde(default)]
+        pub id: String,
+        /// The extension's version.
+        #[serde(default)]
+        pub version: String,
+        /// The extension's name.
+        #[serde(default)]
+        pub name: String,
+        /// A Boolean value that determines whether the extension is configured and can be activated.
+        #[serde(default)]
+        pub can_activate: bool,
+        /// The extension types that you can activate for this extension.
+        #[serde(default)]
+        pub r#type: Vec<String>,
+    }
+
+    impl GetUserExtensionsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Gets the active extensions that the broadcaster has installed for each configuration.
     pub const USERS_GET_USER_ACTIVE_EXTENSIONS: HelixEndpoint = HelixEndpoint {
@@ -2718,9 +9458,40 @@ pub mod users {
     };
     declare_generated_endpoint!(
         GetUserActiveExtensionsRequest,
-        GetUserActiveExtensionsResponse,
         USERS_GET_USER_ACTIVE_EXTENSIONS
     );
+
+    /// Response body for the "Get User Active Extensions" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserActiveExtensionsResponse {
+        /// The active extensions that the broadcaster has installed.
+        #[serde(default)]
+        pub data: GetUserActiveExtensionsItem,
+    }
+
+    /// The active extensions that the broadcaster has installed.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetUserActiveExtensionsItem {
+        /// A dictionary that contains the data for a panel extension.
+        #[serde(default)]
+        pub panel: std::collections::BTreeMap<String, serde_json::Value>,
+        /// A dictionary that contains the data for a video-overlay extension.
+        #[serde(default)]
+        pub overlay: std::collections::BTreeMap<String, serde_json::Value>,
+        /// A dictionary that contains the data for a video-component extension.
+        #[serde(default)]
+        pub component: std::collections::BTreeMap<String, serde_json::Value>,
+    }
+
+    impl GetUserActiveExtensionsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Updates an installed extension’s information.
     pub const USERS_UPDATE_USER_EXTENSIONS: HelixEndpoint = HelixEndpoint {
@@ -2735,11 +9506,39 @@ pub mod users {
         scopes: &["user:edit:broadcast"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        UpdateUserExtensionsRequest,
-        UpdateUserExtensionsResponse,
-        USERS_UPDATE_USER_EXTENSIONS
-    );
+    declare_generated_endpoint!(UpdateUserExtensionsRequest, USERS_UPDATE_USER_EXTENSIONS);
+
+    /// Response body for the "Update User Extensions" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateUserExtensionsResponse {
+        /// The extensions that the broadcaster updated.
+        #[serde(default)]
+        pub data: UpdateUserExtensionsItem,
+    }
+
+    /// The extensions that the broadcaster updated.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct UpdateUserExtensionsItem {
+        /// A dictionary that contains the data for a panel extension.
+        #[serde(default)]
+        pub panel: std::collections::BTreeMap<String, serde_json::Value>,
+        /// A dictionary that contains the data for a video-overlay extension.
+        #[serde(default)]
+        pub overlay: std::collections::BTreeMap<String, serde_json::Value>,
+        /// A dictionary that contains the data for a video-component extension.
+        #[serde(default)]
+        pub component: std::collections::BTreeMap<String, serde_json::Value>,
+    }
+
+    impl UpdateUserExtensionsResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod videos {
@@ -2758,7 +9557,95 @@ pub mod videos {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetVideosRequest, GetVideosResponse, VIDEOS_GET_VIDEOS);
+    declare_generated_endpoint!(GetVideosRequest, VIDEOS_GET_VIDEOS);
+
+    /// Response body for the "Get Videos" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetVideosResponse {
+        /// The list of published videos that match the filter criteria.
+        #[serde(default)]
+        pub data: Vec<GetVideosItem>,
+        /// Contains the information used to page through the list of results.
+        #[serde(default)]
+        pub pagination: crate::helix::HelixPagination,
+    }
+
+    /// The list of published videos that match the filter criteria.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetVideosItem {
+        /// An ID that identifies the video.
+        #[serde(default)]
+        pub id: String,
+        /// The ID of the stream that the video originated from if the video's type is "archive;" otherwise, null.
+        #[serde(default)]
+        pub stream_id: String,
+        /// The ID of the broadcaster that owns the video.
+        #[serde(default)]
+        pub user_id: String,
+        /// The broadcaster's login name.
+        #[serde(default)]
+        pub user_login: String,
+        /// The broadcaster's display name.
+        #[serde(default)]
+        pub user_name: String,
+        /// The video's title.
+        #[serde(default)]
+        pub title: String,
+        /// The video's description.
+        #[serde(default)]
+        pub description: String,
+        /// The date and time, in UTC, of when the video was created.
+        #[serde(default)]
+        pub created_at: String,
+        /// The date and time, in UTC, of when the video was published.
+        #[serde(default)]
+        pub published_at: String,
+        /// The video's URL.
+        #[serde(default)]
+        pub url: String,
+        /// A URL to a thumbnail image of the video.
+        #[serde(default)]
+        pub thumbnail_url: String,
+        /// The video's viewable state.
+        #[serde(default)]
+        pub viewable: String,
+        /// The number of times that users have watched the video.
+        #[serde(default)]
+        pub view_count: i64,
+        /// The ISO 639-1 two-letter language code that the video was broadcast in.
+        #[serde(default)]
+        pub language: String,
+        /// The video's type.
+        #[serde(default)]
+        pub r#type: String,
+        /// The video's length in ISO 8601 duration format.
+        #[serde(default)]
+        pub duration: String,
+        /// The segments that Twitch Audio Recognition muted; otherwise, null.
+        #[serde(default)]
+        pub muted_segments: Vec<GetVideosMutedSegments>,
+    }
+
+    /// The segments that Twitch Audio Recognition muted; otherwise, null.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct GetVideosMutedSegments {
+        /// The duration of the muted segment, in seconds.
+        #[serde(default)]
+        pub duration: i64,
+        /// The offset, in seconds, from the beginning of the video to where the muted segment begins.
+        #[serde(default)]
+        pub offset: i64,
+    }
+
+    impl GetVideosResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 
     /// Deletes one or more videos.
     pub const VIDEOS_DELETE_VIDEOS: HelixEndpoint = HelixEndpoint {
@@ -2773,11 +9660,25 @@ pub mod videos {
         scopes: &["channel:manage:videos"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        DeleteVideosRequest,
-        DeleteVideosResponse,
-        VIDEOS_DELETE_VIDEOS
-    );
+    declare_generated_endpoint!(DeleteVideosRequest, VIDEOS_DELETE_VIDEOS);
+
+    /// Response body for the "Delete Videos" endpoint.
+    #[derive(Clone, Debug, Default, PartialEq, serde::Deserialize)]
+    pub struct DeleteVideosResponse {
+        /// The list of IDs of the videos that were deleted.
+        #[serde(default)]
+        pub data: Vec<String>,
+    }
+
+    impl DeleteVideosResponse {
+        pub const EXPECTED_STATUS: u16 = 200;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)
+        }
+    }
 }
 
 pub mod whispers {
@@ -2796,11 +9697,22 @@ pub mod whispers {
         scopes: &["user:manage:whispers"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(
-        SendWhisperRequest,
-        SendWhisperResponse,
-        WHISPERS_SEND_WHISPER
-    );
+    declare_generated_endpoint!(SendWhisperRequest, WHISPERS_SEND_WHISPER);
+
+    /// Response for the "Send Whisper" endpoint (expects HTTP 204 with an empty body).
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+    pub struct SendWhisperResponse;
+
+    impl SendWhisperResponse {
+        pub const EXPECTED_STATUS: u16 = 204;
+
+        pub fn parse(
+            response: crate::helix::RawResponse,
+        ) -> Result<Self, crate::helix::HelixError> {
+            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;
+            Ok(Self)
+        }
+    }
 }
 
 pub static ALL_ENDPOINTS: &[&HelixEndpoint] = &[
@@ -2811,6 +9723,7 @@ pub static ALL_ENDPOINTS: &[&HelixEndpoint] = &[
     &analytics::ANALYTICS_GET_GAME_ANALYTICS,
     &bits::BITS_GET_BITS_LEADERBOARD,
     &bits::BITS_GET_CHEERMOTES,
+    &bits::BITS_GET_CUSTOM_POWER_UP,
     &bits::BITS_GET_EXTENSION_TRANSACTIONS,
     &channels::CHANNELS_GET_CHANNEL_INFORMATION,
     &channels::CHANNELS_MODIFY_CHANNEL_INFORMATION,
@@ -2838,6 +9751,10 @@ pub static ALL_ENDPOINTS: &[&HelixEndpoint] = &[
     &chat::CHAT_SEND_CHAT_ANNOUNCEMENT,
     &chat::CHAT_SEND_A_SHOUTOUT,
     &chat::CHAT_SEND_CHAT_MESSAGE,
+    &chat::CHAT_GET_PINNED_CHAT_MESSAGE,
+    &chat::CHAT_PIN_CHAT_MESSAGE,
+    &chat::CHAT_UPDATE_PINNED_CHAT_MESSAGE,
+    &chat::CHAT_UNPIN_CHAT_MESSAGE,
     &chat::CHAT_GET_USER_CHAT_COLOR,
     &chat::CHAT_UPDATE_USER_CHAT_COLOR,
     &clips::CLIPS_CREATE_CLIP,

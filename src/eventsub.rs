@@ -431,6 +431,16 @@ trait HasSourceTimestamp {
     fn set_source_timestamp(&mut self, ts: Option<OffsetDateTime>);
 }
 
+/// Treats an explicit JSON `null` like an absent field; EventSub payloads use
+/// `null` liberally for optional values.
+pub(crate) fn null_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: Deserialize<'de> + Default,
+{
+    Ok(Option::<T>::deserialize(deserializer)?.unwrap_or_default())
+}
+
 impl HasSourceTimestamp for EventSubChatMessage {
     fn set_source_timestamp(&mut self, ts: Option<OffsetDateTime>) {
         self.source_timestamp = ts;
@@ -611,12 +621,6 @@ pub struct CreateEventSubSubscriptionRequest {
     pub version: String,
     pub condition: EventSubCondition,
     pub transport: EventSubTransport,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct CreateEventSubSubscriptionResponse {
-    #[serde(default)]
-    pub data: Vec<EventSubSubscription>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -801,7 +805,7 @@ pub fn verify_and_decode_webhook_message(
 #[path = "eventsub_generated.rs"]
 mod generated;
 
-pub use generated::{GenericEventSubPayload, KnownEventSubPayload};
+pub use generated::*;
 pub static ALL_EVENTSUB_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] =
     generated::ALL_SUBSCRIPTIONS;
 

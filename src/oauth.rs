@@ -552,6 +552,36 @@ mod tests {
     }
 
     #[test]
+    fn url_constants_match_checked_in_auth_catalog() {
+        let catalog: serde_json::Value =
+            serde_json::from_str(include_str!("../twitch_catalog/auth.json"))
+                .expect("auth.json should decode");
+        let endpoints = catalog["endpoints"]
+            .as_array()
+            .expect("auth.json should list endpoints");
+
+        let expected = [
+            ("oauth_authorize", TWITCH_AUTHORIZE_URL),
+            ("oauth_token", TWITCH_TOKEN_URL),
+            ("oauth_device", TWITCH_DEVICE_CODE_URL),
+            ("oauth_validate", TWITCH_VALIDATE_URL),
+            ("oauth_revoke", TWITCH_REVOKE_URL),
+            ("oidc_configuration", TWITCH_OPENID_CONFIGURATION_URL),
+            ("oidc_keys", TWITCH_OPENID_JWKS_URL),
+            ("oidc_userinfo", TWITCH_USERINFO_URL),
+        ];
+
+        assert_eq!(endpoints.len(), expected.len());
+        for (id, url) in expected {
+            let entry = endpoints
+                .iter()
+                .find(|endpoint| endpoint["id"] == id)
+                .unwrap_or_else(|| panic!("auth.json should define endpoint `{id}`"));
+            assert_eq!(entry["url"], url, "URL mismatch for `{id}`");
+        }
+    }
+
+    #[test]
     fn token_validation_due_defaults_to_true_without_history() {
         assert!(token_validation_due(None, 1_700_000_000_000));
         assert!(!token_validation_due(
