@@ -35,24 +35,24 @@ jobs:
         run: python3 -m py_compile tools/twitch_surface.py
 
       - name: Check formatting
-        run: cargo fmt --check
+        run: cargo fmt --all --check
 
       - name: Lint
-        run: cargo clippy --all-targets --all-features --locked -- -D warnings
+        run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
       - name: Test default features
-        run: cargo test --locked
+        run: cargo test --workspace --locked
 
       - name: Test all features
-        run: cargo test --all-features --locked
+        run: cargo test --workspace --all-features --locked
 
       - name: Build docs
         env:
           RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps --all-features --locked
+        run: cargo doc --workspace --no-deps --all-features --locked
 
       - name: Verify packaging
-        run: cargo package --locked
+        run: cargo package --workspace --locked
 
   wasm:
     name: Stable (wasm)
@@ -88,7 +88,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Test all features on MSRV
-        run: cargo test --all-features --locked
+        run: cargo test --workspace --all-features --locked
 
   reuse:
     name: REUSE

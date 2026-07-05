@@ -72,20 +72,12 @@ impl HelixEndpointRequest {
         Self::default()
     }
 
-    pub fn with_path_param(
-        mut self,
-        name: impl Into<String>,
-        value: impl Into<String>,
-    ) -> Self {
+    pub fn with_path_param(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
         self.path_params.push((name.into(), value.into()));
         self
     }
 
-    pub fn with_query_param(
-        mut self,
-        name: impl Into<String>,
-        value: impl Into<String>,
-    ) -> Self {
+    pub fn with_query_param(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
         self.query_params.push((name.into(), value.into()));
         self
     }
@@ -127,7 +119,10 @@ impl HelixEndpoint {
         }
         if matches!(
             self.auth_kind,
-            HelixAuthKind::App | HelixAuthKind::User | HelixAuthKind::Either | HelixAuthKind::ExtensionJwt
+            HelixAuthKind::App
+                | HelixAuthKind::User
+                | HelixAuthKind::Either
+                | HelixAuthKind::ExtensionJwt
         ) && access_token.is_none()
         {
             return Err(HelixError::MissingAccessToken { endpoint: self.id });
@@ -141,8 +136,8 @@ impl HelixEndpoint {
 
         let base_url = format!("https://api.twitch.tv/helix{path}");
         let url = append_query_params(&base_url, &request.query_params);
-        let mut builder = PreparedRequestBuilder::new(self.method.clone(), url)
-            .header("Client-Id", client_id);
+        let mut builder =
+            PreparedRequestBuilder::new(self.method.clone(), url).header("Client-Id", client_id);
         if let Some(access_token) = access_token {
             builder = builder.header("Authorization", format!("Bearer {access_token}"));
         }

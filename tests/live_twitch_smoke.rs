@@ -14,15 +14,18 @@ fn required_env(name: &str) -> String {
 async fn app_token_and_openid_configuration_smoke() {
     let client_id = required_env("TWITCH_TEST_CLIENT_ID");
     let client_secret = required_env("TWITCH_TEST_CLIENT_SECRET");
-    let auth_client =
-        TwitchAuthClient::new(TwitchAuthConfig::new(client_id.clone())).expect("client should build");
+    let auth_client = TwitchAuthClient::new(TwitchAuthConfig::new(client_id.clone()))
+        .expect("client should build");
 
     let configuration = auth_client
         .fetch_openid_configuration()
         .await
         .expect("openid configuration should load");
     assert_eq!(configuration.issuer, "https://id.twitch.tv/oauth2");
-    assert_eq!(configuration.userinfo_endpoint, "https://id.twitch.tv/oauth2/userinfo");
+    assert_eq!(
+        configuration.userinfo_endpoint,
+        "https://id.twitch.tv/oauth2/userinfo"
+    );
 
     let app_token = auth_client
         .request_app_access_token(&client_secret)

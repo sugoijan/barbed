@@ -412,10 +412,7 @@ pub fn token_validation_due(last_validated_at_ms: Option<i64>, now_ms: i64) -> b
     }
 }
 
-pub fn sign_extension_jwt<T: Serialize>(
-    secret: &[u8],
-    claims: &T,
-) -> Result<String, SigningError> {
+pub fn sign_extension_jwt<T: Serialize>(secret: &[u8], claims: &T) -> Result<String, SigningError> {
     if secret.is_empty() {
         return Err(SigningError::MissingSigningSecret);
     }

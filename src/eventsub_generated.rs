@@ -265,86 +265,646 @@ pub enum KnownEventSubPayload {
 }
 
 pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
-    EventSubSubscriptionDefinition { id: "automod_message_hold_1", name: "Automod Message Hold", subscription_type: "automod.message.hold", version: "1", stability: EndpointStability::Ga, description: "A user is notified if a message is caught by automod for review." },
-    EventSubSubscriptionDefinition { id: "automod_message_hold_2", name: "Automod Message Hold V2\nNEW", subscription_type: "automod.message.hold", version: "2", stability: EndpointStability::New, description: "A user is notified if a message is caught by automod for review. Only public blocked terms trigger notifications, not private ones." },
-    EventSubSubscriptionDefinition { id: "automod_message_update_1", name: "Automod Message Update", subscription_type: "automod.message.update", version: "1", stability: EndpointStability::Ga, description: "A message in the automod queue had its status changed." },
-    EventSubSubscriptionDefinition { id: "automod_message_update_2", name: "Automod Message Update V2\nNEW", subscription_type: "automod.message.update", version: "2", stability: EndpointStability::New, description: "A message in the automod queue had its status changed. Only public blocked terms trigger notifications, not private ones." },
-    EventSubSubscriptionDefinition { id: "automod_settings_update_1", name: "Automod Settings Update", subscription_type: "automod.settings.update", version: "1", stability: EndpointStability::Ga, description: "A notification is sent when a broadcaster’s automod settings are updated." },
-    EventSubSubscriptionDefinition { id: "automod_terms_update_1", name: "Automod Terms Update", subscription_type: "automod.terms.update", version: "1", stability: EndpointStability::Ga, description: "A notification is sent when a broadcaster’s automod terms are updated. Changes to private terms are not sent." },
-    EventSubSubscriptionDefinition { id: "channel_bits_use_1", name: "Channel Bits Use\nNEW", subscription_type: "channel.bits.use", version: "1", stability: EndpointStability::New, description: "A notification is sent whenever Bits are used on a channel." },
-    EventSubSubscriptionDefinition { id: "channel_update_2", name: "Channel Update", subscription_type: "channel.update", version: "2", stability: EndpointStability::Ga, description: "A broadcaster updates their channel properties e.g., category, title, content classification labels, broadcast, or language." },
-    EventSubSubscriptionDefinition { id: "channel_follow_2", name: "Channel Follow", subscription_type: "channel.follow", version: "2", stability: EndpointStability::Ga, description: "A specified channel receives a follow." },
-    EventSubSubscriptionDefinition { id: "channel_ad_break_begin_1", name: "Channel Ad Break Begin", subscription_type: "channel.ad_break.begin", version: "1", stability: EndpointStability::Ga, description: "A midroll commercial break has started running." },
-    EventSubSubscriptionDefinition { id: "channel_chat_clear_1", name: "Channel Chat Clear", subscription_type: "channel.chat.clear", version: "1", stability: EndpointStability::Ga, description: "A moderator or bot has cleared all messages from the chat room." },
-    EventSubSubscriptionDefinition { id: "channel_chat_clear_user_messages_1", name: "Channel Chat Clear User Messages", subscription_type: "channel.chat.clear_user_messages", version: "1", stability: EndpointStability::Ga, description: "A moderator or bot has cleared all messages from a specific user." },
-    EventSubSubscriptionDefinition { id: "channel_chat_message_1", name: "Channel Chat Message\nNEW", subscription_type: "channel.chat.message", version: "1", stability: EndpointStability::New, description: "Any user sends a message to a specific chat room." },
-    EventSubSubscriptionDefinition { id: "channel_chat_message_delete_1", name: "Channel Chat Message Delete", subscription_type: "channel.chat.message_delete", version: "1", stability: EndpointStability::Ga, description: "A moderator has removed a specific message." },
-    EventSubSubscriptionDefinition { id: "channel_chat_notification_1", name: "Channel Chat Notification", subscription_type: "channel.chat.notification", version: "1", stability: EndpointStability::Ga, description: "A notification for when an event that appears in chat has occurred." },
-    EventSubSubscriptionDefinition { id: "channel_chat_settings_update_1", name: "Channel Chat Settings Update\nNEW", subscription_type: "channel.chat_settings.update", version: "1", stability: EndpointStability::New, description: "A notification for when a broadcaster’s chat settings are updated." },
-    EventSubSubscriptionDefinition { id: "channel_chat_user_message_hold_1", name: "Channel Chat User Message Hold\nNEW", subscription_type: "channel.chat.user_message_hold", version: "1", stability: EndpointStability::New, description: "A user is notified if their message is caught by automod." },
-    EventSubSubscriptionDefinition { id: "channel_chat_user_message_update_1", name: "Channel Chat User Message Update\nNEW", subscription_type: "channel.chat.user_message_update", version: "1", stability: EndpointStability::New, description: "A user is notified if their message’s automod status is updated." },
-    EventSubSubscriptionDefinition { id: "channel_shared_chat_begin_1", name: "Channel Shared Chat Session Begin\nNEW", subscription_type: "channel.shared_chat.begin", version: "1", stability: EndpointStability::New, description: "A notification when a channel becomes active in an active shared chat session." },
-    EventSubSubscriptionDefinition { id: "channel_shared_chat_update_1", name: "Channel Shared Chat Session Update\nNEW", subscription_type: "channel.shared_chat.update", version: "1", stability: EndpointStability::New, description: "A notification when the active shared chat session the channel is in changes." },
-    EventSubSubscriptionDefinition { id: "channel_shared_chat_end_1", name: "Channel Shared Chat Session End", subscription_type: "channel.shared_chat.end", version: "1", stability: EndpointStability::Ga, description: "A notification when a channel leaves a shared chat session or the session ends." },
-    EventSubSubscriptionDefinition { id: "channel_subscribe_1", name: "Channel Subscribe", subscription_type: "channel.subscribe", version: "1", stability: EndpointStability::Ga, description: "A notification is sent when a specified channel receives a subscriber. This does not include resubscribes." },
-    EventSubSubscriptionDefinition { id: "channel_subscription_end_1", name: "Channel Subscription End", subscription_type: "channel.subscription.end", version: "1", stability: EndpointStability::Ga, description: "A notification when a subscription to the specified channel ends." },
-    EventSubSubscriptionDefinition { id: "channel_subscription_gift_1", name: "Channel Subscription Gift", subscription_type: "channel.subscription.gift", version: "1", stability: EndpointStability::Ga, description: "A notification when a viewer gives a gift subscription to one or more users in the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_subscription_message_1", name: "Channel Subscription Message", subscription_type: "channel.subscription.message", version: "1", stability: EndpointStability::Ga, description: "A notification when a user sends a resubscription chat message in a specific channel." },
-    EventSubSubscriptionDefinition { id: "channel_cheer_1", name: "Channel Cheer", subscription_type: "channel.cheer", version: "1", stability: EndpointStability::Ga, description: "A user cheers on the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_raid_1", name: "Channel Raid", subscription_type: "channel.raid", version: "1", stability: EndpointStability::Ga, description: "A broadcaster raids another broadcaster’s channel." },
-    EventSubSubscriptionDefinition { id: "channel_ban_1", name: "Channel Ban", subscription_type: "channel.ban", version: "1", stability: EndpointStability::Ga, description: "A viewer is banned from the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_unban_1", name: "Channel Unban", subscription_type: "channel.unban", version: "1", stability: EndpointStability::Ga, description: "A viewer is unbanned from the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_moderate_1", name: "Channel Unban Request Create\nNEW\nchannel.unban_request.create\n1\nA user creates an unban request.\nChannel Unban Request Resolve\nNEW\nchannel.unban_request.resolve\n1\nAn unban request has been resolved.\nChannel Moderate", subscription_type: "channel.moderate", version: "1", stability: EndpointStability::New, description: "A moderator performs a moderation action in a channel." },
-    EventSubSubscriptionDefinition { id: "channel_moderate_2", name: "Channel Moderate V2\nNEW", subscription_type: "channel.moderate", version: "2", stability: EndpointStability::New, description: "A moderator performs a moderation action in a channel. Includes warnings." },
-    EventSubSubscriptionDefinition { id: "channel_moderator_add_1", name: "Channel Moderator Add", subscription_type: "channel.moderator.add", version: "1", stability: EndpointStability::Ga, description: "Moderator privileges were added to a user on a specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_moderator_remove_1", name: "Channel Moderator Remove", subscription_type: "channel.moderator.remove", version: "1", stability: EndpointStability::Ga, description: "Moderator privileges were removed from a user on a specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_guest_star_session_begin_beta", name: "Channel Guest Star Session Begin\nBETA", subscription_type: "channel.guest_star_session.begin", version: "beta", stability: EndpointStability::Beta, description: "The host began a new Guest Star session." },
-    EventSubSubscriptionDefinition { id: "channel_guest_star_session_end_beta", name: "Channel Guest Star Session End\nBETA", subscription_type: "channel.guest_star_session.end", version: "beta", stability: EndpointStability::Beta, description: "A running Guest Star session has ended." },
-    EventSubSubscriptionDefinition { id: "channel_guest_star_guest_update_beta", name: "Channel Guest Star Guest Update\nBETA", subscription_type: "channel.guest_star_guest.update", version: "beta", stability: EndpointStability::Beta, description: "A guest or a slot is updated in an active Guest Star session." },
-    EventSubSubscriptionDefinition { id: "channel_guest_star_settings_update_beta", name: "Channel Guest Star Settings Update\nBETA", subscription_type: "channel.guest_star_settings.update", version: "beta", stability: EndpointStability::Beta, description: "The host preferences for Guest Star have been updated." },
-    EventSubSubscriptionDefinition { id: "channel_channel_points_automatic_reward_redemption_add_1", name: "Channel Points Automatic Reward Redemption Add", subscription_type: "channel.channel_points_automatic_reward_redemption.add", version: "1", stability: EndpointStability::Ga, description: "A viewer has redeemed an automatic channel points reward on the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_channel_points_automatic_reward_redemption_add_2", name: "Channel Points Automatic Reward Redemption Add V2\nNEW", subscription_type: "channel.channel_points_automatic_reward_redemption.add", version: "2", stability: EndpointStability::New, description: "A viewer has redeemed an automatic channel points reward on the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_channel_points_custom_reward_add_1", name: "Channel Points Custom Reward Add", subscription_type: "channel.channel_points_custom_reward.add", version: "1", stability: EndpointStability::Ga, description: "A custom channel points reward has been created for the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_channel_points_custom_reward_update_1", name: "Channel Points Custom Reward Update", subscription_type: "channel.channel_points_custom_reward.update", version: "1", stability: EndpointStability::Ga, description: "A custom channel points reward has been updated for the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_channel_points_custom_reward_remove_1", name: "Channel Points Custom Reward Remove", subscription_type: "channel.channel_points_custom_reward.remove", version: "1", stability: EndpointStability::Ga, description: "A custom channel points reward has been removed from the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_channel_points_custom_reward_redemption_add_1", name: "Channel Points Custom Reward Redemption Add", subscription_type: "channel.channel_points_custom_reward_redemption.add", version: "1", stability: EndpointStability::Ga, description: "A viewer has redeemed a custom channel points reward on the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_channel_points_custom_reward_redemption_update_1", name: "Channel Points Custom Reward Redemption Update", subscription_type: "channel.channel_points_custom_reward_redemption.update", version: "1", stability: EndpointStability::Ga, description: "A redemption of a channel points custom reward has been updated for the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_poll_begin_1", name: "Channel Poll Begin", subscription_type: "channel.poll.begin", version: "1", stability: EndpointStability::Ga, description: "A poll started on a specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_poll_progress_1", name: "Channel Poll Progress", subscription_type: "channel.poll.progress", version: "1", stability: EndpointStability::Ga, description: "Users respond to a poll on a specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_poll_end_1", name: "Channel Poll End", subscription_type: "channel.poll.end", version: "1", stability: EndpointStability::Ga, description: "A poll ended on a specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_prediction_begin_1", name: "Channel Prediction Begin", subscription_type: "channel.prediction.begin", version: "1", stability: EndpointStability::Ga, description: "A Prediction started on a specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_prediction_progress_1", name: "Channel Prediction Progress", subscription_type: "channel.prediction.progress", version: "1", stability: EndpointStability::Ga, description: "Users participated in a Prediction on a specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_prediction_lock_1", name: "Channel Prediction Lock", subscription_type: "channel.prediction.lock", version: "1", stability: EndpointStability::Ga, description: "A Prediction was locked on a specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_prediction_end_1", name: "Channel Prediction End", subscription_type: "channel.prediction.end", version: "1", stability: EndpointStability::Ga, description: "A Prediction ended on a specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_suspicious_user_message_1", name: "Channel Suspicious User Message\nNEW", subscription_type: "channel.suspicious_user.message", version: "1", stability: EndpointStability::New, description: "A chat message has been sent by a suspicious user." },
-    EventSubSubscriptionDefinition { id: "channel_suspicious_user_update_1", name: "Channel Suspicious User Update\nNEW", subscription_type: "channel.suspicious_user.update", version: "1", stability: EndpointStability::New, description: "A suspicious user has been updated." },
-    EventSubSubscriptionDefinition { id: "channel_vip_add_1", name: "Channel VIP Add\nNEW", subscription_type: "channel.vip.add", version: "1", stability: EndpointStability::New, description: "A VIP is added to the channel." },
-    EventSubSubscriptionDefinition { id: "channel_vip_remove_1", name: "Channel VIP Remove\nNEW", subscription_type: "channel.vip.remove", version: "1", stability: EndpointStability::New, description: "A VIP is removed from the channel." },
-    EventSubSubscriptionDefinition { id: "channel_warning_acknowledge_1", name: "Channel Warning Acknowledgement\nNEW", subscription_type: "channel.warning.acknowledge", version: "1", stability: EndpointStability::New, description: "A user awknowledges a warning. Broadcasters and moderators can see the warning’s details." },
-    EventSubSubscriptionDefinition { id: "channel_warning_send_1", name: "Channel Warning Send\nNEW", subscription_type: "channel.warning.send", version: "1", stability: EndpointStability::New, description: "A user is sent a warning. Broadcasters and moderators can see the warning’s details." },
-    EventSubSubscriptionDefinition { id: "channel_charity_campaign_donate_1", name: "Charity Donation", subscription_type: "channel.charity_campaign.donate", version: "1", stability: EndpointStability::Ga, description: "Sends an event notification when a user donates to the broadcaster’s charity campaign." },
-    EventSubSubscriptionDefinition { id: "channel_charity_campaign_start_1", name: "Charity Campaign Start", subscription_type: "channel.charity_campaign.start", version: "1", stability: EndpointStability::Ga, description: "Sends an event notification when the broadcaster starts a charity campaign." },
-    EventSubSubscriptionDefinition { id: "channel_charity_campaign_progress_1", name: "Charity Campaign Progress", subscription_type: "channel.charity_campaign.progress", version: "1", stability: EndpointStability::Ga, description: "Sends an event notification when progress is made towards the campaign’s goal or when the broadcaster changes the fundraising goal." },
-    EventSubSubscriptionDefinition { id: "channel_charity_campaign_stop_1", name: "Charity Campaign Stop", subscription_type: "channel.charity_campaign.stop", version: "1", stability: EndpointStability::Ga, description: "Sends an event notification when the broadcaster stops a charity campaign." },
-    EventSubSubscriptionDefinition { id: "conduit_shard_disabled_1", name: "Conduit Shard Disabled\nNEW", subscription_type: "conduit.shard.disabled", version: "1", stability: EndpointStability::New, description: "Sends a notification when EventSub disables a shard due to the status of the underlying transport changing." },
-    EventSubSubscriptionDefinition { id: "drop_entitlement_grant_1", name: "Drop Entitlement Grant", subscription_type: "drop.entitlement.grant", version: "1", stability: EndpointStability::Ga, description: "An entitlement for a Drop is granted to a user." },
-    EventSubSubscriptionDefinition { id: "extension_bits_transaction_create_1", name: "Extension Bits Transaction Create", subscription_type: "extension.bits_transaction.create", version: "1", stability: EndpointStability::Ga, description: "A Bits transaction occurred for a specified Twitch Extension." },
-    EventSubSubscriptionDefinition { id: "channel_goal_begin_1", name: "Goal Begin", subscription_type: "channel.goal.begin", version: "1", stability: EndpointStability::Ga, description: "Get notified when a broadcaster begins a goal." },
-    EventSubSubscriptionDefinition { id: "channel_goal_progress_1", name: "Goal Progress", subscription_type: "channel.goal.progress", version: "1", stability: EndpointStability::Ga, description: "Get notified when progress (either positive or negative) is made towards a broadcaster’s goal." },
-    EventSubSubscriptionDefinition { id: "channel_goal_end_1", name: "Goal End", subscription_type: "channel.goal.end", version: "1", stability: EndpointStability::Ga, description: "Get notified when a broadcaster ends a goal." },
-    EventSubSubscriptionDefinition { id: "channel_hype_train_begin_2", name: "Hype Train Begin", subscription_type: "channel.hype_train.begin", version: "2", stability: EndpointStability::Ga, description: "A Hype Train begins on the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_hype_train_progress_2", name: "Hype Train Progress", subscription_type: "channel.hype_train.progress", version: "2", stability: EndpointStability::Ga, description: "A Hype Train makes progress on the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_hype_train_end_2", name: "Hype Train End", subscription_type: "channel.hype_train.end", version: "2", stability: EndpointStability::Ga, description: "A Hype Train ends on the specified channel." },
-    EventSubSubscriptionDefinition { id: "channel_shield_mode_begin_1", name: "Shield Mode Begin", subscription_type: "channel.shield_mode.begin", version: "1", stability: EndpointStability::Ga, description: "Sends a notification when the broadcaster activates Shield Mode." },
-    EventSubSubscriptionDefinition { id: "channel_shield_mode_end_1", name: "Shield Mode End", subscription_type: "channel.shield_mode.end", version: "1", stability: EndpointStability::Ga, description: "Sends a notification when the broadcaster deactivates Shield Mode." },
-    EventSubSubscriptionDefinition { id: "channel_shoutout_create_1", name: "Shoutout Create", subscription_type: "channel.shoutout.create", version: "1", stability: EndpointStability::Ga, description: "Sends a notification when the specified broadcaster sends a Shoutout." },
-    EventSubSubscriptionDefinition { id: "channel_shoutout_receive_1", name: "Shoutout Received", subscription_type: "channel.shoutout.receive", version: "1", stability: EndpointStability::Ga, description: "Sends a notification when the specified broadcaster receives a Shoutout." },
-    EventSubSubscriptionDefinition { id: "stream_online_1", name: "Stream Online", subscription_type: "stream.online", version: "1", stability: EndpointStability::Ga, description: "The specified broadcaster starts a stream." },
-    EventSubSubscriptionDefinition { id: "stream_offline_1", name: "Stream Offline", subscription_type: "stream.offline", version: "1", stability: EndpointStability::Ga, description: "The specified broadcaster stops a stream." },
-    EventSubSubscriptionDefinition { id: "user_authorization_grant_1", name: "User Authorization Grant", subscription_type: "user.authorization.grant", version: "1", stability: EndpointStability::Ga, description: "A user’s authorization has been granted to your client id." },
-    EventSubSubscriptionDefinition { id: "user_authorization_revoke_1", name: "User Authorization Revoke", subscription_type: "user.authorization.revoke", version: "1", stability: EndpointStability::Ga, description: "A user’s authorization has been revoked for your client id." },
-    EventSubSubscriptionDefinition { id: "user_update_1", name: "User Update", subscription_type: "user.update", version: "1", stability: EndpointStability::Ga, description: "A user has updated their account." },
-    EventSubSubscriptionDefinition { id: "user_whisper_message_1", name: "Whisper Received\nNEW", subscription_type: "user.whisper.message", version: "1", stability: EndpointStability::New, description: "A user receives a whisper." },
+    EventSubSubscriptionDefinition {
+        id: "automod_message_hold_1",
+        name: "Automod Message Hold",
+        subscription_type: "automod.message.hold",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A user is notified if a message is caught by automod for review.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "automod_message_hold_2",
+        name: "Automod Message Hold V2\nNEW",
+        subscription_type: "automod.message.hold",
+        version: "2",
+        stability: EndpointStability::New,
+        description: "A user is notified if a message is caught by automod for review. Only public blocked terms trigger notifications, not private ones.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "automod_message_update_1",
+        name: "Automod Message Update",
+        subscription_type: "automod.message.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A message in the automod queue had its status changed.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "automod_message_update_2",
+        name: "Automod Message Update V2\nNEW",
+        subscription_type: "automod.message.update",
+        version: "2",
+        stability: EndpointStability::New,
+        description: "A message in the automod queue had its status changed. Only public blocked terms trigger notifications, not private ones.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "automod_settings_update_1",
+        name: "Automod Settings Update",
+        subscription_type: "automod.settings.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification is sent when a broadcaster’s automod settings are updated.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "automod_terms_update_1",
+        name: "Automod Terms Update",
+        subscription_type: "automod.terms.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification is sent when a broadcaster’s automod terms are updated. Changes to private terms are not sent.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_bits_use_1",
+        name: "Channel Bits Use\nNEW",
+        subscription_type: "channel.bits.use",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A notification is sent whenever Bits are used on a channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_update_2",
+        name: "Channel Update",
+        subscription_type: "channel.update",
+        version: "2",
+        stability: EndpointStability::Ga,
+        description: "A broadcaster updates their channel properties e.g., category, title, content classification labels, broadcast, or language.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_follow_2",
+        name: "Channel Follow",
+        subscription_type: "channel.follow",
+        version: "2",
+        stability: EndpointStability::Ga,
+        description: "A specified channel receives a follow.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_ad_break_begin_1",
+        name: "Channel Ad Break Begin",
+        subscription_type: "channel.ad_break.begin",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A midroll commercial break has started running.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_chat_clear_1",
+        name: "Channel Chat Clear",
+        subscription_type: "channel.chat.clear",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A moderator or bot has cleared all messages from the chat room.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_chat_clear_user_messages_1",
+        name: "Channel Chat Clear User Messages",
+        subscription_type: "channel.chat.clear_user_messages",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A moderator or bot has cleared all messages from a specific user.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_chat_message_1",
+        name: "Channel Chat Message\nNEW",
+        subscription_type: "channel.chat.message",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "Any user sends a message to a specific chat room.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_chat_message_delete_1",
+        name: "Channel Chat Message Delete",
+        subscription_type: "channel.chat.message_delete",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A moderator has removed a specific message.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_chat_notification_1",
+        name: "Channel Chat Notification",
+        subscription_type: "channel.chat.notification",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification for when an event that appears in chat has occurred.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_chat_settings_update_1",
+        name: "Channel Chat Settings Update\nNEW",
+        subscription_type: "channel.chat_settings.update",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A notification for when a broadcaster’s chat settings are updated.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_chat_user_message_hold_1",
+        name: "Channel Chat User Message Hold\nNEW",
+        subscription_type: "channel.chat.user_message_hold",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A user is notified if their message is caught by automod.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_chat_user_message_update_1",
+        name: "Channel Chat User Message Update\nNEW",
+        subscription_type: "channel.chat.user_message_update",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A user is notified if their message’s automod status is updated.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shared_chat_begin_1",
+        name: "Channel Shared Chat Session Begin\nNEW",
+        subscription_type: "channel.shared_chat.begin",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A notification when a channel becomes active in an active shared chat session.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shared_chat_update_1",
+        name: "Channel Shared Chat Session Update\nNEW",
+        subscription_type: "channel.shared_chat.update",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A notification when the active shared chat session the channel is in changes.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shared_chat_end_1",
+        name: "Channel Shared Chat Session End",
+        subscription_type: "channel.shared_chat.end",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification when a channel leaves a shared chat session or the session ends.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_subscribe_1",
+        name: "Channel Subscribe",
+        subscription_type: "channel.subscribe",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification is sent when a specified channel receives a subscriber. This does not include resubscribes.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_subscription_end_1",
+        name: "Channel Subscription End",
+        subscription_type: "channel.subscription.end",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification when a subscription to the specified channel ends.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_subscription_gift_1",
+        name: "Channel Subscription Gift",
+        subscription_type: "channel.subscription.gift",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification when a viewer gives a gift subscription to one or more users in the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_subscription_message_1",
+        name: "Channel Subscription Message",
+        subscription_type: "channel.subscription.message",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification when a user sends a resubscription chat message in a specific channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_cheer_1",
+        name: "Channel Cheer",
+        subscription_type: "channel.cheer",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A user cheers on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_raid_1",
+        name: "Channel Raid",
+        subscription_type: "channel.raid",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A broadcaster raids another broadcaster’s channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_ban_1",
+        name: "Channel Ban",
+        subscription_type: "channel.ban",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A viewer is banned from the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_unban_1",
+        name: "Channel Unban",
+        subscription_type: "channel.unban",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A viewer is unbanned from the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_moderate_1",
+        name: "Channel Unban Request Create\nNEW\nchannel.unban_request.create\n1\nA user creates an unban request.\nChannel Unban Request Resolve\nNEW\nchannel.unban_request.resolve\n1\nAn unban request has been resolved.\nChannel Moderate",
+        subscription_type: "channel.moderate",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A moderator performs a moderation action in a channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_moderate_2",
+        name: "Channel Moderate V2\nNEW",
+        subscription_type: "channel.moderate",
+        version: "2",
+        stability: EndpointStability::New,
+        description: "A moderator performs a moderation action in a channel. Includes warnings.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_moderator_add_1",
+        name: "Channel Moderator Add",
+        subscription_type: "channel.moderator.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Moderator privileges were added to a user on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_moderator_remove_1",
+        name: "Channel Moderator Remove",
+        subscription_type: "channel.moderator.remove",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Moderator privileges were removed from a user on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_guest_star_session_begin_beta",
+        name: "Channel Guest Star Session Begin\nBETA",
+        subscription_type: "channel.guest_star_session.begin",
+        version: "beta",
+        stability: EndpointStability::Beta,
+        description: "The host began a new Guest Star session.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_guest_star_session_end_beta",
+        name: "Channel Guest Star Session End\nBETA",
+        subscription_type: "channel.guest_star_session.end",
+        version: "beta",
+        stability: EndpointStability::Beta,
+        description: "A running Guest Star session has ended.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_guest_star_guest_update_beta",
+        name: "Channel Guest Star Guest Update\nBETA",
+        subscription_type: "channel.guest_star_guest.update",
+        version: "beta",
+        stability: EndpointStability::Beta,
+        description: "A guest or a slot is updated in an active Guest Star session.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_guest_star_settings_update_beta",
+        name: "Channel Guest Star Settings Update\nBETA",
+        subscription_type: "channel.guest_star_settings.update",
+        version: "beta",
+        stability: EndpointStability::Beta,
+        description: "The host preferences for Guest Star have been updated.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_automatic_reward_redemption_add_1",
+        name: "Channel Points Automatic Reward Redemption Add",
+        subscription_type: "channel.channel_points_automatic_reward_redemption.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A viewer has redeemed an automatic channel points reward on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_automatic_reward_redemption_add_2",
+        name: "Channel Points Automatic Reward Redemption Add V2\nNEW",
+        subscription_type: "channel.channel_points_automatic_reward_redemption.add",
+        version: "2",
+        stability: EndpointStability::New,
+        description: "A viewer has redeemed an automatic channel points reward on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_add_1",
+        name: "Channel Points Custom Reward Add",
+        subscription_type: "channel.channel_points_custom_reward.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A custom channel points reward has been created for the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_update_1",
+        name: "Channel Points Custom Reward Update",
+        subscription_type: "channel.channel_points_custom_reward.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A custom channel points reward has been updated for the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_remove_1",
+        name: "Channel Points Custom Reward Remove",
+        subscription_type: "channel.channel_points_custom_reward.remove",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A custom channel points reward has been removed from the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_redemption_add_1",
+        name: "Channel Points Custom Reward Redemption Add",
+        subscription_type: "channel.channel_points_custom_reward_redemption.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A viewer has redeemed a custom channel points reward on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_redemption_update_1",
+        name: "Channel Points Custom Reward Redemption Update",
+        subscription_type: "channel.channel_points_custom_reward_redemption.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A redemption of a channel points custom reward has been updated for the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_poll_begin_1",
+        name: "Channel Poll Begin",
+        subscription_type: "channel.poll.begin",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A poll started on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_poll_progress_1",
+        name: "Channel Poll Progress",
+        subscription_type: "channel.poll.progress",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Users respond to a poll on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_poll_end_1",
+        name: "Channel Poll End",
+        subscription_type: "channel.poll.end",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A poll ended on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_prediction_begin_1",
+        name: "Channel Prediction Begin",
+        subscription_type: "channel.prediction.begin",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A Prediction started on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_prediction_progress_1",
+        name: "Channel Prediction Progress",
+        subscription_type: "channel.prediction.progress",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Users participated in a Prediction on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_prediction_lock_1",
+        name: "Channel Prediction Lock",
+        subscription_type: "channel.prediction.lock",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A Prediction was locked on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_prediction_end_1",
+        name: "Channel Prediction End",
+        subscription_type: "channel.prediction.end",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A Prediction ended on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_suspicious_user_message_1",
+        name: "Channel Suspicious User Message\nNEW",
+        subscription_type: "channel.suspicious_user.message",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A chat message has been sent by a suspicious user.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_suspicious_user_update_1",
+        name: "Channel Suspicious User Update\nNEW",
+        subscription_type: "channel.suspicious_user.update",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A suspicious user has been updated.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_vip_add_1",
+        name: "Channel VIP Add\nNEW",
+        subscription_type: "channel.vip.add",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A VIP is added to the channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_vip_remove_1",
+        name: "Channel VIP Remove\nNEW",
+        subscription_type: "channel.vip.remove",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A VIP is removed from the channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_warning_acknowledge_1",
+        name: "Channel Warning Acknowledgement\nNEW",
+        subscription_type: "channel.warning.acknowledge",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A user awknowledges a warning. Broadcasters and moderators can see the warning’s details.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_warning_send_1",
+        name: "Channel Warning Send\nNEW",
+        subscription_type: "channel.warning.send",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A user is sent a warning. Broadcasters and moderators can see the warning’s details.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_charity_campaign_donate_1",
+        name: "Charity Donation",
+        subscription_type: "channel.charity_campaign.donate",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends an event notification when a user donates to the broadcaster’s charity campaign.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_charity_campaign_start_1",
+        name: "Charity Campaign Start",
+        subscription_type: "channel.charity_campaign.start",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends an event notification when the broadcaster starts a charity campaign.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_charity_campaign_progress_1",
+        name: "Charity Campaign Progress",
+        subscription_type: "channel.charity_campaign.progress",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends an event notification when progress is made towards the campaign’s goal or when the broadcaster changes the fundraising goal.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_charity_campaign_stop_1",
+        name: "Charity Campaign Stop",
+        subscription_type: "channel.charity_campaign.stop",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends an event notification when the broadcaster stops a charity campaign.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "conduit_shard_disabled_1",
+        name: "Conduit Shard Disabled\nNEW",
+        subscription_type: "conduit.shard.disabled",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "Sends a notification when EventSub disables a shard due to the status of the underlying transport changing.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "drop_entitlement_grant_1",
+        name: "Drop Entitlement Grant",
+        subscription_type: "drop.entitlement.grant",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "An entitlement for a Drop is granted to a user.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "extension_bits_transaction_create_1",
+        name: "Extension Bits Transaction Create",
+        subscription_type: "extension.bits_transaction.create",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A Bits transaction occurred for a specified Twitch Extension.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_goal_begin_1",
+        name: "Goal Begin",
+        subscription_type: "channel.goal.begin",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Get notified when a broadcaster begins a goal.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_goal_progress_1",
+        name: "Goal Progress",
+        subscription_type: "channel.goal.progress",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Get notified when progress (either positive or negative) is made towards a broadcaster’s goal.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_goal_end_1",
+        name: "Goal End",
+        subscription_type: "channel.goal.end",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Get notified when a broadcaster ends a goal.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_hype_train_begin_2",
+        name: "Hype Train Begin",
+        subscription_type: "channel.hype_train.begin",
+        version: "2",
+        stability: EndpointStability::Ga,
+        description: "A Hype Train begins on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_hype_train_progress_2",
+        name: "Hype Train Progress",
+        subscription_type: "channel.hype_train.progress",
+        version: "2",
+        stability: EndpointStability::Ga,
+        description: "A Hype Train makes progress on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_hype_train_end_2",
+        name: "Hype Train End",
+        subscription_type: "channel.hype_train.end",
+        version: "2",
+        stability: EndpointStability::Ga,
+        description: "A Hype Train ends on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shield_mode_begin_1",
+        name: "Shield Mode Begin",
+        subscription_type: "channel.shield_mode.begin",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends a notification when the broadcaster activates Shield Mode.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shield_mode_end_1",
+        name: "Shield Mode End",
+        subscription_type: "channel.shield_mode.end",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends a notification when the broadcaster deactivates Shield Mode.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shoutout_create_1",
+        name: "Shoutout Create",
+        subscription_type: "channel.shoutout.create",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends a notification when the specified broadcaster sends a Shoutout.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shoutout_receive_1",
+        name: "Shoutout Received",
+        subscription_type: "channel.shoutout.receive",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends a notification when the specified broadcaster receives a Shoutout.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "stream_online_1",
+        name: "Stream Online",
+        subscription_type: "stream.online",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "The specified broadcaster starts a stream.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "stream_offline_1",
+        name: "Stream Offline",
+        subscription_type: "stream.offline",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "The specified broadcaster stops a stream.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "user_authorization_grant_1",
+        name: "User Authorization Grant",
+        subscription_type: "user.authorization.grant",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A user’s authorization has been granted to your client id.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "user_authorization_revoke_1",
+        name: "User Authorization Revoke",
+        subscription_type: "user.authorization.revoke",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A user’s authorization has been revoked for your client id.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "user_update_1",
+        name: "User Update",
+        subscription_type: "user.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A user has updated their account.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "user_whisper_message_1",
+        name: "Whisper Received\nNEW",
+        subscription_type: "user.whisper.message",
+        version: "1",
+        stability: EndpointStability::New,
+        description: "A user receives a whisper.",
+    },
 ];
 
 pub(crate) fn decode_known_payload(
@@ -354,91 +914,234 @@ pub(crate) fn decode_known_payload(
     source_timestamp: Option<OffsetDateTime>,
 ) -> Option<KnownEventSubPayload> {
     match (subscription_type, version) {
-        ("automod.message.hold", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::AutomodMessageHold1),
-        ("automod.message.hold", Some("2")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::AutomodMessageHold2),
-        ("automod.message.update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::AutomodMessageUpdate1),
-        ("automod.message.update", Some("2")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::AutomodMessageUpdate2),
-        ("automod.settings.update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::AutomodSettingsUpdate1),
-        ("automod.terms.update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::AutomodTermsUpdate1),
-        ("channel.bits.use", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelBitsUse1),
-        ("channel.update", Some("2")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelUpdate2),
-        ("channel.follow", Some("2")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelFollow2),
-        ("channel.ad_break.begin", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelAdBreakBegin1),
-        ("channel.chat.clear", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChatClear1),
-        ("channel.chat.clear_user_messages", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChatClearUserMessages1),
-        ("channel.chat.message", Some("1")) => decode_typed_event::<EventSubChatMessage>(event).map(KnownEventSubPayload::ChannelChatMessage1),
-        ("channel.chat.message_delete", Some("1")) => decode_typed_event::<EventSubChatMessageDeleted>(event).map(KnownEventSubPayload::ChannelChatMessageDelete1),
-        ("channel.chat.notification", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChatNotification1),
-        ("channel.chat_settings.update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChatSettingsUpdate1),
-        ("channel.chat.user_message_hold", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChatUserMessageHold1),
-        ("channel.chat.user_message_update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChatUserMessageUpdate1),
-        ("channel.shared_chat.begin", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelSharedChatBegin1),
-        ("channel.shared_chat.update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelSharedChatUpdate1),
-        ("channel.shared_chat.end", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelSharedChatEnd1),
-        ("channel.subscribe", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelSubscribe1),
-        ("channel.subscription.end", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelSubscriptionEnd1),
-        ("channel.subscription.gift", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelSubscriptionGift1),
-        ("channel.subscription.message", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelSubscriptionMessage1),
-        ("channel.cheer", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelCheer1),
-        ("channel.raid", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelRaid1),
-        ("channel.ban", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelBan1),
-        ("channel.unban", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelUnban1),
-        ("channel.moderate", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelModerate1),
-        ("channel.moderate", Some("2")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelModerate2),
-        ("channel.moderator.add", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelModeratorAdd1),
-        ("channel.moderator.remove", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelModeratorRemove1),
-        ("channel.guest_star_session.begin", Some("beta")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelGuestStarSessionBeginBeta),
-        ("channel.guest_star_session.end", Some("beta")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelGuestStarSessionEndBeta),
-        ("channel.guest_star_guest.update", Some("beta")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelGuestStarGuestUpdateBeta),
-        ("channel.guest_star_settings.update", Some("beta")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelGuestStarSettingsUpdateBeta),
-        ("channel.channel_points_automatic_reward_redemption.add", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChannelPointsAutomaticRewardRedemptionAdd1),
-        ("channel.channel_points_automatic_reward_redemption.add", Some("2")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChannelPointsAutomaticRewardRedemptionAdd2),
-        ("channel.channel_points_custom_reward.add", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChannelPointsCustomRewardAdd1),
-        ("channel.channel_points_custom_reward.update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChannelPointsCustomRewardUpdate1),
-        ("channel.channel_points_custom_reward.remove", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRemove1),
-        ("channel.channel_points_custom_reward_redemption.add", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRedemptionAdd1),
-        ("channel.channel_points_custom_reward_redemption.update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRedemptionUpdate1),
-        ("channel.poll.begin", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelPollBegin1),
-        ("channel.poll.progress", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelPollProgress1),
-        ("channel.poll.end", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelPollEnd1),
-        ("channel.prediction.begin", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelPredictionBegin1),
-        ("channel.prediction.progress", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelPredictionProgress1),
-        ("channel.prediction.lock", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelPredictionLock1),
-        ("channel.prediction.end", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelPredictionEnd1),
-        ("channel.suspicious_user.message", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelSuspiciousUserMessage1),
-        ("channel.suspicious_user.update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelSuspiciousUserUpdate1),
-        ("channel.vip.add", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelVipAdd1),
-        ("channel.vip.remove", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelVipRemove1),
-        ("channel.warning.acknowledge", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelWarningAcknowledge1),
-        ("channel.warning.send", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelWarningSend1),
-        ("channel.charity_campaign.donate", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelCharityCampaignDonate1),
-        ("channel.charity_campaign.start", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelCharityCampaignStart1),
-        ("channel.charity_campaign.progress", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelCharityCampaignProgress1),
-        ("channel.charity_campaign.stop", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelCharityCampaignStop1),
-        ("conduit.shard.disabled", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ConduitShardDisabled1),
-        ("drop.entitlement.grant", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::DropEntitlementGrant1),
-        ("extension.bits_transaction.create", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ExtensionBitsTransactionCreate1),
-        ("channel.goal.begin", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelGoalBegin1),
-        ("channel.goal.progress", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelGoalProgress1),
-        ("channel.goal.end", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelGoalEnd1),
-        ("channel.hype_train.begin", Some("2")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelHypeTrainBegin2),
-        ("channel.hype_train.progress", Some("2")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelHypeTrainProgress2),
-        ("channel.hype_train.end", Some("2")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelHypeTrainEnd2),
-        ("channel.shield_mode.begin", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelShieldModeBegin1),
-        ("channel.shield_mode.end", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelShieldModeEnd1),
-        ("channel.shoutout.create", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelShoutoutCreate1),
-        ("channel.shoutout.receive", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelShoutoutReceive1),
-        ("stream.online", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::StreamOnline1),
-        ("stream.offline", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::StreamOffline1),
-        ("user.authorization.grant", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::UserAuthorizationGrant1),
-        ("user.authorization.revoke", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::UserAuthorizationRevoke1),
-        ("user.update", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::UserUpdate1),
-        ("user.whisper.message", Some("1")) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::UserWhisperMessage1),
+        ("automod.message.hold", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::AutomodMessageHold1),
+        ("automod.message.hold", Some("2")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::AutomodMessageHold2),
+        ("automod.message.update", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::AutomodMessageUpdate1),
+        ("automod.message.update", Some("2")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::AutomodMessageUpdate2),
+        ("automod.settings.update", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::AutomodSettingsUpdate1),
+        ("automod.terms.update", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::AutomodTermsUpdate1),
+        ("channel.bits.use", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelBitsUse1)
+        }
+        ("channel.update", Some("2")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelUpdate2)
+        }
+        ("channel.follow", Some("2")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelFollow2)
+        }
+        ("channel.ad_break.begin", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelAdBreakBegin1),
+        ("channel.chat.clear", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelChatClear1),
+        ("channel.chat.clear_user_messages", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChatClearUserMessages1)
+        }
+        ("channel.chat.message", Some("1")) => decode_typed_event::<EventSubChatMessage>(event)
+            .map(KnownEventSubPayload::ChannelChatMessage1),
+        ("channel.chat.message_delete", Some("1")) => {
+            decode_typed_event::<EventSubChatMessageDeleted>(event)
+                .map(KnownEventSubPayload::ChannelChatMessageDelete1)
+        }
+        ("channel.chat.notification", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelChatNotification1),
+        ("channel.chat_settings.update", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChatSettingsUpdate1)
+        }
+        ("channel.chat.user_message_hold", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChatUserMessageHold1)
+        }
+        ("channel.chat.user_message_update", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChatUserMessageUpdate1)
+        }
+        ("channel.shared_chat.begin", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelSharedChatBegin1),
+        ("channel.shared_chat.update", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelSharedChatUpdate1),
+        ("channel.shared_chat.end", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelSharedChatEnd1),
+        ("channel.subscribe", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelSubscribe1),
+        ("channel.subscription.end", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelSubscriptionEnd1),
+        ("channel.subscription.gift", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelSubscriptionGift1),
+        ("channel.subscription.message", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSubscriptionMessage1)
+        }
+        ("channel.cheer", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelCheer1)
+        }
+        ("channel.raid", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelRaid1)
+        }
+        ("channel.ban", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelBan1)
+        }
+        ("channel.unban", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelUnban1)
+        }
+        ("channel.moderate", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelModerate1),
+        ("channel.moderate", Some("2")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelModerate2),
+        ("channel.moderator.add", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelModeratorAdd1),
+        ("channel.moderator.remove", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelModeratorRemove1),
+        ("channel.guest_star_session.begin", Some("beta")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelGuestStarSessionBeginBeta)
+        }
+        ("channel.guest_star_session.end", Some("beta")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelGuestStarSessionEndBeta)
+        }
+        ("channel.guest_star_guest.update", Some("beta")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelGuestStarGuestUpdateBeta)
+        }
+        ("channel.guest_star_settings.update", Some("beta")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelGuestStarSettingsUpdateBeta)
+        }
+        ("channel.channel_points_automatic_reward_redemption.add", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChannelPointsAutomaticRewardRedemptionAdd1)
+        }
+        ("channel.channel_points_automatic_reward_redemption.add", Some("2")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChannelPointsAutomaticRewardRedemptionAdd2)
+        }
+        ("channel.channel_points_custom_reward.add", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardAdd1)
+        }
+        ("channel.channel_points_custom_reward.update", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardUpdate1)
+        }
+        ("channel.channel_points_custom_reward.remove", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRemove1)
+        }
+        ("channel.channel_points_custom_reward_redemption.add", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRedemptionAdd1)
+        }
+        ("channel.channel_points_custom_reward_redemption.update", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRedemptionUpdate1)
+        }
+        ("channel.poll.begin", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelPollBegin1),
+        ("channel.poll.progress", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelPollProgress1),
+        ("channel.poll.end", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelPollEnd1)
+        }
+        ("channel.prediction.begin", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelPredictionBegin1),
+        ("channel.prediction.progress", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelPredictionProgress1),
+        ("channel.prediction.lock", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelPredictionLock1),
+        ("channel.prediction.end", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelPredictionEnd1),
+        ("channel.suspicious_user.message", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSuspiciousUserMessage1)
+        }
+        ("channel.suspicious_user.update", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSuspiciousUserUpdate1)
+        }
+        ("channel.vip.add", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelVipAdd1)
+        }
+        ("channel.vip.remove", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelVipRemove1),
+        ("channel.warning.acknowledge", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelWarningAcknowledge1),
+        ("channel.warning.send", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelWarningSend1),
+        ("channel.charity_campaign.donate", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCharityCampaignDonate1)
+        }
+        ("channel.charity_campaign.start", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCharityCampaignStart1)
+        }
+        ("channel.charity_campaign.progress", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCharityCampaignProgress1)
+        }
+        ("channel.charity_campaign.stop", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCharityCampaignStop1)
+        }
+        ("conduit.shard.disabled", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ConduitShardDisabled1),
+        ("drop.entitlement.grant", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::DropEntitlementGrant1),
+        ("extension.bits_transaction.create", Some("1")) => {
+            decode_generic_event(event, source_timestamp)
+                .map(KnownEventSubPayload::ExtensionBitsTransactionCreate1)
+        }
+        ("channel.goal.begin", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelGoalBegin1),
+        ("channel.goal.progress", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelGoalProgress1),
+        ("channel.goal.end", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::ChannelGoalEnd1)
+        }
+        ("channel.hype_train.begin", Some("2")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelHypeTrainBegin2),
+        ("channel.hype_train.progress", Some("2")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelHypeTrainProgress2),
+        ("channel.hype_train.end", Some("2")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelHypeTrainEnd2),
+        ("channel.shield_mode.begin", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelShieldModeBegin1),
+        ("channel.shield_mode.end", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelShieldModeEnd1),
+        ("channel.shoutout.create", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelShoutoutCreate1),
+        ("channel.shoutout.receive", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::ChannelShoutoutReceive1),
+        ("stream.online", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::StreamOnline1)
+        }
+        ("stream.offline", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::StreamOffline1)
+        }
+        ("user.authorization.grant", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::UserAuthorizationGrant1),
+        ("user.authorization.revoke", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::UserAuthorizationRevoke1),
+        ("user.update", Some("1")) => {
+            decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::UserUpdate1)
+        }
+        ("user.whisper.message", Some("1")) => decode_generic_event(event, source_timestamp)
+            .map(KnownEventSubPayload::UserWhisperMessage1),
         _ => None,
     }
 }
 
-fn decode_typed_event<T: serde::de::DeserializeOwned>(event: Option<serde_json::Value>) -> Option<T> {
+fn decode_typed_event<T: serde::de::DeserializeOwned>(
+    event: Option<serde_json::Value>,
+) -> Option<T> {
     serde_json::from_value(event?).ok()
 }
 

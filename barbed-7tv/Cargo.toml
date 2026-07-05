@@ -11,7 +11,7 @@ description = "7TV provider helpers for the barbed workspace"
 
 [dependencies]
 async-trait.workspace = true
-barbed-core = { path = "../barbed-core", version = "0.0.2" }
+barbed-core = { path = "../barbed-core", version = "0.0.3" }
 reqwest = { workspace = true, optional = true }
 serde.workspace = true
 serde_json.workspace = true

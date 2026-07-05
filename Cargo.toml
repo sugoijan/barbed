@@ -9,7 +9,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.0.2"
+version = "0.0.3"
 edition = "2024"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
@@ -50,10 +50,10 @@ keywords = ["twitch", "eventsub", "helix", "oauth"]
 [dependencies]
 anyhow = { version = "1", optional = true }
 async-trait.workspace = true
-barbed-core = { path = "barbed-core", version = "0.0.2" }
-barbed_7tv = { package = "barbed-7tv", path = "barbed-7tv", version = "0.0.2", optional = true, default-features = false }
-barbed_bttv = { package = "barbed-bttv", path = "barbed-bttv", version = "0.0.2", optional = true, default-features = false }
-barbed_ffz = { package = "barbed-ffz", path = "barbed-ffz", version = "0.0.2", optional = true, default-features = false }
+barbed-core = { path = "barbed-core", version = "0.0.3" }
+barbed_7tv = { package = "barbed-7tv", path = "barbed-7tv", version = "0.0.3", optional = true, default-features = false }
+barbed_bttv = { package = "barbed-bttv", path = "barbed-bttv", version = "0.0.3", optional = true, default-features = false }
+barbed_ffz = { package = "barbed-ffz", path = "barbed-ffz", version = "0.0.3", optional = true, default-features = false }
 futures-util = { workspace = true, optional = true }
 hex.workspace = true
 hmac.workspace = true
@@ -70,7 +70,7 @@ tracing = { workspace = true, optional = true }
 
 # Optional: Cloudflare Workers integration
 wasm-bindgen = { version = "0.2", optional = true }
-worker = { version = "0.7", optional = true }
+worker = { version = "0.8", optional = true }
 
 [features]
 cloudflare-worker = ["dep:worker", "dep:wasm-bindgen"]

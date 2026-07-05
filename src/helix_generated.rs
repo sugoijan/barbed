@@ -19,7 +19,11 @@ pub mod ads {
         scopes: &["channel:edit:commercial"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(StartCommercialRequest, StartCommercialResponse, ADS_START_COMMERCIAL);
+    declare_generated_endpoint!(
+        StartCommercialRequest,
+        StartCommercialResponse,
+        ADS_START_COMMERCIAL
+    );
 
     /// Returns ad schedule related information.
     pub const ADS_GET_AD_SCHEDULE: HelixEndpoint = HelixEndpoint {
@@ -34,7 +38,11 @@ pub mod ads {
         scopes: &["channel:read:ads"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetAdScheduleRequest, GetAdScheduleResponse, ADS_GET_AD_SCHEDULE);
+    declare_generated_endpoint!(
+        GetAdScheduleRequest,
+        GetAdScheduleResponse,
+        ADS_GET_AD_SCHEDULE
+    );
 
     /// Pushes back the timestamp of the upcoming automatic mid-roll ad by 5 minutes.
     pub const ADS_SNOOZE_NEXT_AD: HelixEndpoint = HelixEndpoint {
@@ -49,8 +57,11 @@ pub mod ads {
         scopes: &["channel:manage:ads"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(SnoozeNextAdRequest, SnoozeNextAdResponse, ADS_SNOOZE_NEXT_AD);
-
+    declare_generated_endpoint!(
+        SnoozeNextAdRequest,
+        SnoozeNextAdResponse,
+        ADS_SNOOZE_NEXT_AD
+    );
 }
 
 pub mod analytics {
@@ -69,7 +80,11 @@ pub mod analytics {
         scopes: &["analytics:read:extensions"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetExtensionAnalyticsRequest, GetExtensionAnalyticsResponse, ANALYTICS_GET_EXTENSION_ANALYTICS);
+    declare_generated_endpoint!(
+        GetExtensionAnalyticsRequest,
+        GetExtensionAnalyticsResponse,
+        ANALYTICS_GET_EXTENSION_ANALYTICS
+    );
 
     /// Gets an analytics report for one or more games.
     pub const ANALYTICS_GET_GAME_ANALYTICS: HelixEndpoint = HelixEndpoint {
@@ -84,8 +99,11 @@ pub mod analytics {
         scopes: &["analytics:read:games"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetGameAnalyticsRequest, GetGameAnalyticsResponse, ANALYTICS_GET_GAME_ANALYTICS);
-
+    declare_generated_endpoint!(
+        GetGameAnalyticsRequest,
+        GetGameAnalyticsResponse,
+        ANALYTICS_GET_GAME_ANALYTICS
+    );
 }
 
 pub mod bits {
@@ -104,7 +122,11 @@ pub mod bits {
         scopes: &["bits:read"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetBitsLeaderboardRequest, GetBitsLeaderboardResponse, BITS_GET_BITS_LEADERBOARD);
+    declare_generated_endpoint!(
+        GetBitsLeaderboardRequest,
+        GetBitsLeaderboardResponse,
+        BITS_GET_BITS_LEADERBOARD
+    );
 
     /// Gets a list of Cheermotes that users can use to cheer Bits.
     pub const BITS_GET_CHEERMOTES: HelixEndpoint = HelixEndpoint {
@@ -119,7 +141,11 @@ pub mod bits {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetCheermotesRequest, GetCheermotesResponse, BITS_GET_CHEERMOTES);
+    declare_generated_endpoint!(
+        GetCheermotesRequest,
+        GetCheermotesResponse,
+        BITS_GET_CHEERMOTES
+    );
 
     /// Gets an extension’s list of transactions.
     pub const BITS_GET_EXTENSION_TRANSACTIONS: HelixEndpoint = HelixEndpoint {
@@ -134,8 +160,11 @@ pub mod bits {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetExtensionTransactionsRequest, GetExtensionTransactionsResponse, BITS_GET_EXTENSION_TRANSACTIONS);
-
+    declare_generated_endpoint!(
+        GetExtensionTransactionsRequest,
+        GetExtensionTransactionsResponse,
+        BITS_GET_EXTENSION_TRANSACTIONS
+    );
 }
 
 pub mod channels {
@@ -154,7 +183,11 @@ pub mod channels {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetChannelInformationRequest, GetChannelInformationResponse, CHANNELS_GET_CHANNEL_INFORMATION);
+    declare_generated_endpoint!(
+        GetChannelInformationRequest,
+        GetChannelInformationResponse,
+        CHANNELS_GET_CHANNEL_INFORMATION
+    );
 
     /// Updates a channel’s properties.
     pub const CHANNELS_MODIFY_CHANNEL_INFORMATION: HelixEndpoint = HelixEndpoint {
@@ -169,7 +202,11 @@ pub mod channels {
         scopes: &["channel:manage:broadcast"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(ModifyChannelInformationRequest, ModifyChannelInformationResponse, CHANNELS_MODIFY_CHANNEL_INFORMATION);
+    declare_generated_endpoint!(
+        ModifyChannelInformationRequest,
+        ModifyChannelInformationResponse,
+        CHANNELS_MODIFY_CHANNEL_INFORMATION
+    );
 
     /// Gets the broadcaster’s list editors.
     pub const CHANNELS_GET_CHANNEL_EDITORS: HelixEndpoint = HelixEndpoint {
@@ -184,7 +221,11 @@ pub mod channels {
         scopes: &["channel:read:editors"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetChannelEditorsRequest, GetChannelEditorsResponse, CHANNELS_GET_CHANNEL_EDITORS);
+    declare_generated_endpoint!(
+        GetChannelEditorsRequest,
+        GetChannelEditorsResponse,
+        CHANNELS_GET_CHANNEL_EDITORS
+    );
 
     /// Gets a list of broadcasters that the specified user follows. You can also use this endpoint to see whether a user follows a specific broadcaster.
     pub const CHANNELS_GET_FOLLOWED_CHANNELS: HelixEndpoint = HelixEndpoint {
@@ -199,7 +240,11 @@ pub mod channels {
         scopes: &["user:read:follows"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetFollowedChannelsRequest, GetFollowedChannelsResponse, CHANNELS_GET_FOLLOWED_CHANNELS);
+    declare_generated_endpoint!(
+        GetFollowedChannelsRequest,
+        GetFollowedChannelsResponse,
+        CHANNELS_GET_FOLLOWED_CHANNELS
+    );
 
     /// Gets a list of users that follow the specified broadcaster. You can also use this endpoint to see whether a specific user follows the broadcaster.
     pub const CHANNELS_GET_CHANNEL_FOLLOWERS: HelixEndpoint = HelixEndpoint {
@@ -214,8 +259,11 @@ pub mod channels {
         scopes: &["moderator:read:followers"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetChannelFollowersRequest, GetChannelFollowersResponse, CHANNELS_GET_CHANNEL_FOLLOWERS);
-
+    declare_generated_endpoint!(
+        GetChannelFollowersRequest,
+        GetChannelFollowersResponse,
+        CHANNELS_GET_CHANNEL_FOLLOWERS
+    );
 }
 
 pub mod channel_points {
@@ -234,7 +282,11 @@ pub mod channel_points {
         scopes: &["channel:manage:redemptions"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CreateCustomRewardsRequest, CreateCustomRewardsResponse, CHANNEL_POINTS_CREATE_CUSTOM_REWARDS);
+    declare_generated_endpoint!(
+        CreateCustomRewardsRequest,
+        CreateCustomRewardsResponse,
+        CHANNEL_POINTS_CREATE_CUSTOM_REWARDS
+    );
 
     /// Deletes a custom reward that the broadcaster created.
     pub const CHANNEL_POINTS_DELETE_CUSTOM_REWARD: HelixEndpoint = HelixEndpoint {
@@ -249,7 +301,11 @@ pub mod channel_points {
         scopes: &["channel:manage:redemptions"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(DeleteCustomRewardRequest, DeleteCustomRewardResponse, CHANNEL_POINTS_DELETE_CUSTOM_REWARD);
+    declare_generated_endpoint!(
+        DeleteCustomRewardRequest,
+        DeleteCustomRewardResponse,
+        CHANNEL_POINTS_DELETE_CUSTOM_REWARD
+    );
 
     /// Gets a list of custom rewards that the specified broadcaster created.
     pub const CHANNEL_POINTS_GET_CUSTOM_REWARD: HelixEndpoint = HelixEndpoint {
@@ -264,7 +320,11 @@ pub mod channel_points {
         scopes: &["channel:manage:redemptions", "channel:read:redemptions"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetCustomRewardRequest, GetCustomRewardResponse, CHANNEL_POINTS_GET_CUSTOM_REWARD);
+    declare_generated_endpoint!(
+        GetCustomRewardRequest,
+        GetCustomRewardResponse,
+        CHANNEL_POINTS_GET_CUSTOM_REWARD
+    );
 
     /// Gets a list of redemptions for a custom reward.
     pub const CHANNEL_POINTS_GET_CUSTOM_REWARD_REDEMPTION: HelixEndpoint = HelixEndpoint {
@@ -279,7 +339,11 @@ pub mod channel_points {
         scopes: &["channel:manage:redemptions", "channel:read:redemptions"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetCustomRewardRedemptionRequest, GetCustomRewardRedemptionResponse, CHANNEL_POINTS_GET_CUSTOM_REWARD_REDEMPTION);
+    declare_generated_endpoint!(
+        GetCustomRewardRedemptionRequest,
+        GetCustomRewardRedemptionResponse,
+        CHANNEL_POINTS_GET_CUSTOM_REWARD_REDEMPTION
+    );
 
     /// Updates a custom reward.
     pub const CHANNEL_POINTS_UPDATE_CUSTOM_REWARD: HelixEndpoint = HelixEndpoint {
@@ -294,7 +358,11 @@ pub mod channel_points {
         scopes: &["channel:manage:redemptions"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateCustomRewardRequest, UpdateCustomRewardResponse, CHANNEL_POINTS_UPDATE_CUSTOM_REWARD);
+    declare_generated_endpoint!(
+        UpdateCustomRewardRequest,
+        UpdateCustomRewardResponse,
+        CHANNEL_POINTS_UPDATE_CUSTOM_REWARD
+    );
 
     /// Updates a redemption’s status.
     pub const CHANNEL_POINTS_UPDATE_REDEMPTION_STATUS: HelixEndpoint = HelixEndpoint {
@@ -309,8 +377,11 @@ pub mod channel_points {
         scopes: &["channel:manage:redemptions"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateRedemptionStatusRequest, UpdateRedemptionStatusResponse, CHANNEL_POINTS_UPDATE_REDEMPTION_STATUS);
-
+    declare_generated_endpoint!(
+        UpdateRedemptionStatusRequest,
+        UpdateRedemptionStatusResponse,
+        CHANNEL_POINTS_UPDATE_REDEMPTION_STATUS
+    );
 }
 
 pub mod charity {
@@ -329,7 +400,11 @@ pub mod charity {
         scopes: &["channel:read:charity"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetCharityCampaignRequest, GetCharityCampaignResponse, CHARITY_GET_CHARITY_CAMPAIGN);
+    declare_generated_endpoint!(
+        GetCharityCampaignRequest,
+        GetCharityCampaignResponse,
+        CHARITY_GET_CHARITY_CAMPAIGN
+    );
 
     /// Gets the list of donations that users have made to the broadcaster’s active charity campaign.
     pub const CHARITY_GET_CHARITY_CAMPAIGN_DONATIONS: HelixEndpoint = HelixEndpoint {
@@ -344,8 +419,11 @@ pub mod charity {
         scopes: &["channel:read:charity"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetCharityCampaignDonationsRequest, GetCharityCampaignDonationsResponse, CHARITY_GET_CHARITY_CAMPAIGN_DONATIONS);
-
+    declare_generated_endpoint!(
+        GetCharityCampaignDonationsRequest,
+        GetCharityCampaignDonationsResponse,
+        CHARITY_GET_CHARITY_CAMPAIGN_DONATIONS
+    );
 }
 
 pub mod chat {
@@ -379,7 +457,11 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetChannelEmotesRequest, GetChannelEmotesResponse, CHAT_GET_CHANNEL_EMOTES);
+    declare_generated_endpoint!(
+        GetChannelEmotesRequest,
+        GetChannelEmotesResponse,
+        CHAT_GET_CHANNEL_EMOTES
+    );
 
     /// Gets all global emotes.
     pub const CHAT_GET_GLOBAL_EMOTES: HelixEndpoint = HelixEndpoint {
@@ -394,7 +476,11 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetGlobalEmotesRequest, GetGlobalEmotesResponse, CHAT_GET_GLOBAL_EMOTES);
+    declare_generated_endpoint!(
+        GetGlobalEmotesRequest,
+        GetGlobalEmotesResponse,
+        CHAT_GET_GLOBAL_EMOTES
+    );
 
     /// Gets emotes for one or more specified emote sets.
     pub const CHAT_GET_EMOTE_SETS: HelixEndpoint = HelixEndpoint {
@@ -409,7 +495,11 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetEmoteSetsRequest, GetEmoteSetsResponse, CHAT_GET_EMOTE_SETS);
+    declare_generated_endpoint!(
+        GetEmoteSetsRequest,
+        GetEmoteSetsResponse,
+        CHAT_GET_EMOTE_SETS
+    );
 
     /// Gets the broadcaster’s list of custom chat badges.
     pub const CHAT_GET_CHANNEL_CHAT_BADGES: HelixEndpoint = HelixEndpoint {
@@ -424,7 +514,11 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetChannelChatBadgesRequest, GetChannelChatBadgesResponse, CHAT_GET_CHANNEL_CHAT_BADGES);
+    declare_generated_endpoint!(
+        GetChannelChatBadgesRequest,
+        GetChannelChatBadgesResponse,
+        CHAT_GET_CHANNEL_CHAT_BADGES
+    );
 
     /// Gets Twitch’s list of chat badges.
     pub const CHAT_GET_GLOBAL_CHAT_BADGES: HelixEndpoint = HelixEndpoint {
@@ -439,7 +533,11 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetGlobalChatBadgesRequest, GetGlobalChatBadgesResponse, CHAT_GET_GLOBAL_CHAT_BADGES);
+    declare_generated_endpoint!(
+        GetGlobalChatBadgesRequest,
+        GetGlobalChatBadgesResponse,
+        CHAT_GET_GLOBAL_CHAT_BADGES
+    );
 
     /// Gets the broadcaster’s chat settings.
     pub const CHAT_GET_CHAT_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -454,7 +552,11 @@ pub mod chat {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetChatSettingsRequest, GetChatSettingsResponse, CHAT_GET_CHAT_SETTINGS);
+    declare_generated_endpoint!(
+        GetChatSettingsRequest,
+        GetChatSettingsResponse,
+        CHAT_GET_CHAT_SETTINGS
+    );
 
     /// NEW Retrieves the active shared chat session for a channel.
     pub const CHAT_GET_SHARED_CHAT_SESSION: HelixEndpoint = HelixEndpoint {
@@ -469,7 +571,11 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetSharedChatSessionRequest, GetSharedChatSessionResponse, CHAT_GET_SHARED_CHAT_SESSION);
+    declare_generated_endpoint!(
+        GetSharedChatSessionRequest,
+        GetSharedChatSessionResponse,
+        CHAT_GET_SHARED_CHAT_SESSION
+    );
 
     /// Retrieves emotes available to the user across all channels.
     pub const CHAT_GET_USER_EMOTES: HelixEndpoint = HelixEndpoint {
@@ -484,7 +590,11 @@ pub mod chat {
         scopes: &["user:read:emotes"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetUserEmotesRequest, GetUserEmotesResponse, CHAT_GET_USER_EMOTES);
+    declare_generated_endpoint!(
+        GetUserEmotesRequest,
+        GetUserEmotesResponse,
+        CHAT_GET_USER_EMOTES
+    );
 
     /// Updates the broadcaster’s chat settings.
     pub const CHAT_UPDATE_CHAT_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -499,7 +609,11 @@ pub mod chat {
         scopes: &["moderator:manage:chat_settings"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(UpdateChatSettingsRequest, UpdateChatSettingsResponse, CHAT_UPDATE_CHAT_SETTINGS);
+    declare_generated_endpoint!(
+        UpdateChatSettingsRequest,
+        UpdateChatSettingsResponse,
+        CHAT_UPDATE_CHAT_SETTINGS
+    );
 
     /// Sends an announcement to the broadcaster’s chat room.
     pub const CHAT_SEND_CHAT_ANNOUNCEMENT: HelixEndpoint = HelixEndpoint {
@@ -514,7 +628,11 @@ pub mod chat {
         scopes: &["channel:bot", "moderator:manage:announcements", "user:bot"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(SendChatAnnouncementRequest, SendChatAnnouncementResponse, CHAT_SEND_CHAT_ANNOUNCEMENT);
+    declare_generated_endpoint!(
+        SendChatAnnouncementRequest,
+        SendChatAnnouncementResponse,
+        CHAT_SEND_CHAT_ANNOUNCEMENT
+    );
 
     /// Sends a Shoutout to the specified broadcaster.
     pub const CHAT_SEND_A_SHOUTOUT: HelixEndpoint = HelixEndpoint {
@@ -529,7 +647,11 @@ pub mod chat {
         scopes: &["channel:bot", "moderator:manage:shoutouts", "user:bot"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(SendAShoutoutRequest, SendAShoutoutResponse, CHAT_SEND_A_SHOUTOUT);
+    declare_generated_endpoint!(
+        SendAShoutoutRequest,
+        SendAShoutoutResponse,
+        CHAT_SEND_A_SHOUTOUT
+    );
 
     /// Sends a message to the broadcaster’s chat room.
     pub const CHAT_SEND_CHAT_MESSAGE: HelixEndpoint = HelixEndpoint {
@@ -544,7 +666,11 @@ pub mod chat {
         scopes: &["channel:bot", "user:bot", "user:write:chat"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(SendChatMessageRequest, SendChatMessageResponse, CHAT_SEND_CHAT_MESSAGE);
+    declare_generated_endpoint!(
+        SendChatMessageRequest,
+        SendChatMessageResponse,
+        CHAT_SEND_CHAT_MESSAGE
+    );
 
     /// Gets the color used for the user’s name in chat.
     pub const CHAT_GET_USER_CHAT_COLOR: HelixEndpoint = HelixEndpoint {
@@ -559,7 +685,11 @@ pub mod chat {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetUserChatColorRequest, GetUserChatColorResponse, CHAT_GET_USER_CHAT_COLOR);
+    declare_generated_endpoint!(
+        GetUserChatColorRequest,
+        GetUserChatColorResponse,
+        CHAT_GET_USER_CHAT_COLOR
+    );
 
     /// Updates the color used for the user’s name in chat.
     pub const CHAT_UPDATE_USER_CHAT_COLOR: HelixEndpoint = HelixEndpoint {
@@ -574,8 +704,11 @@ pub mod chat {
         scopes: &["user:manage:chat_color"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateUserChatColorRequest, UpdateUserChatColorResponse, CHAT_UPDATE_USER_CHAT_COLOR);
-
+    declare_generated_endpoint!(
+        UpdateUserChatColorRequest,
+        UpdateUserChatColorResponse,
+        CHAT_UPDATE_USER_CHAT_COLOR
+    );
 }
 
 pub mod clips {
@@ -609,7 +742,11 @@ pub mod clips {
         scopes: &["channel:manage:clips", "editor:manage:clips"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CreateClipFromVodRequest, CreateClipFromVodResponse, CLIPS_CREATE_CLIP_FROM_VOD);
+    declare_generated_endpoint!(
+        CreateClipFromVodRequest,
+        CreateClipFromVodResponse,
+        CLIPS_CREATE_CLIP_FROM_VOD
+    );
 
     /// Gets one or more video clips.
     pub const CLIPS_GET_CLIPS: HelixEndpoint = HelixEndpoint {
@@ -639,8 +776,11 @@ pub mod clips {
         scopes: &["channel:manage:clips", "editor:manage:clips"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetClipsDownloadRequest, GetClipsDownloadResponse, CLIPS_GET_CLIPS_DOWNLOAD);
-
+    declare_generated_endpoint!(
+        GetClipsDownloadRequest,
+        GetClipsDownloadResponse,
+        CLIPS_GET_CLIPS_DOWNLOAD
+    );
 }
 
 pub mod conduits {
@@ -659,7 +799,11 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetConduitsRequest, GetConduitsResponse, CONDUITS_GET_CONDUITS);
+    declare_generated_endpoint!(
+        GetConduitsRequest,
+        GetConduitsResponse,
+        CONDUITS_GET_CONDUITS
+    );
 
     /// Creates a new conduit.
     pub const CONDUITS_CREATE_CONDUITS: HelixEndpoint = HelixEndpoint {
@@ -674,7 +818,11 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CreateConduitsRequest, CreateConduitsResponse, CONDUITS_CREATE_CONDUITS);
+    declare_generated_endpoint!(
+        CreateConduitsRequest,
+        CreateConduitsResponse,
+        CONDUITS_CREATE_CONDUITS
+    );
 
     /// Updates a conduit’s shard count.
     pub const CONDUITS_UPDATE_CONDUITS: HelixEndpoint = HelixEndpoint {
@@ -689,7 +837,11 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(UpdateConduitsRequest, UpdateConduitsResponse, CONDUITS_UPDATE_CONDUITS);
+    declare_generated_endpoint!(
+        UpdateConduitsRequest,
+        UpdateConduitsResponse,
+        CONDUITS_UPDATE_CONDUITS
+    );
 
     /// Deletes a specified conduit.
     pub const CONDUITS_DELETE_CONDUIT: HelixEndpoint = HelixEndpoint {
@@ -704,7 +856,11 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(DeleteConduitRequest, DeleteConduitResponse, CONDUITS_DELETE_CONDUIT);
+    declare_generated_endpoint!(
+        DeleteConduitRequest,
+        DeleteConduitResponse,
+        CONDUITS_DELETE_CONDUIT
+    );
 
     /// Gets a lists of all shards for a conduit.
     pub const CONDUITS_GET_CONDUIT_SHARDS: HelixEndpoint = HelixEndpoint {
@@ -719,7 +875,11 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetConduitShardsRequest, GetConduitShardsResponse, CONDUITS_GET_CONDUIT_SHARDS);
+    declare_generated_endpoint!(
+        GetConduitShardsRequest,
+        GetConduitShardsResponse,
+        CONDUITS_GET_CONDUIT_SHARDS
+    );
 
     /// Updates shard(s) for a conduit.
     pub const CONDUITS_UPDATE_CONDUIT_SHARDS: HelixEndpoint = HelixEndpoint {
@@ -734,8 +894,11 @@ pub mod conduits {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(UpdateConduitShardsRequest, UpdateConduitShardsResponse, CONDUITS_UPDATE_CONDUIT_SHARDS);
-
+    declare_generated_endpoint!(
+        UpdateConduitShardsRequest,
+        UpdateConduitShardsResponse,
+        CONDUITS_UPDATE_CONDUIT_SHARDS
+    );
 }
 
 pub mod ccls {
@@ -754,8 +917,11 @@ pub mod ccls {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetContentClassificationLabelsRequest, GetContentClassificationLabelsResponse, CCLS_GET_CONTENT_CLASSIFICATION_LABELS);
-
+    declare_generated_endpoint!(
+        GetContentClassificationLabelsRequest,
+        GetContentClassificationLabelsResponse,
+        CCLS_GET_CONTENT_CLASSIFICATION_LABELS
+    );
 }
 
 pub mod entitlements {
@@ -774,7 +940,11 @@ pub mod entitlements {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetDropsEntitlementsRequest, GetDropsEntitlementsResponse, ENTITLEMENTS_GET_DROPS_ENTITLEMENTS);
+    declare_generated_endpoint!(
+        GetDropsEntitlementsRequest,
+        GetDropsEntitlementsResponse,
+        ENTITLEMENTS_GET_DROPS_ENTITLEMENTS
+    );
 
     /// Updates the Drop entitlement’s fulfillment status.
     pub const ENTITLEMENTS_UPDATE_DROPS_ENTITLEMENTS: HelixEndpoint = HelixEndpoint {
@@ -789,8 +959,11 @@ pub mod entitlements {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateDropsEntitlementsRequest, UpdateDropsEntitlementsResponse, ENTITLEMENTS_UPDATE_DROPS_ENTITLEMENTS);
-
+    declare_generated_endpoint!(
+        UpdateDropsEntitlementsRequest,
+        UpdateDropsEntitlementsResponse,
+        ENTITLEMENTS_UPDATE_DROPS_ENTITLEMENTS
+    );
 }
 
 pub mod extensions {
@@ -809,7 +982,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetExtensionConfigurationSegmentRequest, GetExtensionConfigurationSegmentResponse, EXTENSIONS_GET_EXTENSION_CONFIGURATION_SEGMENT);
+    declare_generated_endpoint!(
+        GetExtensionConfigurationSegmentRequest,
+        GetExtensionConfigurationSegmentResponse,
+        EXTENSIONS_GET_EXTENSION_CONFIGURATION_SEGMENT
+    );
 
     /// Updates a configuration segment.
     pub const EXTENSIONS_SET_EXTENSION_CONFIGURATION_SEGMENT: HelixEndpoint = HelixEndpoint {
@@ -824,7 +1001,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(SetExtensionConfigurationSegmentRequest, SetExtensionConfigurationSegmentResponse, EXTENSIONS_SET_EXTENSION_CONFIGURATION_SEGMENT);
+    declare_generated_endpoint!(
+        SetExtensionConfigurationSegmentRequest,
+        SetExtensionConfigurationSegmentResponse,
+        EXTENSIONS_SET_EXTENSION_CONFIGURATION_SEGMENT
+    );
 
     /// Updates the extension’s required_configuration string.
     pub const EXTENSIONS_SET_EXTENSION_REQUIRED_CONFIGURATION: HelixEndpoint = HelixEndpoint {
@@ -839,7 +1020,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(SetExtensionRequiredConfigurationRequest, SetExtensionRequiredConfigurationResponse, EXTENSIONS_SET_EXTENSION_REQUIRED_CONFIGURATION);
+    declare_generated_endpoint!(
+        SetExtensionRequiredConfigurationRequest,
+        SetExtensionRequiredConfigurationResponse,
+        EXTENSIONS_SET_EXTENSION_REQUIRED_CONFIGURATION
+    );
 
     /// Sends a message to one or more viewers.
     pub const EXTENSIONS_SEND_EXTENSION_PUBSUB_MESSAGE: HelixEndpoint = HelixEndpoint {
@@ -854,7 +1039,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(SendExtensionPubsubMessageRequest, SendExtensionPubsubMessageResponse, EXTENSIONS_SEND_EXTENSION_PUBSUB_MESSAGE);
+    declare_generated_endpoint!(
+        SendExtensionPubsubMessageRequest,
+        SendExtensionPubsubMessageResponse,
+        EXTENSIONS_SEND_EXTENSION_PUBSUB_MESSAGE
+    );
 
     /// Gets a list of broadcasters that are streaming live and have installed or activated the extension.
     pub const EXTENSIONS_GET_EXTENSION_LIVE_CHANNELS: HelixEndpoint = HelixEndpoint {
@@ -869,7 +1058,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetExtensionLiveChannelsRequest, GetExtensionLiveChannelsResponse, EXTENSIONS_GET_EXTENSION_LIVE_CHANNELS);
+    declare_generated_endpoint!(
+        GetExtensionLiveChannelsRequest,
+        GetExtensionLiveChannelsResponse,
+        EXTENSIONS_GET_EXTENSION_LIVE_CHANNELS
+    );
 
     /// Gets an extension’s list of shared secrets.
     pub const EXTENSIONS_GET_EXTENSION_SECRETS: HelixEndpoint = HelixEndpoint {
@@ -884,7 +1077,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetExtensionSecretsRequest, GetExtensionSecretsResponse, EXTENSIONS_GET_EXTENSION_SECRETS);
+    declare_generated_endpoint!(
+        GetExtensionSecretsRequest,
+        GetExtensionSecretsResponse,
+        EXTENSIONS_GET_EXTENSION_SECRETS
+    );
 
     /// Creates a shared secret used to sign and verify JWT tokens.
     pub const EXTENSIONS_CREATE_EXTENSION_SECRET: HelixEndpoint = HelixEndpoint {
@@ -899,7 +1096,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CreateExtensionSecretRequest, CreateExtensionSecretResponse, EXTENSIONS_CREATE_EXTENSION_SECRET);
+    declare_generated_endpoint!(
+        CreateExtensionSecretRequest,
+        CreateExtensionSecretResponse,
+        EXTENSIONS_CREATE_EXTENSION_SECRET
+    );
 
     /// Sends a message to the specified broadcaster’s chat room.
     pub const EXTENSIONS_SEND_EXTENSION_CHAT_MESSAGE: HelixEndpoint = HelixEndpoint {
@@ -914,7 +1115,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(SendExtensionChatMessageRequest, SendExtensionChatMessageResponse, EXTENSIONS_SEND_EXTENSION_CHAT_MESSAGE);
+    declare_generated_endpoint!(
+        SendExtensionChatMessageRequest,
+        SendExtensionChatMessageResponse,
+        EXTENSIONS_SEND_EXTENSION_CHAT_MESSAGE
+    );
 
     /// Gets information about an extension.
     pub const EXTENSIONS_GET_EXTENSIONS: HelixEndpoint = HelixEndpoint {
@@ -929,7 +1134,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetExtensionsRequest, GetExtensionsResponse, EXTENSIONS_GET_EXTENSIONS);
+    declare_generated_endpoint!(
+        GetExtensionsRequest,
+        GetExtensionsResponse,
+        EXTENSIONS_GET_EXTENSIONS
+    );
 
     /// Gets information about a released extension.
     pub const EXTENSIONS_GET_RELEASED_EXTENSIONS: HelixEndpoint = HelixEndpoint {
@@ -944,7 +1153,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetReleasedExtensionsRequest, GetReleasedExtensionsResponse, EXTENSIONS_GET_RELEASED_EXTENSIONS);
+    declare_generated_endpoint!(
+        GetReleasedExtensionsRequest,
+        GetReleasedExtensionsResponse,
+        EXTENSIONS_GET_RELEASED_EXTENSIONS
+    );
 
     /// Gets the list of Bits products that belongs to the extension.
     pub const EXTENSIONS_GET_EXTENSION_BITS_PRODUCTS: HelixEndpoint = HelixEndpoint {
@@ -959,7 +1172,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetExtensionBitsProductsRequest, GetExtensionBitsProductsResponse, EXTENSIONS_GET_EXTENSION_BITS_PRODUCTS);
+    declare_generated_endpoint!(
+        GetExtensionBitsProductsRequest,
+        GetExtensionBitsProductsResponse,
+        EXTENSIONS_GET_EXTENSION_BITS_PRODUCTS
+    );
 
     /// Adds or updates a Bits product that the extension created.
     pub const EXTENSIONS_UPDATE_EXTENSION_BITS_PRODUCT: HelixEndpoint = HelixEndpoint {
@@ -974,8 +1191,11 @@ pub mod extensions {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateExtensionBitsProductRequest, UpdateExtensionBitsProductResponse, EXTENSIONS_UPDATE_EXTENSION_BITS_PRODUCT);
-
+    declare_generated_endpoint!(
+        UpdateExtensionBitsProductRequest,
+        UpdateExtensionBitsProductResponse,
+        EXTENSIONS_UPDATE_EXTENSION_BITS_PRODUCT
+    );
 }
 
 pub mod eventsub {
@@ -994,7 +1214,11 @@ pub mod eventsub {
         scopes: &["channel:read:subscriptions"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(CreateEventsubSubscriptionRequest, CreateEventsubSubscriptionResponse, EVENTSUB_CREATE_EVENTSUB_SUBSCRIPTION);
+    declare_generated_endpoint!(
+        CreateEventsubSubscriptionRequest,
+        CreateEventsubSubscriptionResponse,
+        EVENTSUB_CREATE_EVENTSUB_SUBSCRIPTION
+    );
 
     /// Deletes an EventSub subscription.
     pub const EVENTSUB_DELETE_EVENTSUB_SUBSCRIPTION: HelixEndpoint = HelixEndpoint {
@@ -1009,7 +1233,11 @@ pub mod eventsub {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(DeleteEventsubSubscriptionRequest, DeleteEventsubSubscriptionResponse, EVENTSUB_DELETE_EVENTSUB_SUBSCRIPTION);
+    declare_generated_endpoint!(
+        DeleteEventsubSubscriptionRequest,
+        DeleteEventsubSubscriptionResponse,
+        EVENTSUB_DELETE_EVENTSUB_SUBSCRIPTION
+    );
 
     /// Gets a list of EventSub subscriptions that the client in the access token created.
     pub const EVENTSUB_GET_EVENTSUB_SUBSCRIPTIONS: HelixEndpoint = HelixEndpoint {
@@ -1024,8 +1252,11 @@ pub mod eventsub {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetEventsubSubscriptionsRequest, GetEventsubSubscriptionsResponse, EVENTSUB_GET_EVENTSUB_SUBSCRIPTIONS);
-
+    declare_generated_endpoint!(
+        GetEventsubSubscriptionsRequest,
+        GetEventsubSubscriptionsResponse,
+        EVENTSUB_GET_EVENTSUB_SUBSCRIPTIONS
+    );
 }
 
 pub mod games {
@@ -1060,7 +1291,6 @@ pub mod games {
         supports_pagination: false,
     };
     declare_generated_endpoint!(GetGamesRequest, GetGamesResponse, GAMES_GET_GAMES);
-
 }
 
 pub mod goals {
@@ -1079,8 +1309,11 @@ pub mod goals {
         scopes: &["channel:read:goals"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetCreatorGoalsRequest, GetCreatorGoalsResponse, GOALS_GET_CREATOR_GOALS);
-
+    declare_generated_endpoint!(
+        GetCreatorGoalsRequest,
+        GetCreatorGoalsResponse,
+        GOALS_GET_CREATOR_GOALS
+    );
 }
 
 pub mod guest_star {
@@ -1096,10 +1329,19 @@ pub mod guest_star {
         method: HttpMethod::Get,
         path: "/guest_star/channel_settings",
         auth_kind: HelixAuthKind::None,
-        scopes: &["channel:manage:guest_star", "channel:read:guest_star", "moderator:manage:guest_star", "moderator:read:guest_star"],
+        scopes: &[
+            "channel:manage:guest_star",
+            "channel:read:guest_star",
+            "moderator:manage:guest_star",
+            "moderator:read:guest_star",
+        ],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetChannelGuestStarSettingsRequest, GetChannelGuestStarSettingsResponse, GUEST_STAR_GET_CHANNEL_GUEST_STAR_SETTINGS);
+    declare_generated_endpoint!(
+        GetChannelGuestStarSettingsRequest,
+        GetChannelGuestStarSettingsResponse,
+        GUEST_STAR_GET_CHANNEL_GUEST_STAR_SETTINGS
+    );
 
     /// BETA Mutates the channel settings for configuration of the Guest Star feature for a particular host.
     pub const GUEST_STAR_UPDATE_CHANNEL_GUEST_STAR_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -1114,7 +1356,11 @@ pub mod guest_star {
         scopes: &["channel:manage:guest_star"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateChannelGuestStarSettingsRequest, UpdateChannelGuestStarSettingsResponse, GUEST_STAR_UPDATE_CHANNEL_GUEST_STAR_SETTINGS);
+    declare_generated_endpoint!(
+        UpdateChannelGuestStarSettingsRequest,
+        UpdateChannelGuestStarSettingsResponse,
+        GUEST_STAR_UPDATE_CHANNEL_GUEST_STAR_SETTINGS
+    );
 
     /// BETA Gets information about an ongoing Guest Star session for a particular channel.
     pub const GUEST_STAR_GET_GUEST_STAR_SESSION: HelixEndpoint = HelixEndpoint {
@@ -1126,10 +1372,19 @@ pub mod guest_star {
         method: HttpMethod::Get,
         path: "/guest_star/session",
         auth_kind: HelixAuthKind::None,
-        scopes: &["channel:manage:guest_star", "channel:read:guest_star", "moderator:manage:guest_star", "moderator:read:guest_star"],
+        scopes: &[
+            "channel:manage:guest_star",
+            "channel:read:guest_star",
+            "moderator:manage:guest_star",
+            "moderator:read:guest_star",
+        ],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetGuestStarSessionRequest, GetGuestStarSessionResponse, GUEST_STAR_GET_GUEST_STAR_SESSION);
+    declare_generated_endpoint!(
+        GetGuestStarSessionRequest,
+        GetGuestStarSessionResponse,
+        GUEST_STAR_GET_GUEST_STAR_SESSION
+    );
 
     /// BETA Programmatically creates a Guest Star session on behalf of the broadcaster.
     pub const GUEST_STAR_CREATE_GUEST_STAR_SESSION: HelixEndpoint = HelixEndpoint {
@@ -1144,7 +1399,11 @@ pub mod guest_star {
         scopes: &["channel:manage:guest_star"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CreateGuestStarSessionRequest, CreateGuestStarSessionResponse, GUEST_STAR_CREATE_GUEST_STAR_SESSION);
+    declare_generated_endpoint!(
+        CreateGuestStarSessionRequest,
+        CreateGuestStarSessionResponse,
+        GUEST_STAR_CREATE_GUEST_STAR_SESSION
+    );
 
     /// BETA Programmatically ends a Guest Star session on behalf of the broadcaster.
     pub const GUEST_STAR_END_GUEST_STAR_SESSION: HelixEndpoint = HelixEndpoint {
@@ -1159,7 +1418,11 @@ pub mod guest_star {
         scopes: &["channel:manage:guest_star"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(EndGuestStarSessionRequest, EndGuestStarSessionResponse, GUEST_STAR_END_GUEST_STAR_SESSION);
+    declare_generated_endpoint!(
+        EndGuestStarSessionRequest,
+        EndGuestStarSessionResponse,
+        GUEST_STAR_END_GUEST_STAR_SESSION
+    );
 
     /// BETA Provides the caller with a list of pending invites to a Guest Star session.
     pub const GUEST_STAR_GET_GUEST_STAR_INVITES: HelixEndpoint = HelixEndpoint {
@@ -1171,10 +1434,19 @@ pub mod guest_star {
         method: HttpMethod::Get,
         path: "/guest_star/invites",
         auth_kind: HelixAuthKind::None,
-        scopes: &["channel:manage:guest_star", "channel:read:guest_star", "moderator:manage:guest_star", "moderator:read:guest_star"],
+        scopes: &[
+            "channel:manage:guest_star",
+            "channel:read:guest_star",
+            "moderator:manage:guest_star",
+            "moderator:read:guest_star",
+        ],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetGuestStarInvitesRequest, GetGuestStarInvitesResponse, GUEST_STAR_GET_GUEST_STAR_INVITES);
+    declare_generated_endpoint!(
+        GetGuestStarInvitesRequest,
+        GetGuestStarInvitesResponse,
+        GUEST_STAR_GET_GUEST_STAR_INVITES
+    );
 
     /// BETA Sends an invite to a specified guest on behalf of the broadcaster for a Guest Star session in progress.
     pub const GUEST_STAR_SEND_GUEST_STAR_INVITE: HelixEndpoint = HelixEndpoint {
@@ -1189,7 +1461,11 @@ pub mod guest_star {
         scopes: &["channel:manage:guest_star", "moderator:manage:guest_star"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(SendGuestStarInviteRequest, SendGuestStarInviteResponse, GUEST_STAR_SEND_GUEST_STAR_INVITE);
+    declare_generated_endpoint!(
+        SendGuestStarInviteRequest,
+        SendGuestStarInviteResponse,
+        GUEST_STAR_SEND_GUEST_STAR_INVITE
+    );
 
     /// BETA Revokes a previously sent invite for a Guest Star session.
     pub const GUEST_STAR_DELETE_GUEST_STAR_INVITE: HelixEndpoint = HelixEndpoint {
@@ -1204,7 +1480,11 @@ pub mod guest_star {
         scopes: &["channel:manage:guest_star", "moderator:manage:guest_star"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(DeleteGuestStarInviteRequest, DeleteGuestStarInviteResponse, GUEST_STAR_DELETE_GUEST_STAR_INVITE);
+    declare_generated_endpoint!(
+        DeleteGuestStarInviteRequest,
+        DeleteGuestStarInviteResponse,
+        GUEST_STAR_DELETE_GUEST_STAR_INVITE
+    );
 
     /// BETA Allows a previously invited user to be assigned a slot within the active Guest Star session.
     pub const GUEST_STAR_ASSIGN_GUEST_STAR_SLOT: HelixEndpoint = HelixEndpoint {
@@ -1219,7 +1499,11 @@ pub mod guest_star {
         scopes: &["channel:manage:guest_star", "moderator:manage:guest_star"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(AssignGuestStarSlotRequest, AssignGuestStarSlotResponse, GUEST_STAR_ASSIGN_GUEST_STAR_SLOT);
+    declare_generated_endpoint!(
+        AssignGuestStarSlotRequest,
+        AssignGuestStarSlotResponse,
+        GUEST_STAR_ASSIGN_GUEST_STAR_SLOT
+    );
 
     /// BETA Allows a user to update the assigned slot for a particular user within the active Guest Star session.
     pub const GUEST_STAR_UPDATE_GUEST_STAR_SLOT: HelixEndpoint = HelixEndpoint {
@@ -1234,7 +1518,11 @@ pub mod guest_star {
         scopes: &["channel:manage:guest_star", "moderator:manage:guest_star"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateGuestStarSlotRequest, UpdateGuestStarSlotResponse, GUEST_STAR_UPDATE_GUEST_STAR_SLOT);
+    declare_generated_endpoint!(
+        UpdateGuestStarSlotRequest,
+        UpdateGuestStarSlotResponse,
+        GUEST_STAR_UPDATE_GUEST_STAR_SLOT
+    );
 
     /// BETA Allows a caller to remove a slot assignment from a user participating in an active Guest Star session.
     pub const GUEST_STAR_DELETE_GUEST_STAR_SLOT: HelixEndpoint = HelixEndpoint {
@@ -1249,7 +1537,11 @@ pub mod guest_star {
         scopes: &["channel:manage:guest_star", "moderator:manage:guest_star"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(DeleteGuestStarSlotRequest, DeleteGuestStarSlotResponse, GUEST_STAR_DELETE_GUEST_STAR_SLOT);
+    declare_generated_endpoint!(
+        DeleteGuestStarSlotRequest,
+        DeleteGuestStarSlotResponse,
+        GUEST_STAR_DELETE_GUEST_STAR_SLOT
+    );
 
     /// BETA Allows a user to update slot settings for a particular guest within a Guest Star session.
     pub const GUEST_STAR_UPDATE_GUEST_STAR_SLOT_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -1264,8 +1556,11 @@ pub mod guest_star {
         scopes: &["channel:manage:guest_star", "moderator:manage:guest_star"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateGuestStarSlotSettingsRequest, UpdateGuestStarSlotSettingsResponse, GUEST_STAR_UPDATE_GUEST_STAR_SLOT_SETTINGS);
-
+    declare_generated_endpoint!(
+        UpdateGuestStarSlotSettingsRequest,
+        UpdateGuestStarSlotSettingsResponse,
+        GUEST_STAR_UPDATE_GUEST_STAR_SLOT_SETTINGS
+    );
 }
 
 pub mod hype_train {
@@ -1284,8 +1579,11 @@ pub mod hype_train {
         scopes: &["channel:read:hype_train"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetHypeTrainStatusRequest, GetHypeTrainStatusResponse, HYPE_TRAIN_GET_HYPE_TRAIN_STATUS);
-
+    declare_generated_endpoint!(
+        GetHypeTrainStatusRequest,
+        GetHypeTrainStatusResponse,
+        HYPE_TRAIN_GET_HYPE_TRAIN_STATUS
+    );
 }
 
 pub mod moderation {
@@ -1304,7 +1602,11 @@ pub mod moderation {
         scopes: &["moderation:read"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CheckAutomodStatusRequest, CheckAutomodStatusResponse, MODERATION_CHECK_AUTOMOD_STATUS);
+    declare_generated_endpoint!(
+        CheckAutomodStatusRequest,
+        CheckAutomodStatusResponse,
+        MODERATION_CHECK_AUTOMOD_STATUS
+    );
 
     /// Allow or deny the message that AutoMod flagged for review.
     pub const MODERATION_MANAGE_HELD_AUTOMOD_MESSAGES: HelixEndpoint = HelixEndpoint {
@@ -1319,7 +1621,11 @@ pub mod moderation {
         scopes: &["moderator:manage:automod"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(ManageHeldAutomodMessagesRequest, ManageHeldAutomodMessagesResponse, MODERATION_MANAGE_HELD_AUTOMOD_MESSAGES);
+    declare_generated_endpoint!(
+        ManageHeldAutomodMessagesRequest,
+        ManageHeldAutomodMessagesResponse,
+        MODERATION_MANAGE_HELD_AUTOMOD_MESSAGES
+    );
 
     /// Gets the broadcaster’s AutoMod settings.
     pub const MODERATION_GET_AUTOMOD_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -1331,10 +1637,17 @@ pub mod moderation {
         method: HttpMethod::Get,
         path: "/moderation/automod/settings",
         auth_kind: HelixAuthKind::Either,
-        scopes: &["moderator:manage:automod_settings", "moderator:read:automod_settings"],
+        scopes: &[
+            "moderator:manage:automod_settings",
+            "moderator:read:automod_settings",
+        ],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetAutomodSettingsRequest, GetAutomodSettingsResponse, MODERATION_GET_AUTOMOD_SETTINGS);
+    declare_generated_endpoint!(
+        GetAutomodSettingsRequest,
+        GetAutomodSettingsResponse,
+        MODERATION_GET_AUTOMOD_SETTINGS
+    );
 
     /// Updates the broadcaster’s AutoMod settings.
     pub const MODERATION_UPDATE_AUTOMOD_SETTINGS: HelixEndpoint = HelixEndpoint {
@@ -1349,7 +1662,11 @@ pub mod moderation {
         scopes: &["moderator:manage:automod_settings"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(UpdateAutomodSettingsRequest, UpdateAutomodSettingsResponse, MODERATION_UPDATE_AUTOMOD_SETTINGS);
+    declare_generated_endpoint!(
+        UpdateAutomodSettingsRequest,
+        UpdateAutomodSettingsResponse,
+        MODERATION_UPDATE_AUTOMOD_SETTINGS
+    );
 
     /// Gets all users that the broadcaster banned or put in a timeout.
     pub const MODERATION_GET_BANNED_USERS: HelixEndpoint = HelixEndpoint {
@@ -1364,7 +1681,11 @@ pub mod moderation {
         scopes: &["moderation:read", "moderator:manage:banned_users"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetBannedUsersRequest, GetBannedUsersResponse, MODERATION_GET_BANNED_USERS);
+    declare_generated_endpoint!(
+        GetBannedUsersRequest,
+        GetBannedUsersResponse,
+        MODERATION_GET_BANNED_USERS
+    );
 
     /// Bans a user from participating in a broadcaster’s chat room or puts them in a timeout.
     pub const MODERATION_BAN_USER: HelixEndpoint = HelixEndpoint {
@@ -1406,10 +1727,17 @@ pub mod moderation {
         method: HttpMethod::Get,
         path: "/moderation/unban_requests",
         auth_kind: HelixAuthKind::User,
-        scopes: &["moderator:manage:unban_requests", "moderator:read:unban_requests"],
+        scopes: &[
+            "moderator:manage:unban_requests",
+            "moderator:read:unban_requests",
+        ],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetUnbanRequestsRequest, GetUnbanRequestsResponse, MODERATION_GET_UNBAN_REQUESTS);
+    declare_generated_endpoint!(
+        GetUnbanRequestsRequest,
+        GetUnbanRequestsResponse,
+        MODERATION_GET_UNBAN_REQUESTS
+    );
 
     /// Resolves an unban request by approving or denying it.
     pub const MODERATION_RESOLVE_UNBAN_REQUESTS: HelixEndpoint = HelixEndpoint {
@@ -1424,7 +1752,11 @@ pub mod moderation {
         scopes: &["moderator:manage:unban_requests"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(ResolveUnbanRequestsRequest, ResolveUnbanRequestsResponse, MODERATION_RESOLVE_UNBAN_REQUESTS);
+    declare_generated_endpoint!(
+        ResolveUnbanRequestsRequest,
+        ResolveUnbanRequestsResponse,
+        MODERATION_RESOLVE_UNBAN_REQUESTS
+    );
 
     /// Gets the broadcaster’s list of non-private, blocked words or phrases.
     pub const MODERATION_GET_BLOCKED_TERMS: HelixEndpoint = HelixEndpoint {
@@ -1436,10 +1768,17 @@ pub mod moderation {
         method: HttpMethod::Get,
         path: "/moderation/blocked_terms",
         auth_kind: HelixAuthKind::Either,
-        scopes: &["moderator:manage:blocked_terms", "moderator:read:blocked_terms"],
+        scopes: &[
+            "moderator:manage:blocked_terms",
+            "moderator:read:blocked_terms",
+        ],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetBlockedTermsRequest, GetBlockedTermsResponse, MODERATION_GET_BLOCKED_TERMS);
+    declare_generated_endpoint!(
+        GetBlockedTermsRequest,
+        GetBlockedTermsResponse,
+        MODERATION_GET_BLOCKED_TERMS
+    );
 
     /// Adds a word or phrase to the broadcaster’s list of blocked terms.
     pub const MODERATION_ADD_BLOCKED_TERM: HelixEndpoint = HelixEndpoint {
@@ -1454,7 +1793,11 @@ pub mod moderation {
         scopes: &["moderator:manage:blocked_terms"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(AddBlockedTermRequest, AddBlockedTermResponse, MODERATION_ADD_BLOCKED_TERM);
+    declare_generated_endpoint!(
+        AddBlockedTermRequest,
+        AddBlockedTermResponse,
+        MODERATION_ADD_BLOCKED_TERM
+    );
 
     /// Removes the word or phrase from the broadcaster’s list of blocked terms.
     pub const MODERATION_REMOVE_BLOCKED_TERM: HelixEndpoint = HelixEndpoint {
@@ -1469,7 +1812,11 @@ pub mod moderation {
         scopes: &["moderator:manage:blocked_terms"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(RemoveBlockedTermRequest, RemoveBlockedTermResponse, MODERATION_REMOVE_BLOCKED_TERM);
+    declare_generated_endpoint!(
+        RemoveBlockedTermRequest,
+        RemoveBlockedTermResponse,
+        MODERATION_REMOVE_BLOCKED_TERM
+    );
 
     /// Removes a single chat message or all chat messages from the broadcaster’s chat room.
     pub const MODERATION_DELETE_CHAT_MESSAGES: HelixEndpoint = HelixEndpoint {
@@ -1484,7 +1831,11 @@ pub mod moderation {
         scopes: &["moderator:manage:chat_messages"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(DeleteChatMessagesRequest, DeleteChatMessagesResponse, MODERATION_DELETE_CHAT_MESSAGES);
+    declare_generated_endpoint!(
+        DeleteChatMessagesRequest,
+        DeleteChatMessagesResponse,
+        MODERATION_DELETE_CHAT_MESSAGES
+    );
 
     /// Gets a list of channels that the specified user has moderator privileges in.
     pub const MODERATION_GET_MODERATED_CHANNELS: HelixEndpoint = HelixEndpoint {
@@ -1499,7 +1850,11 @@ pub mod moderation {
         scopes: &["user:read:moderated_channels"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetModeratedChannelsRequest, GetModeratedChannelsResponse, MODERATION_GET_MODERATED_CHANNELS);
+    declare_generated_endpoint!(
+        GetModeratedChannelsRequest,
+        GetModeratedChannelsResponse,
+        MODERATION_GET_MODERATED_CHANNELS
+    );
 
     /// Gets all users allowed to moderate the broadcaster’s chat room.
     pub const MODERATION_GET_MODERATORS: HelixEndpoint = HelixEndpoint {
@@ -1514,7 +1869,11 @@ pub mod moderation {
         scopes: &["channel:manage:moderators", "moderation:read"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetModeratorsRequest, GetModeratorsResponse, MODERATION_GET_MODERATORS);
+    declare_generated_endpoint!(
+        GetModeratorsRequest,
+        GetModeratorsResponse,
+        MODERATION_GET_MODERATORS
+    );
 
     /// Adds a moderator to the broadcaster’s chat room.
     pub const MODERATION_ADD_CHANNEL_MODERATOR: HelixEndpoint = HelixEndpoint {
@@ -1529,7 +1888,11 @@ pub mod moderation {
         scopes: &["channel:manage:moderators"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(AddChannelModeratorRequest, AddChannelModeratorResponse, MODERATION_ADD_CHANNEL_MODERATOR);
+    declare_generated_endpoint!(
+        AddChannelModeratorRequest,
+        AddChannelModeratorResponse,
+        MODERATION_ADD_CHANNEL_MODERATOR
+    );
 
     /// Removes a moderator from the broadcaster’s chat room.
     pub const MODERATION_REMOVE_CHANNEL_MODERATOR: HelixEndpoint = HelixEndpoint {
@@ -1544,7 +1907,11 @@ pub mod moderation {
         scopes: &["channel:manage:moderators"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(RemoveChannelModeratorRequest, RemoveChannelModeratorResponse, MODERATION_REMOVE_CHANNEL_MODERATOR);
+    declare_generated_endpoint!(
+        RemoveChannelModeratorRequest,
+        RemoveChannelModeratorResponse,
+        MODERATION_REMOVE_CHANNEL_MODERATOR
+    );
 
     /// Gets a list of the broadcaster’s VIPs.
     pub const MODERATION_GET_VIPS: HelixEndpoint = HelixEndpoint {
@@ -1574,7 +1941,11 @@ pub mod moderation {
         scopes: &["channel:manage:vips"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(AddChannelVipRequest, AddChannelVipResponse, MODERATION_ADD_CHANNEL_VIP);
+    declare_generated_endpoint!(
+        AddChannelVipRequest,
+        AddChannelVipResponse,
+        MODERATION_ADD_CHANNEL_VIP
+    );
 
     /// Removes the specified user as a VIP in the broadcaster’s channel.
     pub const MODERATION_REMOVE_CHANNEL_VIP: HelixEndpoint = HelixEndpoint {
@@ -1589,7 +1960,11 @@ pub mod moderation {
         scopes: &["channel:manage:vips"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(RemoveChannelVipRequest, RemoveChannelVipResponse, MODERATION_REMOVE_CHANNEL_VIP);
+    declare_generated_endpoint!(
+        RemoveChannelVipRequest,
+        RemoveChannelVipResponse,
+        MODERATION_REMOVE_CHANNEL_VIP
+    );
 
     /// Activates or deactivates the broadcaster’s Shield Mode.
     pub const MODERATION_UPDATE_SHIELD_MODE_STATUS: HelixEndpoint = HelixEndpoint {
@@ -1604,7 +1979,11 @@ pub mod moderation {
         scopes: &["moderator:manage:shield_mode"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateShieldModeStatusRequest, UpdateShieldModeStatusResponse, MODERATION_UPDATE_SHIELD_MODE_STATUS);
+    declare_generated_endpoint!(
+        UpdateShieldModeStatusRequest,
+        UpdateShieldModeStatusResponse,
+        MODERATION_UPDATE_SHIELD_MODE_STATUS
+    );
 
     /// Gets the broadcaster’s Shield Mode activation status.
     pub const MODERATION_GET_SHIELD_MODE_STATUS: HelixEndpoint = HelixEndpoint {
@@ -1619,7 +1998,11 @@ pub mod moderation {
         scopes: &["moderator:manage:shield_mode", "moderator:read:shield_mode"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetShieldModeStatusRequest, GetShieldModeStatusResponse, MODERATION_GET_SHIELD_MODE_STATUS);
+    declare_generated_endpoint!(
+        GetShieldModeStatusRequest,
+        GetShieldModeStatusResponse,
+        MODERATION_GET_SHIELD_MODE_STATUS
+    );
 
     /// Warns a user in the specified broadcaster’s chat room, preventing them from chat interaction until the warning is acknowledged.
     pub const MODERATION_WARN_CHAT_USER: HelixEndpoint = HelixEndpoint {
@@ -1634,7 +2017,11 @@ pub mod moderation {
         scopes: &["moderator:manage:warnings"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(WarnChatUserRequest, WarnChatUserResponse, MODERATION_WARN_CHAT_USER);
+    declare_generated_endpoint!(
+        WarnChatUserRequest,
+        WarnChatUserResponse,
+        MODERATION_WARN_CHAT_USER
+    );
 
     /// NEW Adds a suspicious user status to a chatter on the broadcaster’s channel.
     pub const MODERATION_ADD_SUSPICIOUS_STATUS_TO_CHAT_USER: HelixEndpoint = HelixEndpoint {
@@ -1649,7 +2036,11 @@ pub mod moderation {
         scopes: &["moderator:manage:suspicious_users"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(AddSuspiciousStatusToChatUserRequest, AddSuspiciousStatusToChatUserResponse, MODERATION_ADD_SUSPICIOUS_STATUS_TO_CHAT_USER);
+    declare_generated_endpoint!(
+        AddSuspiciousStatusToChatUserRequest,
+        AddSuspiciousStatusToChatUserResponse,
+        MODERATION_ADD_SUSPICIOUS_STATUS_TO_CHAT_USER
+    );
 
     /// NEW Remove a suspicious user status from a chatter on broadcaster’s channel.
     pub const MODERATION_REMOVE_SUSPICIOUS_STATUS_FROM_CHAT_USER: HelixEndpoint = HelixEndpoint {
@@ -1664,8 +2055,11 @@ pub mod moderation {
         scopes: &["moderator:manage:suspicious_users"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(RemoveSuspiciousStatusFromChatUserRequest, RemoveSuspiciousStatusFromChatUserResponse, MODERATION_REMOVE_SUSPICIOUS_STATUS_FROM_CHAT_USER);
-
+    declare_generated_endpoint!(
+        RemoveSuspiciousStatusFromChatUserRequest,
+        RemoveSuspiciousStatusFromChatUserResponse,
+        MODERATION_REMOVE_SUSPICIOUS_STATUS_FROM_CHAT_USER
+    );
 }
 
 pub mod polls {
@@ -1715,7 +2109,6 @@ pub mod polls {
         supports_pagination: true,
     };
     declare_generated_endpoint!(EndPollRequest, EndPollResponse, POLLS_END_POLL);
-
 }
 
 pub mod predictions {
@@ -1734,7 +2127,11 @@ pub mod predictions {
         scopes: &["channel:manage:predictions", "channel:read:predictions"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetPredictionsRequest, GetPredictionsResponse, PREDICTIONS_GET_PREDICTIONS);
+    declare_generated_endpoint!(
+        GetPredictionsRequest,
+        GetPredictionsResponse,
+        PREDICTIONS_GET_PREDICTIONS
+    );
 
     /// Create a Channel Points Prediction.
     pub const PREDICTIONS_CREATE_PREDICTION: HelixEndpoint = HelixEndpoint {
@@ -1749,7 +2146,11 @@ pub mod predictions {
         scopes: &["channel:manage:predictions"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CreatePredictionRequest, CreatePredictionResponse, PREDICTIONS_CREATE_PREDICTION);
+    declare_generated_endpoint!(
+        CreatePredictionRequest,
+        CreatePredictionResponse,
+        PREDICTIONS_CREATE_PREDICTION
+    );
 
     /// Locks, resolves, or cancels a Channel Points Prediction.
     pub const PREDICTIONS_END_PREDICTION: HelixEndpoint = HelixEndpoint {
@@ -1764,8 +2165,11 @@ pub mod predictions {
         scopes: &["channel:manage:predictions"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(EndPredictionRequest, EndPredictionResponse, PREDICTIONS_END_PREDICTION);
-
+    declare_generated_endpoint!(
+        EndPredictionRequest,
+        EndPredictionResponse,
+        PREDICTIONS_END_PREDICTION
+    );
 }
 
 pub mod raids {
@@ -1800,7 +2204,6 @@ pub mod raids {
         supports_pagination: false,
     };
     declare_generated_endpoint!(CancelARaidRequest, CancelARaidResponse, RAIDS_CANCEL_A_RAID);
-
 }
 
 pub mod schedule {
@@ -1819,7 +2222,11 @@ pub mod schedule {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetChannelStreamScheduleRequest, GetChannelStreamScheduleResponse, SCHEDULE_GET_CHANNEL_STREAM_SCHEDULE);
+    declare_generated_endpoint!(
+        GetChannelStreamScheduleRequest,
+        GetChannelStreamScheduleResponse,
+        SCHEDULE_GET_CHANNEL_STREAM_SCHEDULE
+    );
 
     /// Gets the broadcaster’s streaming schedule as an iCalendar.
     pub const SCHEDULE_GET_CHANNEL_ICALENDAR: HelixEndpoint = HelixEndpoint {
@@ -1834,7 +2241,11 @@ pub mod schedule {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetChannelIcalendarRequest, GetChannelIcalendarResponse, SCHEDULE_GET_CHANNEL_ICALENDAR);
+    declare_generated_endpoint!(
+        GetChannelIcalendarRequest,
+        GetChannelIcalendarResponse,
+        SCHEDULE_GET_CHANNEL_ICALENDAR
+    );
 
     /// Updates the broadcaster’s schedule settings, such as scheduling a vacation.
     pub const SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE: HelixEndpoint = HelixEndpoint {
@@ -1849,7 +2260,11 @@ pub mod schedule {
         scopes: &["channel:manage:schedule"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateChannelStreamScheduleRequest, UpdateChannelStreamScheduleResponse, SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE);
+    declare_generated_endpoint!(
+        UpdateChannelStreamScheduleRequest,
+        UpdateChannelStreamScheduleResponse,
+        SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE
+    );
 
     /// Adds a single or recurring broadcast to the broadcaster’s streaming schedule.
     pub const SCHEDULE_CREATE_CHANNEL_STREAM_SCHEDULE_SEGMENT: HelixEndpoint = HelixEndpoint {
@@ -1864,7 +2279,11 @@ pub mod schedule {
         scopes: &["channel:manage:schedule"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CreateChannelStreamScheduleSegmentRequest, CreateChannelStreamScheduleSegmentResponse, SCHEDULE_CREATE_CHANNEL_STREAM_SCHEDULE_SEGMENT);
+    declare_generated_endpoint!(
+        CreateChannelStreamScheduleSegmentRequest,
+        CreateChannelStreamScheduleSegmentResponse,
+        SCHEDULE_CREATE_CHANNEL_STREAM_SCHEDULE_SEGMENT
+    );
 
     /// Updates a scheduled broadcast segment.
     pub const SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE_SEGMENT: HelixEndpoint = HelixEndpoint {
@@ -1879,7 +2298,11 @@ pub mod schedule {
         scopes: &["channel:manage:schedule"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(UpdateChannelStreamScheduleSegmentRequest, UpdateChannelStreamScheduleSegmentResponse, SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE_SEGMENT);
+    declare_generated_endpoint!(
+        UpdateChannelStreamScheduleSegmentRequest,
+        UpdateChannelStreamScheduleSegmentResponse,
+        SCHEDULE_UPDATE_CHANNEL_STREAM_SCHEDULE_SEGMENT
+    );
 
     /// Deletes a broadcast from the broadcaster’s streaming schedule.
     pub const SCHEDULE_DELETE_CHANNEL_STREAM_SCHEDULE_SEGMENT: HelixEndpoint = HelixEndpoint {
@@ -1894,8 +2317,11 @@ pub mod schedule {
         scopes: &["channel:manage:schedule"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(DeleteChannelStreamScheduleSegmentRequest, DeleteChannelStreamScheduleSegmentResponse, SCHEDULE_DELETE_CHANNEL_STREAM_SCHEDULE_SEGMENT);
-
+    declare_generated_endpoint!(
+        DeleteChannelStreamScheduleSegmentRequest,
+        DeleteChannelStreamScheduleSegmentResponse,
+        SCHEDULE_DELETE_CHANNEL_STREAM_SCHEDULE_SEGMENT
+    );
 }
 
 pub mod search {
@@ -1914,7 +2340,11 @@ pub mod search {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(SearchCategoriesRequest, SearchCategoriesResponse, SEARCH_SEARCH_CATEGORIES);
+    declare_generated_endpoint!(
+        SearchCategoriesRequest,
+        SearchCategoriesResponse,
+        SEARCH_SEARCH_CATEGORIES
+    );
 
     /// Gets the channels that match the specified query and have streamed content within the past 6 months.
     pub const SEARCH_SEARCH_CHANNELS: HelixEndpoint = HelixEndpoint {
@@ -1929,8 +2359,11 @@ pub mod search {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(SearchChannelsRequest, SearchChannelsResponse, SEARCH_SEARCH_CHANNELS);
-
+    declare_generated_endpoint!(
+        SearchChannelsRequest,
+        SearchChannelsResponse,
+        SEARCH_SEARCH_CHANNELS
+    );
 }
 
 pub mod streams {
@@ -1949,7 +2382,11 @@ pub mod streams {
         scopes: &["channel:read:stream_key"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetStreamKeyRequest, GetStreamKeyResponse, STREAMS_GET_STREAM_KEY);
+    declare_generated_endpoint!(
+        GetStreamKeyRequest,
+        GetStreamKeyResponse,
+        STREAMS_GET_STREAM_KEY
+    );
 
     /// Gets a list of all streams.
     pub const STREAMS_GET_STREAMS: HelixEndpoint = HelixEndpoint {
@@ -1979,7 +2416,11 @@ pub mod streams {
         scopes: &["user:read:follows"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetFollowedStreamsRequest, GetFollowedStreamsResponse, STREAMS_GET_FOLLOWED_STREAMS);
+    declare_generated_endpoint!(
+        GetFollowedStreamsRequest,
+        GetFollowedStreamsResponse,
+        STREAMS_GET_FOLLOWED_STREAMS
+    );
 
     /// Adds a marker to a live stream.
     pub const STREAMS_CREATE_STREAM_MARKER: HelixEndpoint = HelixEndpoint {
@@ -1994,7 +2435,11 @@ pub mod streams {
         scopes: &["channel:manage:broadcast"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CreateStreamMarkerRequest, CreateStreamMarkerResponse, STREAMS_CREATE_STREAM_MARKER);
+    declare_generated_endpoint!(
+        CreateStreamMarkerRequest,
+        CreateStreamMarkerResponse,
+        STREAMS_CREATE_STREAM_MARKER
+    );
 
     /// Gets a list of markers from the user’s most recent stream or from the specified VOD/video.
     pub const STREAMS_GET_STREAM_MARKERS: HelixEndpoint = HelixEndpoint {
@@ -2009,8 +2454,11 @@ pub mod streams {
         scopes: &["channel:manage:broadcast", "user:read:broadcast"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetStreamMarkersRequest, GetStreamMarkersResponse, STREAMS_GET_STREAM_MARKERS);
-
+    declare_generated_endpoint!(
+        GetStreamMarkersRequest,
+        GetStreamMarkersResponse,
+        STREAMS_GET_STREAM_MARKERS
+    );
 }
 
 pub mod subscriptions {
@@ -2029,7 +2477,11 @@ pub mod subscriptions {
         scopes: &["channel:read:subscriptions"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetBroadcasterSubscriptionsRequest, GetBroadcasterSubscriptionsResponse, SUBSCRIPTIONS_GET_BROADCASTER_SUBSCRIPTIONS);
+    declare_generated_endpoint!(
+        GetBroadcasterSubscriptionsRequest,
+        GetBroadcasterSubscriptionsResponse,
+        SUBSCRIPTIONS_GET_BROADCASTER_SUBSCRIPTIONS
+    );
 
     /// Checks whether the user subscribes to the broadcaster’s channel.
     pub const SUBSCRIPTIONS_CHECK_USER_SUBSCRIPTION: HelixEndpoint = HelixEndpoint {
@@ -2044,8 +2496,11 @@ pub mod subscriptions {
         scopes: &["user:read:subscriptions"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(CheckUserSubscriptionRequest, CheckUserSubscriptionResponse, SUBSCRIPTIONS_CHECK_USER_SUBSCRIPTION);
-
+    declare_generated_endpoint!(
+        CheckUserSubscriptionRequest,
+        CheckUserSubscriptionResponse,
+        SUBSCRIPTIONS_CHECK_USER_SUBSCRIPTION
+    );
 }
 
 pub mod tags {
@@ -2064,7 +2519,11 @@ pub mod tags {
         scopes: &[],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetAllStreamTagsRequest, GetAllStreamTagsResponse, TAGS_GET_ALL_STREAM_TAGS);
+    declare_generated_endpoint!(
+        GetAllStreamTagsRequest,
+        GetAllStreamTagsResponse,
+        TAGS_GET_ALL_STREAM_TAGS
+    );
 
     /// Gets the list of stream tags that the broadcaster or Twitch added to their channel.
     pub const TAGS_GET_STREAM_TAGS: HelixEndpoint = HelixEndpoint {
@@ -2079,8 +2538,11 @@ pub mod tags {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetStreamTagsRequest, GetStreamTagsResponse, TAGS_GET_STREAM_TAGS);
-
+    declare_generated_endpoint!(
+        GetStreamTagsRequest,
+        GetStreamTagsResponse,
+        TAGS_GET_STREAM_TAGS
+    );
 }
 
 pub mod teams {
@@ -2099,7 +2561,11 @@ pub mod teams {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetChannelTeamsRequest, GetChannelTeamsResponse, TEAMS_GET_CHANNEL_TEAMS);
+    declare_generated_endpoint!(
+        GetChannelTeamsRequest,
+        GetChannelTeamsResponse,
+        TEAMS_GET_CHANNEL_TEAMS
+    );
 
     /// Gets information about the specified Twitch team.
     pub const TEAMS_GET_TEAMS: HelixEndpoint = HelixEndpoint {
@@ -2115,7 +2581,6 @@ pub mod teams {
         supports_pagination: false,
     };
     declare_generated_endpoint!(GetTeamsRequest, GetTeamsResponse, TEAMS_GET_TEAMS);
-
 }
 
 pub mod users {
@@ -2164,7 +2629,11 @@ pub mod users {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetAuthorizationByUserRequest, GetAuthorizationByUserResponse, USERS_GET_AUTHORIZATION_BY_USER);
+    declare_generated_endpoint!(
+        GetAuthorizationByUserRequest,
+        GetAuthorizationByUserResponse,
+        USERS_GET_AUTHORIZATION_BY_USER
+    );
 
     /// Gets the list of users that the broadcaster has blocked.
     pub const USERS_GET_USER_BLOCK_LIST: HelixEndpoint = HelixEndpoint {
@@ -2179,7 +2648,11 @@ pub mod users {
         scopes: &["user:read:blocked_users"],
         supports_pagination: true,
     };
-    declare_generated_endpoint!(GetUserBlockListRequest, GetUserBlockListResponse, USERS_GET_USER_BLOCK_LIST);
+    declare_generated_endpoint!(
+        GetUserBlockListRequest,
+        GetUserBlockListResponse,
+        USERS_GET_USER_BLOCK_LIST
+    );
 
     /// Blocks the specified user from interacting with or having contact with the broadcaster.
     pub const USERS_BLOCK_USER: HelixEndpoint = HelixEndpoint {
@@ -2224,7 +2697,11 @@ pub mod users {
         scopes: &["user:edit:broadcast", "user:read:broadcast"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetUserExtensionsRequest, GetUserExtensionsResponse, USERS_GET_USER_EXTENSIONS);
+    declare_generated_endpoint!(
+        GetUserExtensionsRequest,
+        GetUserExtensionsResponse,
+        USERS_GET_USER_EXTENSIONS
+    );
 
     /// Gets the active extensions that the broadcaster has installed for each configuration.
     pub const USERS_GET_USER_ACTIVE_EXTENSIONS: HelixEndpoint = HelixEndpoint {
@@ -2239,7 +2716,11 @@ pub mod users {
         scopes: &[],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(GetUserActiveExtensionsRequest, GetUserActiveExtensionsResponse, USERS_GET_USER_ACTIVE_EXTENSIONS);
+    declare_generated_endpoint!(
+        GetUserActiveExtensionsRequest,
+        GetUserActiveExtensionsResponse,
+        USERS_GET_USER_ACTIVE_EXTENSIONS
+    );
 
     /// Updates an installed extension’s information.
     pub const USERS_UPDATE_USER_EXTENSIONS: HelixEndpoint = HelixEndpoint {
@@ -2254,8 +2735,11 @@ pub mod users {
         scopes: &["user:edit:broadcast"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(UpdateUserExtensionsRequest, UpdateUserExtensionsResponse, USERS_UPDATE_USER_EXTENSIONS);
-
+    declare_generated_endpoint!(
+        UpdateUserExtensionsRequest,
+        UpdateUserExtensionsResponse,
+        USERS_UPDATE_USER_EXTENSIONS
+    );
 }
 
 pub mod videos {
@@ -2289,8 +2773,11 @@ pub mod videos {
         scopes: &["channel:manage:videos"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(DeleteVideosRequest, DeleteVideosResponse, VIDEOS_DELETE_VIDEOS);
-
+    declare_generated_endpoint!(
+        DeleteVideosRequest,
+        DeleteVideosResponse,
+        VIDEOS_DELETE_VIDEOS
+    );
 }
 
 pub mod whispers {
@@ -2309,8 +2796,11 @@ pub mod whispers {
         scopes: &["user:manage:whispers"],
         supports_pagination: false,
     };
-    declare_generated_endpoint!(SendWhisperRequest, SendWhisperResponse, WHISPERS_SEND_WHISPER);
-
+    declare_generated_endpoint!(
+        SendWhisperRequest,
+        SendWhisperResponse,
+        WHISPERS_SEND_WHISPER
+    );
 }
 
 pub static ALL_ENDPOINTS: &[&HelixEndpoint] = &[

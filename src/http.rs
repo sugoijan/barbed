@@ -64,10 +64,12 @@ impl HttpResponse {
             .or_else(|| pagination_cursor_from_link(&self.headers))
             .or_else(|| pagination_cursor_from_body(&self.body));
         let rate_limit = RateLimit {
-            limit: header_value(&self.headers, "Ratelimit-Limit").and_then(|value| value.parse().ok()),
+            limit: header_value(&self.headers, "Ratelimit-Limit")
+                .and_then(|value| value.parse().ok()),
             remaining: header_value(&self.headers, "Ratelimit-Remaining")
                 .and_then(|value| value.parse().ok()),
-            reset: header_value(&self.headers, "Ratelimit-Reset").and_then(|value| value.parse().ok()),
+            reset: header_value(&self.headers, "Ratelimit-Reset")
+                .and_then(|value| value.parse().ok()),
         };
 
         ResponseMeta {
@@ -121,10 +123,8 @@ impl PreparedRequestBuilder {
     }
 
     pub fn json_body(mut self, value: &serde_json::Value) -> Result<Self, serde_json::Error> {
-        self.headers.push((
-            "Content-Type".to_string(),
-            "application/json".to_string(),
-        ));
+        self.headers
+            .push(("Content-Type".to_string(), "application/json".to_string()));
         self.body = Some(serde_json::to_string(value)?);
         Ok(self)
     }
@@ -333,7 +333,9 @@ mod tests {
         let meta = response.meta();
         assert_eq!(meta.pagination_cursor.as_deref(), Some("abc"));
         assert_eq!(
-            meta.rate_limit.expect("rate limit should be parsed").remaining,
+            meta.rate_limit
+                .expect("rate limit should be parsed")
+                .remaining,
             Some(799)
         );
     }

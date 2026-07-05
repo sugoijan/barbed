@@ -142,7 +142,10 @@ impl TwitchAuthClient {
         }
     }
 
-    pub async fn request_app_access_token(&self, client_secret: &str) -> Result<TwitchTokenExchange> {
+    pub async fn request_app_access_token(
+        &self,
+        client_secret: &str,
+    ) -> Result<TwitchTokenExchange> {
         let response = send_prepared_request_with_metadata(
             &self.http,
             client_credentials_request(self.config.client_id(), client_secret),
@@ -191,11 +194,9 @@ impl TwitchAuthClient {
     }
 
     pub async fn fetch_openid_userinfo(&self, access_token: &str) -> Result<OpenIdUserInfo> {
-        let response = send_prepared_request_with_metadata(
-            &self.http,
-            openid_userinfo_request(access_token),
-        )
-        .await?;
+        let response =
+            send_prepared_request_with_metadata(&self.http, openid_userinfo_request(access_token))
+                .await?;
         if response.status != 200 {
             bail!(
                 "twitch openid userinfo request failed with status {}: {}",

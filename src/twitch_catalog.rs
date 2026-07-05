@@ -121,13 +121,21 @@ macro_rules! json_once {
     };
 }
 
-json_once!(helix_catalog, HelixCatalog, include_str!("../twitch_catalog/helix.json"));
+json_once!(
+    helix_catalog,
+    HelixCatalog,
+    include_str!("../twitch_catalog/helix.json")
+);
 json_once!(
     eventsub_catalog,
     EventSubCatalog,
     include_str!("../twitch_catalog/eventsub.json")
 );
-json_once!(auth_catalog, AuthCatalog, include_str!("../twitch_catalog/auth.json"));
+json_once!(
+    auth_catalog,
+    AuthCatalog,
+    include_str!("../twitch_catalog/auth.json")
+);
 json_once!(
     catalog_summary,
     CatalogSummary,
@@ -179,6 +187,9 @@ mod tests {
             eventsub_catalog().subscriptions.len()
         );
         assert_eq!(summary.counts.auth_flows, auth_catalog().flows.len());
-        assert_eq!(summary.counts.auth_endpoints, auth_catalog().endpoints.len());
+        assert_eq!(
+            summary.counts.auth_endpoints,
+            auth_catalog().endpoints.len()
+        );
     }
 }

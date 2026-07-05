@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use thiserror::Error;
 use time::OffsetDateTime;
-use time::{Duration, error::Parse as TimeParseError};
 use time::format_description::well_known::Rfc3339;
+use time::{Duration, error::Parse as TimeParseError};
 
 use crate::emotes::{
     Emote, EmoteId, EmoteImage, EmoteImageFormat, EmoteImageScale, EmoteProvider, EmoteThemeMode,
@@ -804,7 +804,8 @@ pub fn verify_and_decode_webhook_message(
         return Err(EventSubError::StaleWebhookTimestamp);
     }
     if let Some(replay_store) = replay_store {
-        let is_new = replay_store.remember_message(&headers.message_id, headers.message_timestamp()?)?;
+        let is_new =
+            replay_store.remember_message(&headers.message_id, headers.message_timestamp()?)?;
         if !is_new {
             return Err(EventSubError::DuplicateWebhookMessage);
         }
@@ -939,7 +940,10 @@ mod tests {
         .expect("headers should parse");
 
         assert_eq!(headers.message_id, "msg-1");
-        assert_eq!(headers.message_type, EventSubWebhookMessageType::Notification);
+        assert_eq!(
+            headers.message_type,
+            EventSubWebhookMessageType::Notification
+        );
         assert_eq!(headers.subscription_type.as_deref(), Some("channel.follow"));
     }
 
@@ -976,7 +980,11 @@ mod tests {
             message_signature: compute_webhook_signature("secret", &headers, raw_body),
             ..headers
         };
-        assert!(verify_webhook_signature("secret", &signed_headers, raw_body));
+        assert!(verify_webhook_signature(
+            "secret",
+            &signed_headers,
+            raw_body
+        ));
 
         let store = InMemoryEventSubReplayStore::new();
         let envelope = verify_and_decode_webhook_message(
@@ -995,8 +1003,7 @@ mod tests {
                 "secret",
                 &signed_headers,
                 raw_body,
-                OffsetDateTime::parse("2024-01-01T00:00:10Z", &Rfc3339)
-                    .expect("time should parse"),
+                OffsetDateTime::parse("2024-01-01T00:00:10Z", &Rfc3339).expect("time should parse"),
                 Duration::seconds(30),
                 Some(&store),
             ),

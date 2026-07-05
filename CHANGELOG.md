@@ -2,7 +2,18 @@
 
 This file is append-only and records `barbed` changes that are intended to replace behavior currently implemented in LUPO. Each entry lists the public API involved, the root feature flags needed, the LUPO behavior it is meant to replace, and any known gaps that still remain.
 
-## Unreleased
+## 0.0.3 - 2026-07-05
+
+### Dependency updates
+
+- Public API added/changed:
+  - `worker` updated from 0.7 to 0.8; `worker::Error` is embedded in the `cloudflare-worker` error type, so downstream users of that feature must use `worker` 0.8
+- Root feature flags:
+  - `cloudflare-worker` for the `worker` upgrade
+- Intended LUPO replacement:
+  - none; maintenance only
+- Known remaining gaps:
+  - none
 
 ### Root emote and auth/session abstractions
 
