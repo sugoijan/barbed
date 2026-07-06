@@ -9,7 +9,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.0.4"
+version = "0.0.4-alpha.1"
 edition = "2024"
 rust-version = "1.88"
 license = "MIT OR Apache-2.0"
@@ -20,10 +20,10 @@ documentation = "https://docs.rs/barbed"
 [workspace.dependencies]
 # Internal crates: bumping a release edits `workspace.package.version` plus
 # these four requirements, all in this file.
-barbed-core = { path = "barbed-core", version = "0.0.4" }
-barbed_7tv = { package = "barbed-7tv", path = "barbed-7tv", version = "0.0.4", default-features = false }
-barbed_bttv = { package = "barbed-bttv", path = "barbed-bttv", version = "0.0.4", default-features = false }
-barbed_ffz = { package = "barbed-ffz", path = "barbed-ffz", version = "0.0.4", default-features = false }
+barbed-core = { path = "barbed-core", version = "0.0.4-alpha" }
+barbed_7tv = { package = "barbed-7tv", path = "barbed-7tv", version = "0.0.4-alpha", default-features = false }
+barbed_bttv = { package = "barbed-bttv", path = "barbed-bttv", version = "0.0.4-alpha", default-features = false }
+barbed_ffz = { package = "barbed-ffz", path = "barbed-ffz", version = "0.0.4-alpha", default-features = false }
 
 async-trait = "0.1"
 base64 = "0.22"
