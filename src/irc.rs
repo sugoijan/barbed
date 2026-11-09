@@ -349,9 +349,13 @@ impl TwitchIrcApi for InMemoryTwitchIrcClient {
 
 #[cfg(feature = "tokio-irc")]
 pub struct TwitchIrcClient {
-    config: TwitchIrcConfig,
+    raw_mode: bool,
+    /// Commands sent on `close`, precomputed so the OAuth token is not retained.
+    disconnect: Vec<String>,
     reader: tokio::io::BufReader<tokio::net::tcp::OwnedReadHalf>,
     writer: tokio::net::tcp::OwnedWriteHalf,
+    /// Reused line buffer; one allocation for the connection instead of one per line.
+    line: String,
     closed: bool,
 }
 
@@ -369,9 +373,11 @@ impl TwitchIrcClient {
         }
 
         Ok(Self {
-            config,
+            raw_mode: config.raw_mode,
+            disconnect: disconnect_commands(&config),
             reader: tokio::io::BufReader::new(read_half),
             writer: write_half,
+            line: String::new(),
             closed: false,
         })
     }
@@ -387,15 +393,14 @@ impl TwitchIrcApi for TwitchIrcClient {
             return Ok(None);
         }
 
-        let mut buffer = String::new();
         loop {
-            buffer.clear();
-            let bytes = self.reader.read_line(&mut buffer).await?;
+            self.line.clear();
+            let bytes = self.reader.read_line(&mut self.line).await?;
             if bytes == 0 {
                 return Ok(None);
             }
 
-            let line = buffer.trim_end_matches(['\r', '\n']);
+            let line = self.line.trim_end_matches(['\r', '\n']);
             if line.is_empty() {
                 continue;
             }
@@ -403,7 +408,7 @@ impl TwitchIrcApi for TwitchIrcClient {
             if let Some(response) = ping_response(line) {
                 send_line(&mut self.writer, &response).await?;
             }
-            return Ok(Some(parse_line(line, self.config.raw_mode)));
+            return Ok(Some(parse_line(line, self.raw_mode)));
         }
     }
 
@@ -420,8 +425,8 @@ impl TwitchIrcApi for TwitchIrcClient {
         if self.closed {
             return Err(IrcError::Closed);
         }
-        for command in disconnect_commands(&self.config) {
-            send_line(&mut self.writer, &command).await?;
+        for command in &self.disconnect {
+            send_line(&mut self.writer, command).await?;
         }
         self.writer.shutdown().await?;
         self.closed = true;
@@ -436,9 +441,7 @@ async fn send_line(
 ) -> Result<(), IrcError> {
     use tokio::io::AsyncWriteExt;
 
-    writer.write_all(line.as_bytes()).await?;
-    writer.write_all(b"\r\n").await?;
-    writer.flush().await?;
+    writer.write_all(format!("{line}\r\n").as_bytes()).await?;
     Ok(())
 }
 

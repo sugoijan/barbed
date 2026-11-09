@@ -18,6 +18,12 @@ pub struct GenericEventSubPayload {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
+impl super::HasSourceTimestamp for GenericEventSubPayload {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
 /// Shared `bits-voting` object from the EventSub reference documentation.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SharedBitsVoting {
@@ -353,7 +359,7 @@ pub struct AutomodMessageHold2Event {
     /// The timestamp of when automod saved the message.
     #[serde(default, deserialize_with = "super::null_default")]
     pub held_at: String,
-    /// Possible values are: automod blocked_term.
+    /// Possible values are: automod blocked_term blocked_link.
     #[serde(default, deserialize_with = "super::null_default")]
     pub reason: String,
     /// Optional.
@@ -1270,6 +1276,9 @@ pub struct ChannelChatNotification1Event {
     /// Information about the modiversary event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub modiversary: ChannelChatNotification1EventModiversary,
+    /// Information about the gifted Drops summary event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifted_drops_summary: ChannelChatNotification1EventGiftedDropsSummary,
     /// Optional.
     #[serde(default, deserialize_with = "super::null_default")]
     pub source_broadcaster_user_id: String,
@@ -1318,6 +1327,9 @@ pub struct ChannelChatNotification1Event {
     /// Optional.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_modiversary: serde_json::Value,
+    /// Optional.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_gifted_drops_summary: serde_json::Value,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
@@ -1622,6 +1634,14 @@ pub struct ChannelChatNotification1EventModiversary {
     /// The number of months the user has been a moderator in this channel.
     #[serde(default, deserialize_with = "super::null_default")]
     pub months: i64,
+}
+
+/// Information about the gifted Drops summary event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventGiftedDropsSummary {
+    /// The number of users who received a gifted Drop.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub recipient_count: i64,
 }
 
 /// Optional.
@@ -6506,7 +6526,7 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
 pub(crate) fn decode_known_payload(
     subscription_type: &str,
     version: Option<&str>,
-    event: Option<serde_json::Value>,
+    event: Option<&serde_json::Value>,
     source_timestamp: Option<OffsetDateTime>,
 ) -> Option<KnownEventSubPayload> {
     match (subscription_type, version) {
@@ -6862,20 +6882,12 @@ pub(crate) fn decode_known_payload(
     }
 }
 
-fn decode_typed_event<T: serde::de::DeserializeOwned + super::HasSourceTimestamp>(
-    event: Option<serde_json::Value>,
+/// Decodes an event payload by reference and stamps the envelope timestamp on it.
+pub(super) fn decode_typed_event<T: serde::de::DeserializeOwned + super::HasSourceTimestamp>(
+    event: Option<&serde_json::Value>,
     source_timestamp: Option<OffsetDateTime>,
 ) -> Option<T> {
-    let mut payload: T = serde_json::from_value(event?).ok()?;
+    let mut payload: T = T::deserialize(event?).ok()?;
     payload.set_source_timestamp(source_timestamp);
-    Some(payload)
-}
-
-fn decode_generic_event(
-    event: Option<serde_json::Value>,
-    source_timestamp: Option<OffsetDateTime>,
-) -> Option<GenericEventSubPayload> {
-    let mut payload: GenericEventSubPayload = serde_json::from_value(event?).ok()?;
-    payload.source_timestamp = source_timestamp;
     Some(payload)
 }

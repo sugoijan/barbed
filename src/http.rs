@@ -59,31 +59,34 @@ impl HttpResponse {
     }
 
     pub fn meta(&self) -> ResponseMeta {
-        let pagination_cursor = header_value(&self.headers, "Ratelimit-Cursor")
-            .map(ToOwned::to_owned)
-            .or_else(|| pagination_cursor_from_link(&self.headers))
-            .or_else(|| pagination_cursor_from_body(&self.body));
-        let rate_limit = RateLimit {
-            limit: header_value(&self.headers, "Ratelimit-Limit")
-                .and_then(|value| value.parse().ok()),
-            remaining: header_value(&self.headers, "Ratelimit-Remaining")
-                .and_then(|value| value.parse().ok()),
-            reset: header_value(&self.headers, "Ratelimit-Reset")
-                .and_then(|value| value.parse().ok()),
-        };
+        response_meta(self.headers.clone(), || {
+            pagination_cursor_from_body(&self.body)
+        })
+    }
+}
 
-        ResponseMeta {
-            headers: self.headers.clone(),
-            pagination_cursor,
-            rate_limit: if rate_limit.limit.is_some()
-                || rate_limit.remaining.is_some()
-                || rate_limit.reset.is_some()
-            {
-                Some(rate_limit)
-            } else {
-                None
-            },
-        }
+/// Builds response metadata from headers; `body_cursor` is consulted only when
+/// no header carries a pagination cursor, so callers that already parsed the
+/// body can look the cursor up in the parsed value instead of reparsing.
+pub(crate) fn response_meta(
+    headers: Vec<ResponseHeader>,
+    body_cursor: impl FnOnce() -> Option<String>,
+) -> ResponseMeta {
+    let pagination_cursor = header_value(&headers, "Ratelimit-Cursor")
+        .map(ToOwned::to_owned)
+        .or_else(|| pagination_cursor_from_link(&headers))
+        .or_else(body_cursor);
+    let rate_limit = RateLimit {
+        limit: header_value(&headers, "Ratelimit-Limit").and_then(|value| value.parse().ok()),
+        remaining: header_value(&headers, "Ratelimit-Remaining")
+            .and_then(|value| value.parse().ok()),
+        reset: header_value(&headers, "Ratelimit-Reset").and_then(|value| value.parse().ok()),
+    };
+
+    ResponseMeta {
+        headers,
+        pagination_cursor,
+        rate_limit: (rate_limit != RateLimit::default()).then_some(rate_limit),
     }
 }
 
@@ -140,8 +143,12 @@ impl PreparedRequestBuilder {
 }
 
 pub fn form_body(values: &[(&str, &str)]) -> String {
-    values
-        .iter()
+    encode_pairs(values.iter().copied())
+}
+
+/// Percent-encodes `key=value` pairs and joins them with `&`.
+fn encode_pairs<'a>(pairs: impl Iterator<Item = (&'a str, &'a str)>) -> String {
+    pairs
         .map(|(key, value)| format!("{}={}", percent_encode(key), percent_encode(value)))
         .collect::<Vec<_>>()
         .join("&")
@@ -184,11 +191,11 @@ pub fn append_query_params(url: &str, params: &[(String, String)]) -> String {
     }
 
     let separator = if url.contains('?') { '&' } else { '?' };
-    let query = params
-        .iter()
-        .map(|(key, value)| format!("{}={}", percent_encode(key), percent_encode(value)))
-        .collect::<Vec<_>>()
-        .join("&");
+    let query = encode_pairs(
+        params
+            .iter()
+            .map(|(key, value)| (key.as_str(), value.as_str())),
+    );
     format!("{url}{separator}{query}")
 }
 
@@ -207,7 +214,10 @@ fn pagination_cursor_from_link(headers: &[ResponseHeader]) -> Option<String> {
 }
 
 fn pagination_cursor_from_body(body: &str) -> Option<String> {
-    let value: serde_json::Value = serde_json::from_str(body).ok()?;
+    pagination_cursor_from_value(&serde_json::from_str(body).ok()?)
+}
+
+pub(crate) fn pagination_cursor_from_value(value: &serde_json::Value) -> Option<String> {
     value
         .get("pagination")
         .and_then(|pagination| pagination.get("cursor"))

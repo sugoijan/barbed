@@ -145,21 +145,15 @@ def now_iso() -> str:
     return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
 
 
+def strip_tags(raw: str) -> str:
+    return html.unescape(re.sub(r"<[^>]+>", "", raw))
+
+
 def clean_html(raw: str) -> str:
     text = re.sub(r"<br\s*/?>", "\n", raw, flags=re.I)
     text = re.sub(r"</(p|div|li|ul|ol|tr|td|th|h2|h3|h4)>", "\n", text, flags=re.I)
-    text = re.sub(r"<[^>]+>", "", text)
-    text = html.unescape(text)
-    lines = []
-    for line in text.splitlines():
-        line = re.sub(r"\s+", " ", line).strip()
-        if line:
-            lines.append(line)
-    return "\n".join(lines)
-
-
-def normalize_space(value: str) -> str:
-    return re.sub(r"\s+", " ", value).strip()
+    lines = (re.sub(r"\s+", " ", line).strip() for line in strip_tags(text).splitlines())
+    return "\n".join(line for line in lines if line)
 
 
 def snake_case(value: str) -> str:
@@ -231,6 +225,9 @@ def parse_section(section_html: str, heading: str) -> str:
 
 
 RESPONSE_TABLE_RE = re.compile(r"<table[^>]*>.*?</table>", re.S)
+# Fragment of the first link in a cell; the docs link names to section ids.
+TYPE_LINK_RE = re.compile(r'href="[^"]*#(?P<slug>[^"]+)"')
+EVENT_LINK_RE = re.compile(r'href="[^"]*eventsub-reference/?#(?P<slug>[^"]+)"')
 RESPONSE_ROW_RE = re.compile(
     r"<tr>\s*<td[^>]*>(?P<field>.*?)</td>\s*<td[^>]*>(?P<type>.*?)</td>\s*<td[^>]*>(?P<description>.*?)</td>\s*</tr>",
     re.S,
@@ -265,52 +262,46 @@ EVENTSUB_TYPE_ALIASES = {
 }
 EVENTSUB_PRIMITIVE_TYPES = {"string", "integer", "boolean", "string[]", "integer[]", "array", "float"}
 
-# Subscriptions whose event section id cannot be derived from the human name.
-EVENT_SECTION_OVERRIDES = {
-    ("channel.goal.begin", "1"): "goals-event",
-    ("channel.goal.progress", "1"): "goals-event",
-    ("channel.goal.end", "1"): "goals-event",
-    ("channel.shield_mode.begin", "1"): "shield-mode",
-    ("channel.shield_mode.end", "1"): "shield-mode",
-    ("channel.shoutout.create", "1"): "shoutout-create",
-    ("channel.shoutout.receive", "1"): "shoutout-received",
-    ("channel.warning.acknowledge", "1"): "channel-warning-acknowledge-event",
-    ("channel.custom_power_up_redemption.add", "1"): "channel-custom-power-up-redemption-add-event",
-}
-
-# Named doc types whose cardinality is an array; not derivable from the Type
-# cell, so asserted here (a description-based tripwire warns on drift).
-ARRAY_NAMED_TYPES = {"choices", "outcomes", "top_predictors", "top_contributions", "emotes"}
-
-# Events that keep their hand-written structs in src/eventsub.rs; their fields
-# are still scraped into the catalog for completeness.
+# Events that keep their hand-written structs in src/eventsub.rs, keyed to the
+# struct name; their fields are still scraped into the catalog for completeness.
 HANDWRITTEN_EVENTS = {
-    ("channel.chat.message", "1"),
-    ("channel.chat.message_delete", "1"),
+    ("channel.chat.message", "1"): "EventSubChatMessage",
+    ("channel.chat.message_delete", "1"): "EventSubChatMessageDeleted",
 }
 
-# Shared doc object sections emitted once as `Shared*` structs. Array sections
-# name the element struct in the singular; explicit table, no heuristics.
-SHARED_STRUCT_NAMES = {
-    "choices": "SharedChoice",
-    "outcomes": "SharedOutcome",
-    "top-predictors": "SharedTopPredictor",
-    "emotes": "SharedEmote",
-    "reward": "SharedReward",
-    "image": "SharedImage",
-    "message": "SharedMessage",
-    "max-per-stream": "SharedMaxPerStream",
-    "max-per-user-per-stream": "SharedMaxPerUserPerStream",
-    "global-cooldown": "SharedGlobalCooldown",
-    "bits-voting": "SharedBitsVoting",
-    "channel-points-voting": "SharedChannelPointsVoting",
-    "custom-power-up": "SharedCustomPowerUp",
-    "product": "SharedProduct",
-    "last-contribution": "SharedLastContribution",
-    "top-contributions": "SharedTopContribution",
-    "shoutout-create": "SharedShoutoutCreate",
-    "shoutout-received": "SharedShoutoutReceived",
+# Shared doc object sections emitted once as `Shared*` structs, keyed by the
+# reference-page section id: (struct name, documented as an array). Whether a
+# section is an array is not derivable from its Type cell, so it is asserted
+# here (a description-based tripwire warns on drift); array sections name the
+# element struct in the singular.
+SHARED_SECTIONS = {
+    "choices": ("SharedChoice", True),
+    "outcomes": ("SharedOutcome", True),
+    "top-predictors": ("SharedTopPredictor", True),
+    "emotes": ("SharedEmote", True),
+    "reward": ("SharedReward", False),
+    "image": ("SharedImage", False),
+    "message": ("SharedMessage", False),
+    "max-per-stream": ("SharedMaxPerStream", False),
+    "max-per-user-per-stream": ("SharedMaxPerUserPerStream", False),
+    "global-cooldown": ("SharedGlobalCooldown", False),
+    "bits-voting": ("SharedBitsVoting", False),
+    "channel-points-voting": ("SharedChannelPointsVoting", False),
+    "custom-power-up": ("SharedCustomPowerUp", False),
+    "product": ("SharedProduct", False),
+    "last-contribution": ("SharedLastContribution", False),
+    "top-contributions": ("SharedTopContribution", True),
 }
+
+
+def shared_section_slug(type_str: str) -> str:
+    """Kebab-cases a named type's display text (`custom_power_up`, `Custom Power
+    Up`) into the reference-page section id; used when the cell has no link."""
+    return re.sub(r"[^a-z0-9]+", "-", type_str.lower()).strip("-")
+
+
+def shared_section_is_array(slug: str) -> bool:
+    return SHARED_SECTIONS.get(slug, ("", False))[1]
 
 
 def normalize_eventsub_type(raw: str) -> str:
@@ -324,14 +315,9 @@ def normalize_eventsub_type(raw: str) -> str:
 
 
 def response_field_indent_and_name(raw_field: str) -> tuple[int, str]:
-    text = html.unescape(re.sub(r"<[^>]+>", "", raw_field))
-    indent = 0
-    for ch in text:
-        if ch in INDENT_CHARS:
-            indent += 1
-        else:
-            break
-    return indent, text.strip()
+    text = strip_tags(raw_field)
+    unindented = text.lstrip("".join(INDENT_CHARS))
+    return len(text) - len(unindented), unindented.strip()
 
 
 def parse_fields_table(
@@ -341,6 +327,7 @@ def parse_fields_table(
     *,
     scalar_parent: str = "lift",
     normalize: Any = None,
+    capture_refs: bool = False,
 ) -> list[dict[str, Any]] | None:
     rows = RESPONSE_ROW_RE.findall(table_html)
     if not rows:
@@ -361,7 +348,7 @@ def parse_fields_table(
         if not name:
             warnings.append(f"{context_id}: empty field name in response table")
             return None
-        type_str = html.unescape(re.sub(r"<[^>]+>", "", raw_type)).strip()
+        type_str = strip_tags(raw_type).strip()
         if normalize is not None:
             type_str = normalize(type_str)
         field: dict[str, Any] = {
@@ -369,6 +356,11 @@ def parse_fields_table(
             "type": type_str,
             "description": clean_html(raw_description).replace("\n", " ").strip(),
         }
+        # EventSub type cells link named types to their reference section; the
+        # fragment is the section id, which `resolve()` prefers over the text.
+        link = TYPE_LINK_RE.search(raw_type) if capture_refs else None
+        if link:
+            field["ref"] = link.group("slug")
         while stack and stack[-1][0] >= indent:
             stack.pop()
         if scalar_parent == "lift":
@@ -416,9 +408,9 @@ def parse_expected_status(section_html: str) -> int:
     return int(match.group(1)) if match else 200
 
 
-def parse_helix(reference_html: str, warnings: list[str] | None = None) -> dict[str, Any]:
-    if warnings is None:
-        warnings = []
+def parse_helix(
+    reference_html: str, warnings: list[str], *, generated_at: str
+) -> dict[str, Any]:
     summary_start = reference_html.find('<h1 id="twitch-api-reference">')
     if summary_start == -1:
         raise RuntimeError("failed to locate helix summary table")
@@ -452,11 +444,9 @@ def parse_helix(reference_html: str, warnings: list[str] | None = None) -> dict[
         method = method_match.group(1).upper() if method_match else "GET"
         path = method_match.group("path").strip() if method_match else f"/{slug}"
         auth_text = parse_section(body, "Authorization")
-        supports_pagination = (
-            "pagination" in body.lower()
-            or " after " in body.lower()
-            or " before " in body.lower()
-            or "cursor" in body.lower()
+        lowered_body = body.lower()
+        supports_pagination = any(
+            needle in lowered_body for needle in ("pagination", " after ", " before ", "cursor")
         )
         endpoint_id = snake_case(f"{group}_{name}")
         expected_status = parse_expected_status(body)
@@ -487,14 +477,40 @@ def parse_helix(reference_html: str, warnings: list[str] | None = None) -> dict[
         groups[group] += 1
 
     return {
-        "generated_at": now_iso(),
+        "generated_at": generated_at,
         "source": SOURCE_URLS["helix_reference"],
         "group_counts": dict(sorted(groups.items())),
         "endpoints": endpoints,
     }
 
 
-def parse_eventsub(eventsub_html: str) -> dict[str, Any]:
+def event_section_slugs(eventsub_html: str, anchors: list[str]) -> dict[str, str | None]:
+    """Maps each subscription's anchor on the types page to the reference-page
+    section its payload table links the `event` row to."""
+    starts = {anchor: eventsub_html.find(f'<h3 id="{anchor}"') for anchor in anchors}
+    ordered = sorted(start for start in starts.values() if start != -1)
+    slugs: dict[str, str | None] = {}
+    for anchor, start in starts.items():
+        if start == -1:
+            slugs[anchor] = None
+            continue
+        end = next((position for position in ordered if position > start), len(eventsub_html))
+        # The payload row is `event`, or `events` for batched subscriptions;
+        # either way its Type cell links to the reference section.
+        rows = RESPONSE_ROW_RE.findall(eventsub_html[start:end])
+        slugs[anchor] = next(
+            (
+                link.group("slug")
+                for raw_field, raw_type, _ in rows
+                if strip_tags(raw_field).strip() in {"event", "events"}
+                and (link := EVENT_LINK_RE.search(raw_type))
+            ),
+            None,
+        )
+    return slugs
+
+
+def parse_eventsub(eventsub_html: str, *, generated_at: str) -> dict[str, Any]:
     start = eventsub_html.find('<h1 id="subscription-types">')
     if start == -1:
         raise RuntimeError("failed to locate EventSub subscription table")
@@ -506,39 +522,35 @@ def parse_eventsub(eventsub_html: str) -> dict[str, Any]:
         re.S,
     )
 
+    rows = list(row_re.finditer(summary_html))
+    anchors = [
+        link.group("slug") if (link := TYPE_LINK_RE.search(match.group("name"))) else None
+        for match in rows
+    ]
+    event_sections = event_section_slugs(eventsub_html, [a for a in anchors if a])
+
     subscriptions = []
-    for match in row_re.finditer(summary_html):
+    for match, anchor in zip(rows, anchors):
         name_html = match.group("name")
-        name = clean_html(name_html)
         subscription_type = clean_html(match.group("subscription_type"))
         version = clean_html(match.group("version"))
-        description = clean_html(match.group("description"))
-        stability = classify_stability(name_html)
         subscriptions.append(
             {
                 "id": snake_case(f"{subscription_type}_{version}"),
-                "name": name,
+                "name": clean_html(name_html),
                 "subscription_type": subscription_type,
                 "version": version,
-                "description": description,
-                "stability": stability,
+                "description": clean_html(match.group("description")),
+                "stability": classify_stability(name_html),
+                "event_section": event_sections.get(anchor) if anchor else None,
             }
         )
 
     return {
-        "generated_at": now_iso(),
+        "generated_at": generated_at,
         "source": SOURCE_URLS["eventsub_types"],
         "subscriptions": subscriptions,
     }
-
-
-def eventsub_section_candidates(name: str, version: str) -> list[str]:
-    first = name.splitlines()[0].strip()
-    first = re.sub(r"\s+V2$", "", first, flags=re.I)
-    base = re.sub(r"[^a-z0-9]+", "-", first.lower()).strip("-")
-    if version == "2":
-        return [f"{base}-event-v2", f"{base}-v2-event", f"{base}-event"]
-    return [f"{base}-event"]
 
 
 def attach_eventsub_events(
@@ -569,6 +581,7 @@ def attach_eventsub_events(
                 warnings,
                 scalar_parent="retype",
                 normalize=normalize_eventsub_type,
+                capture_refs=True,
             )
             if table_match
             else None
@@ -584,16 +597,15 @@ def attach_eventsub_events(
                 lowered not in EVENTSUB_PRIMITIVE_TYPES
                 and lowered not in {"object", "object[]"}
             )
+            # Only a named type that resolves to a shared section keeps `ref`.
+            slug = field.pop("ref", None) or shared_section_slug(type_str)
             if field.get("children"):
                 if is_named:
-                    field["type"] = (
-                        "object[]" if lowered in ARRAY_NAMED_TYPES else "object"
-                    )
+                    field["type"] = "object[]" if shared_section_is_array(slug) else "object"
                 resolve(field["children"], origin)
                 continue
             if not is_named:
                 continue
-            slug = lowered.replace("_", "-")
             if slug in resolving:
                 warnings.append(f"{origin}: cyclic named type `{type_str}`")
                 continue
@@ -604,34 +616,24 @@ def attach_eventsub_events(
                 shared_used[slug] = shared_fields
             resolving.discard(slug)
             if shared_fields is None:
-                warnings.append(f"{origin}: unresolved named type `{type_str}`")
+                warnings.append(f"{origin}: unresolved named type `{type_str}` (section `{slug}`)")
                 continue
             field["ref"] = slug
-            field["type"] = "object[]" if lowered in ARRAY_NAMED_TYPES else "object"
-            if (
-                lowered not in ARRAY_NAMED_TYPES
-                and "array of" in field["description"].lower()
-            ):
+            is_array = shared_section_is_array(slug)
+            field["type"] = "object[]" if is_array else "object"
+            if not is_array and "array of" in field["description"].lower():
                 warnings.append(
                     f"{origin}: field `{field['name']}` described as an array but "
-                    f"named type `{type_str}` is not in ARRAY_NAMED_TYPES"
+                    f"section `{slug}` is not marked as an array in SHARED_SECTIONS"
                 )
 
     consumed: set[str] = set()
     for item in eventsub["subscriptions"]:
-        key = (item["subscription_type"], item["version"])
-        override = EVENT_SECTION_OVERRIDES.get(key)
-        candidates = (
-            [override]
-            if override
-            else eventsub_section_candidates(item["name"], item["version"])
-        )
-        slug = next((candidate for candidate in candidates if candidate in sections), None)
+        slug = item.get("event_section")
         fields = section_fields(slug) if slug else None
         if fields is None:
-            warnings.append(
-                f"{item['id']}: no event section found (tried {', '.join(candidates)})"
-            )
+            where = f"`{slug}` has no table" if slug else "types page has no `event` link"
+            warnings.append(f"{item['id']}: no event section found ({where})")
             item["event"] = None
             continue
         consumed.add(slug)
@@ -649,11 +651,13 @@ def attach_eventsub_events(
     return shared_used
 
 
-def build_summary(helix: dict[str, Any], eventsub: dict[str, Any], auth: dict[str, Any]) -> dict[str, Any]:
+def build_summary(
+    helix: dict[str, Any], eventsub: dict[str, Any], auth: dict[str, Any], *, generated_at: str
+) -> dict[str, Any]:
     helix_endpoints = helix["endpoints"]
     eventsub_subscriptions = eventsub["subscriptions"]
     return {
-        "generated_at": now_iso(),
+        "generated_at": generated_at,
         "sources": SOURCE_URLS,
         "counts": {
             "helix_total": len(helix_endpoints),
@@ -845,6 +849,25 @@ def render_struct_tree(
         )
 
 
+def response_struct_name(endpoint: dict[str, Any]) -> str:
+    return camel_case(endpoint["name"]) + "Response"
+
+
+def render_parse_impl(response_name: str, expected_status: int, body: list[str]) -> list[str]:
+    return [
+        f"    impl {response_name} {{",
+        f"        pub const EXPECTED_STATUS: u16 = {expected_status};",
+        "",
+        "        pub fn parse(",
+        "            response: crate::helix::RawResponse,",
+        "        ) -> Result<Self, crate::helix::HelixError> {",
+        *[f"            {line}" for line in body],
+        "        }",
+        "    }",
+        "",
+    ]
+
+
 def helix_field_attr(rename: str | None) -> list[str]:
     if rename is not None:
         return [f"#[serde(default, rename = {rust_string(rename)})]"]
@@ -858,7 +881,7 @@ def render_response_types(endpoint: dict[str, Any]) -> list[str]:
     the caller falls back to the untyped alias.
     """
     base = camel_case(endpoint["name"])
-    response_name = f"{base}Response"
+    response_name = response_struct_name(endpoint)
     rendered: list[str] = []
 
     def special_field(field: dict[str, Any], is_root: bool) -> str | None:
@@ -888,41 +911,32 @@ def render_response_types(endpoint: dict[str, Any]) -> list[str]:
         child_namer=child_namer,
     )
 
-    rendered.append(f"    impl {response_name} {{")
-    rendered.append(f"        pub const EXPECTED_STATUS: u16 = {endpoint['expected_status']};")
-    rendered.append("")
-    rendered.append("        pub fn parse(")
-    rendered.append("            response: crate::helix::RawResponse,")
-    rendered.append("        ) -> Result<Self, crate::helix::HelixError> {")
-    rendered.append(
-        "            crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)"
+    rendered.extend(
+        render_parse_impl(
+            response_name,
+            endpoint["expected_status"],
+            ["crate::helix::parse_typed_response(response, Self::EXPECTED_STATUS)"],
+        )
     )
-    rendered.append("        }")
-    rendered.append("    }")
-    rendered.append("")
     return rendered
 
 
 def render_unit_response(endpoint: dict[str, Any]) -> list[str]:
-    base = camel_case(endpoint["name"])
-    response_name = f"{base}Response"
+    response_name = response_struct_name(endpoint)
     return [
         f"    /// Response for the \"{endpoint['name']}\" endpoint "
         f"(expects HTTP {endpoint['expected_status']} with an empty body).",
         "    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]",
         f"    pub struct {response_name};",
         "",
-        f"    impl {response_name} {{",
-        f"        pub const EXPECTED_STATUS: u16 = {endpoint['expected_status']};",
-        "",
-        "        pub fn parse(",
-        "            response: crate::helix::RawResponse,",
-        "        ) -> Result<Self, crate::helix::HelixError> {",
-        "            crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;",
-        "            Ok(Self)",
-        "        }",
-        "    }",
-        "",
+        *render_parse_impl(
+            response_name,
+            endpoint["expected_status"],
+            [
+                "crate::helix::parse_empty_response(response, Self::EXPECTED_STATUS)?;",
+                "Ok(Self)",
+            ],
+        ),
     ]
 
 
@@ -990,9 +1004,8 @@ def render_helix_rust(helix: dict[str, Any]) -> str:
             out.append("")
             response = endpoint.get("response")
             if response is None:
-                response_name = camel_case(endpoint["name"]) + "Response"
                 out.append(
-                    f"    pub type {response_name} = crate::helix::HelixJsonResponse;"
+                    f"    pub type {response_struct_name(endpoint)} = crate::helix::HelixJsonResponse;"
                 )
                 out.append("")
             elif not response["fields"]:
@@ -1017,8 +1030,7 @@ EVENTSUB_STRUCT_SEED = {
     "GenericEventSubPayload",
     "KnownEventSubPayload",
     "EventSubSubscriptionDefinition",
-    "EventSubChatMessage",
-    "EventSubChatMessageDeleted",
+    *HANDWRITTEN_EVENTS.values(),
 }
 
 EVENT_SOURCE_TIMESTAMP_LINES = (
@@ -1041,12 +1053,11 @@ def eventsub_ref_struct(field: dict[str, Any]) -> str | None:
     ref = field.get("ref")
     if ref is None:
         return None
-    shared = SHARED_STRUCT_NAMES.get(ref)
-    if shared is None:
+    section = SHARED_SECTIONS.get(ref)
+    if section is None:
         raise ResponseRenderError(f"no shared struct name for section `{ref}`")
-    if field["type"].strip().lower().endswith("[]"):
-        return f"Vec<{shared}>"
-    return shared
+    struct_name, is_array = section
+    return f"Vec<{struct_name}>" if is_array else struct_name
 
 
 def eventsub_variant(item: dict[str, Any]) -> str:
@@ -1060,9 +1071,10 @@ def render_shared_event_structs(
 ) -> list[str]:
     rendered: list[str] = []
     for slug in sorted(shared_objects):
-        struct_name = SHARED_STRUCT_NAMES.get(slug)
-        if struct_name is None:
+        section = SHARED_SECTIONS.get(slug)
+        if section is None:
             raise ResponseRenderError(f"no shared struct name for section `{slug}`")
+        struct_name = section[0]
         render_struct_tree(
             rendered,
             struct_names,
@@ -1153,33 +1165,18 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
         subscription_type = item["subscription_type"]
         version = item["version"]
         description = item["description"].replace("\n", " ")
-        key = (subscription_type, version)
-        handwritten = key in HANDWRITTEN_EVENTS
-        typed = item["event"] is not None and not handwritten
-
-        if subscription_type == "channel.chat.message" and version == "1":
-            variants.append((variant, description, "EventSubChatMessage"))
-            payload_type = "EventSubChatMessage"
-        elif subscription_type == "channel.chat.message_delete" and version == "1":
-            variants.append((variant, description, "EventSubChatMessageDeleted"))
-            payload_type = "EventSubChatMessageDeleted"
-        elif typed:
-            variants.append((variant, description, f"{variant}Event"))
+        payload_type = HANDWRITTEN_EVENTS.get((subscription_type, version))
+        if payload_type is None and item["event"] is not None:
             payload_type = f"{variant}Event"
             typed_blocks.extend(render_event_struct(item, set(base_names)))
-        else:
-            variants.append((variant, description, "GenericEventSubPayload"))
-            payload_type = None
-            aliases.append((f"{variant}Event", stability))
+        elif payload_type is None:
+            payload_type = "GenericEventSubPayload"
+            aliases.append(f"{variant}Event")
 
-        if payload_type is not None:
-            match_arms.append(
-                f'        ({rust_string(subscription_type)}, Some({rust_string(version)})) => decode_typed_event::<{payload_type}>(event, source_timestamp).map(KnownEventSubPayload::{variant}),'
-            )
-        else:
-            match_arms.append(
-                f'        ({rust_string(subscription_type)}, Some({rust_string(version)})) => decode_generic_event(event, source_timestamp).map(KnownEventSubPayload::{variant}),'
-            )
+        variants.append((variant, description, payload_type))
+        match_arms.append(
+            f'        ({rust_string(subscription_type)}, Some({rust_string(version)})) => decode_typed_event::<{payload_type}>(event, source_timestamp).map(KnownEventSubPayload::{variant}),'
+        )
         all_entries.append(
             "    EventSubSubscriptionDefinition { "
             + f"id: {rust_string(item['id'])}, "
@@ -1199,10 +1196,10 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
     out.append("use serde::{Deserialize, Serialize};")
     out.append("use time::OffsetDateTime;")
     out.append("")
-    out.append("use super::{")
-    out.append("    EndpointStability, EventSubChatMessage, EventSubChatMessageDeleted,")
-    out.append("    EventSubSubscriptionDefinition,")
-    out.append("};")
+    handwritten = ", ".join(sorted(set(HANDWRITTEN_EVENTS.values())))
+    out.append(
+        f"use super::{{EndpointStability, EventSubSubscriptionDefinition, {handwritten}}};"
+    )
     out.append("")
     out.append("#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]")
     out.append("pub struct GenericEventSubPayload {")
@@ -1212,9 +1209,15 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
     out.append("    pub source_timestamp: Option<OffsetDateTime>,")
     out.append("}")
     out.append("")
+    out.append("impl super::HasSourceTimestamp for GenericEventSubPayload {")
+    out.append("    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {")
+    out.append("        self.source_timestamp = source_timestamp;")
+    out.append("    }")
+    out.append("}")
+    out.append("")
     out.extend(shared_blocks)
     out.extend(typed_blocks)
-    for alias, _ in aliases:
+    for alias in aliases:
         out.append(f"pub type {alias} = GenericEventSubPayload;")
     out.append("")
     out.append("#[allow(clippy::large_enum_variant)]")
@@ -1232,7 +1235,7 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
     out.append("pub(crate) fn decode_known_payload(")
     out.append("    subscription_type: &str,")
     out.append("    version: Option<&str>,")
-    out.append("    event: Option<serde_json::Value>,")
+    out.append("    event: Option<&serde_json::Value>,")
     out.append("    source_timestamp: Option<OffsetDateTime>,")
     out.append(") -> Option<KnownEventSubPayload> {")
     out.append("    match (subscription_type, version) {")
@@ -1241,21 +1244,13 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
     out.append("    }")
     out.append("}")
     out.append("")
-    out.append("fn decode_typed_event<T: serde::de::DeserializeOwned + super::HasSourceTimestamp>(")
-    out.append("    event: Option<serde_json::Value>,")
+    out.append("/// Decodes an event payload by reference and stamps the envelope timestamp on it.")
+    out.append("pub(super) fn decode_typed_event<T: serde::de::DeserializeOwned + super::HasSourceTimestamp>(")
+    out.append("    event: Option<&serde_json::Value>,")
     out.append("    source_timestamp: Option<OffsetDateTime>,")
     out.append(") -> Option<T> {")
-    out.append("    let mut payload: T = serde_json::from_value(event?).ok()?;")
+    out.append("    let mut payload: T = T::deserialize(event?).ok()?;")
     out.append("    payload.set_source_timestamp(source_timestamp);")
-    out.append("    Some(payload)")
-    out.append("}")
-    out.append("")
-    out.append("fn decode_generic_event(")
-    out.append("    event: Option<serde_json::Value>,")
-    out.append("    source_timestamp: Option<OffsetDateTime>,")
-    out.append(") -> Option<GenericEventSubPayload> {")
-    out.append("    let mut payload: GenericEventSubPayload = serde_json::from_value(event?).ok()?;")
-    out.append("    payload.source_timestamp = source_timestamp;")
     out.append("    Some(payload)")
     out.append("}")
     out.append("")
@@ -1272,17 +1267,18 @@ def build_command(args: argparse.Namespace) -> int:
     eventsub_html = pathlib.Path(args.eventsub_html).read_text()
     eventsub_reference_html = pathlib.Path(args.eventsub_reference_html).read_text()
     warnings: list[str] = []
-    helix = parse_helix(reference_html, warnings)
+    generated_at = now_iso()
+    helix = parse_helix(reference_html, warnings, generated_at=generated_at)
     validate_responses(helix, warnings)
-    eventsub = parse_eventsub(eventsub_html)
+    eventsub = parse_eventsub(eventsub_html, generated_at=generated_at)
     attach_eventsub_events(eventsub, eventsub_reference_html, warnings)
     validate_events(eventsub, warnings)
     auth = {
-        "generated_at": now_iso(),
+        "generated_at": generated_at,
         "source_urls": SOURCE_URLS,
         **AUTH_SURFACE,
     }
-    summary = build_summary(helix, eventsub, auth)
+    summary = build_summary(helix, eventsub, auth, generated_at=generated_at)
 
     catalog_dir = pathlib.Path(args.catalog_dir)
     write_json(catalog_dir / "helix.json", helix)
@@ -1326,9 +1322,7 @@ def build_command(args: argparse.Namespace) -> int:
                     for endpoint in helix["endpoints"]
                     if endpoint["response"] is None
                 ],
-                "eventsub_typed": sum(
-                    1 for item in eventsub["subscriptions"] if item["event"] is not None
-                ),
+                "eventsub_typed": summary["counts"]["eventsub_typed_events"],
                 "eventsub_untyped": [
                     item["id"]
                     for item in eventsub["subscriptions"]
@@ -1345,10 +1339,8 @@ def build_command(args: argparse.Namespace) -> int:
 
 def load_catalog_dir(path: pathlib.Path) -> dict[str, Any]:
     return {
-        "helix": json.loads((path / "helix.json").read_text()),
-        "eventsub": json.loads((path / "eventsub.json").read_text()),
-        "auth": json.loads((path / "auth.json").read_text()),
-        "summary": json.loads((path / "summary.json").read_text()),
+        name: json.loads((path / f"{name}.json").read_text())
+        for name in ("helix", "eventsub", "auth", "summary")
     }
 
 
@@ -1376,10 +1368,11 @@ def diff_catalogs(old: dict[str, Any], new: dict[str, Any]) -> tuple[str, int]:
         new_by_id = {item["id"]: item for item in new_items}
         added = sorted(set(new_by_id) - set(old_by_id))
         removed = sorted(set(old_by_id) - set(new_by_id))
-        changed = []
-        for item_id in sorted(set(old_by_id) & set(new_by_id)):
-            if old_by_id[item_id] != new_by_id[item_id]:
-                changed.append(item_id)
+        changed = [
+            item_id
+            for item_id in sorted(set(old_by_id) & set(new_by_id))
+            if old_by_id[item_id] != new_by_id[item_id]
+        ]
 
         lines.append(f"## {kind}")
         lines.append("")

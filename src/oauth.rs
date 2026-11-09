@@ -7,7 +7,9 @@ use time::Duration as TimeDuration;
 use time::OffsetDateTime;
 
 use crate::TwitchIdentity;
-use crate::http::{HttpMethod, PreparedRequest, append_query_params, form_post_request};
+use crate::http::{
+    HttpMethod, PreparedRequest, PreparedRequestBuilder, append_query_params, form_post_request,
+};
 use crate::signing::{self, SigningError};
 
 const TOKEN_REFRESH_SKEW_MS: i64 = 5 * 60 * 1_000;
@@ -80,27 +82,36 @@ pub struct TwitchDeviceAuthorization {
     pub(crate) device_code: String,
 }
 
+/// Body of a successful device-code authorization response.
+#[cfg(feature = "reqwest-client")]
+#[derive(Debug, Deserialize)]
+pub(crate) struct DeviceCodeResponse {
+    device_code: String,
+    user_code: String,
+    verification_uri: String,
+    #[serde(default)]
+    verification_uri_complete: Option<String>,
+    expires_in: u64,
+    #[serde(default)]
+    interval: Option<u64>,
+}
+
 impl TwitchDeviceAuthorization {
     #[cfg(feature = "reqwest-client")]
-    pub(crate) fn new(
-        user_code: String,
-        verification_uri: String,
-        verification_uri_complete: Option<String>,
-        expires_in_seconds: u64,
-        interval_seconds: Option<u64>,
-        device_code: String,
+    pub(crate) fn from_response(
+        response: DeviceCodeResponse,
         now: OffsetDateTime,
     ) -> Result<Self, SigningError> {
         let expires_at = now
-            .checked_add(TimeDuration::seconds(expires_in_seconds as i64))
+            .checked_add(TimeDuration::seconds(response.expires_in as i64))
             .ok_or(SigningError::MalformedToken)?;
         Ok(Self {
-            user_code,
-            verification_uri,
-            verification_uri_complete,
+            user_code: response.user_code,
+            verification_uri: response.verification_uri,
+            verification_uri_complete: response.verification_uri_complete,
             expires_at,
-            interval: Duration::from_secs(interval_seconds.unwrap_or(DEFAULT_POLL_INTERVAL_SECS)),
-            device_code,
+            interval: Duration::from_secs(response.interval.unwrap_or(DEFAULT_POLL_INTERVAL_SECS)),
+            device_code: response.device_code,
         })
     }
 }
@@ -163,25 +174,6 @@ pub fn should_refresh_twitch_token(tokens: &TwitchTokenState, now_ms: i64) -> bo
         .is_some_and(|expires_at_ms| now_ms >= expires_at_ms - TOKEN_REFRESH_SKEW_MS)
 }
 
-pub fn refreshed_twitch_token_state(
-    previous: &TwitchTokenState,
-    access_token: String,
-    refresh_token: Option<String>,
-    expires_in_seconds: Option<u32>,
-    scope: Option<Vec<String>>,
-    token_type: Option<String>,
-    now_ms: i64,
-) -> TwitchTokenState {
-    TwitchTokenState {
-        access_token,
-        refresh_token: refresh_token.unwrap_or_else(|| previous.refresh_token.clone()),
-        expires_in_seconds,
-        scope: scope.unwrap_or_else(|| previous.scope.clone()),
-        token_type: token_type.unwrap_or_else(|| previous.token_type.clone()),
-        linked_at_ms: now_ms,
-    }
-}
-
 pub fn device_code_request(client_id: &str, scopes: &[String]) -> PreparedRequest {
     let scope_string = normalize_scopes(scopes, &[]);
     device_code_request_with_scope(client_id, &scope_string)
@@ -217,12 +209,9 @@ pub fn refresh_token_request(client_id: &str, refresh_token: &str) -> PreparedRe
 }
 
 pub fn validate_token_request(access_token: &str) -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_VALIDATE_URL.to_string(),
-        method: HttpMethod::Get,
-        headers: vec![("Authorization".to_string(), format!("OAuth {access_token}"))],
-        body: None,
-    }
+    PreparedRequestBuilder::new(HttpMethod::Get, TWITCH_VALIDATE_URL)
+        .header("Authorization", format!("OAuth {access_token}"))
+        .build()
 }
 
 pub fn client_credentials_request(client_id: &str, client_secret: &str) -> PreparedRequest {
@@ -244,33 +233,17 @@ pub fn revoke_token_request(client_id: &str, token: &str) -> PreparedRequest {
 }
 
 pub fn openid_configuration_request() -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_OPENID_CONFIGURATION_URL.to_string(),
-        method: HttpMethod::Get,
-        headers: vec![],
-        body: None,
-    }
+    PreparedRequestBuilder::new(HttpMethod::Get, TWITCH_OPENID_CONFIGURATION_URL).build()
 }
 
 pub fn openid_jwks_request() -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_OPENID_JWKS_URL.to_string(),
-        method: HttpMethod::Get,
-        headers: vec![],
-        body: None,
-    }
+    PreparedRequestBuilder::new(HttpMethod::Get, TWITCH_OPENID_JWKS_URL).build()
 }
 
 pub fn openid_userinfo_request(access_token: &str) -> PreparedRequest {
-    PreparedRequest {
-        url: TWITCH_USERINFO_URL.to_string(),
-        method: HttpMethod::Get,
-        headers: vec![(
-            "Authorization".to_string(),
-            format!("Bearer {access_token}"),
-        )],
-        body: None,
-    }
+    PreparedRequestBuilder::new(HttpMethod::Get, TWITCH_USERINFO_URL)
+        .header("Authorization", format!("Bearer {access_token}"))
+        .build()
 }
 
 /// Trait for OAuth state payloads that carry an expiration timestamp.
@@ -357,10 +330,7 @@ pub(crate) fn normalize_scopes(overrides: &[String], defaults: &[String]) -> Str
 }
 
 pub fn token_validation_due(last_validated_at_ms: Option<i64>, now_ms: i64) -> bool {
-    match last_validated_at_ms {
-        Some(last_validated_at_ms) => now_ms - last_validated_at_ms >= 60 * 60 * 1_000,
-        None => true,
-    }
+    last_validated_at_ms.is_none_or(|last| now_ms - last >= 60 * 60 * 1_000)
 }
 
 pub fn sign_extension_jwt<T: Serialize>(secret: &[u8], claims: &T) -> Result<String, SigningError> {
@@ -445,30 +415,15 @@ mod tests {
     }
 
     #[test]
-    fn refreshed_token_state_preserves_previous_refresh_token_when_omitted() {
-        let previous = TwitchTokenState {
-            access_token: "old-access".to_string(),
-            refresh_token: "old-refresh".to_string(),
-            expires_in_seconds: Some(3_600),
-            scope: vec!["user:read:chat".to_string()],
-            token_type: "bearer".to_string(),
-            linked_at_ms: 1_741_515_200_000,
-        };
-
-        let refreshed = refreshed_twitch_token_state(
-            &previous,
-            "new-access".to_string(),
-            None,
-            Some(7_200),
-            None,
-            None,
-            1_741_515_300_000,
+    fn validate_request_is_a_get_with_oauth_header() {
+        let request = validate_token_request("tok");
+        assert_eq!(request.method, HttpMethod::Get);
+        assert_eq!(request.url, TWITCH_VALIDATE_URL);
+        assert_eq!(
+            request.headers,
+            vec![("Authorization".to_string(), "OAuth tok".to_string())]
         );
-
-        assert_eq!(refreshed.access_token, "new-access");
-        assert_eq!(refreshed.refresh_token, "old-refresh");
-        assert_eq!(refreshed.expires_in_seconds, Some(7_200));
-        assert_eq!(refreshed.scope, previous.scope);
+        assert_eq!(request.body, None);
     }
 
     #[test]

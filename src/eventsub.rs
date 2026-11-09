@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, HashSet, VecDeque};
 use std::sync::{Arc, Mutex};
 
 use serde::{Deserialize, Serialize};
@@ -216,14 +216,44 @@ pub trait EventSubReplayStore: Send + Sync {
     ) -> Result<bool, EventSubError>;
 }
 
-#[derive(Clone, Default)]
+/// Replay store that forgets message ids once they fall outside its retention
+/// window, so memory stays bounded on long-running webhook servers.
+#[derive(Clone)]
 pub struct InMemoryEventSubReplayStore {
-    seen: Arc<Mutex<BTreeSet<String>>>,
+    state: Arc<Mutex<ReplayState>>,
+    retention: Duration,
+}
+
+#[derive(Default)]
+struct ReplayState {
+    seen: HashSet<String>,
+    /// Ids in arrival order with their `seen_at`; expired ids leave from the front.
+    order: VecDeque<(OffsetDateTime, String)>,
+}
+
+impl Default for InMemoryEventSubReplayStore {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl InMemoryEventSubReplayStore {
+    /// Twitch tells receivers to reject notifications older than ten minutes,
+    /// so ids are remembered for that long by default.
+    pub const DEFAULT_RETENTION: Duration = Duration::minutes(10);
+
     pub fn new() -> Self {
-        Self::default()
+        Self::with_retention(Self::DEFAULT_RETENTION)
+    }
+
+    /// `retention` must be at least the `max_age` given to
+    /// [`verify_and_decode_webhook_message`]; a replay older than the retention
+    /// window but still within `max_age` would otherwise pass.
+    pub fn with_retention(retention: Duration) -> Self {
+        Self {
+            state: Arc::new(Mutex::new(ReplayState::default())),
+            retention,
+        }
     }
 }
 
@@ -231,13 +261,25 @@ impl EventSubReplayStore for InMemoryEventSubReplayStore {
     fn remember_message(
         &self,
         message_id: &str,
-        _seen_at: OffsetDateTime,
+        seen_at: OffsetDateTime,
     ) -> Result<bool, EventSubError> {
-        let mut seen = self
-            .seen
+        let mut state = self
+            .state
             .lock()
             .expect("in-memory EventSub replay store lock poisoned");
-        Ok(seen.insert(message_id.to_string()))
+        if let Some(cutoff) = seen_at.checked_sub(self.retention) {
+            while let Some((at, _)) = state.order.front()
+                && *at < cutoff
+            {
+                let (_, expired) = state.order.pop_front().expect("front was just observed");
+                state.seen.remove(&expired);
+            }
+        }
+        if !state.seen.insert(message_id.to_string()) {
+            return Ok(false);
+        }
+        state.order.push_back((seen_at, message_id.to_string()));
+        Ok(true)
     }
 }
 
@@ -259,6 +301,8 @@ pub struct EventSubCheermote {
     #[serde(default)]
     pub prefix: String,
     pub bits: u64,
+    #[serde(default)]
+    pub tier: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -266,6 +310,17 @@ pub struct EventSubMessageMention {
     pub user_id: String,
     pub user_name: String,
     pub user_login: String,
+}
+
+/// Metadata of a `gif` message fragment.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EventSubMessageGif {
+    /// The reference table names this `id` while the change log announced it
+    /// as `gif_id`; both spellings decode.
+    #[serde(alias = "gif_id")]
+    pub id: String,
+    /// Full asset URL; Twitch requires it to be used unmodified.
+    pub url: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -285,56 +340,55 @@ pub struct EventSubMessageEmote {
 
 impl EventSubMessageEmote {
     pub fn to_emote(&self, code: impl Into<String>) -> Emote {
-        let formats: Vec<EmoteImageFormat> = if self.format.is_empty() {
-            vec![EmoteImageFormat::Static]
-        } else {
-            self.format
-                .iter()
-                .map(|value| EmoteImageFormat::parse(value))
-                .collect()
-        };
-        let themes: Vec<EmoteThemeMode> = if self.theme_modes.is_empty() {
-            vec![EmoteThemeMode::Light, EmoteThemeMode::Dark]
-        } else {
-            self.theme_modes
-                .iter()
-                .map(|value| EmoteThemeMode::parse(value))
-                .collect()
-        };
-        let scales: Vec<EmoteImageScale> = if self.scale.is_empty() {
-            vec![EmoteImageScale::One]
-        } else {
-            self.scale
-                .iter()
-                .map(|value| EmoteImageScale::parse(value))
-                .collect()
-        };
+        let formats = parse_or(
+            &self.format,
+            &[EmoteImageFormat::Static],
+            EmoteImageFormat::parse,
+        );
+        let themes = parse_or(
+            &self.theme_modes,
+            &[EmoteThemeMode::Light, EmoteThemeMode::Dark],
+            EmoteThemeMode::parse,
+        );
+        let scales = parse_or(&self.scale, &[EmoteImageScale::One], EmoteImageScale::parse);
+        let (themes, scales) = (&themes, &scales);
 
-        let mut images = Vec::new();
-        for format in &formats {
-            for theme in &themes {
-                for scale in &scales {
-                    images.push(EmoteImage {
-                        format: format.clone(),
-                        theme_mode: theme.clone(),
-                        scale: scale.clone(),
-                        url: format!(
-                            "https://static-cdn.jtvnw.net/emoticons/v2/{}/{}/{}/{}",
-                            self.id,
-                            format.as_str(),
-                            theme.as_str(),
-                            scale.as_str()
-                        ),
-                    });
-                }
-            }
-        }
+        let images = formats
+            .iter()
+            .flat_map(|format| {
+                themes.iter().flat_map(move |theme| {
+                    scales.iter().map(move |scale| {
+                        EmoteImage::new(
+                            format.clone(),
+                            scale.clone(),
+                            format!(
+                                "https://static-cdn.jtvnw.net/emoticons/v2/{}/{}/{}/{}",
+                                self.id,
+                                format.as_str(),
+                                theme.as_str(),
+                                scale.as_str()
+                            ),
+                        )
+                        .with_theme(theme.clone())
+                    })
+                })
+            })
+            .collect();
 
         Emote::new(
             EmoteId::new(EmoteProvider::Twitch, self.id.clone()),
             code,
             images,
         )
+    }
+}
+
+/// Parses each value, or returns `default` when Twitch omitted the list.
+fn parse_or<T: Clone>(values: &[String], default: &[T], parse: fn(&str) -> T) -> Vec<T> {
+    if values.is_empty() {
+        default.to_vec()
+    } else {
+        values.iter().map(|value| parse(value)).collect()
     }
 }
 
@@ -345,6 +399,9 @@ pub enum EventSubMessageFragmentType {
     Emote,
     Mention,
     Cheermote,
+    Gif,
+    /// Any fragment type this crate does not know yet.
+    #[serde(other)]
     Unknown,
 }
 
@@ -359,6 +416,8 @@ pub struct EventSubMessageFragment {
     pub mention: Option<EventSubMessageMention>,
     #[serde(default)]
     pub cheermote: Option<EventSubCheermote>,
+    #[serde(default)]
+    pub gif: Option<EventSubMessageGif>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -366,6 +425,45 @@ pub struct EventSubChatMessageText {
     pub text: String,
     #[serde(default)]
     pub fragments: Vec<EventSubMessageFragment>,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EventSubChatMessageType {
+    #[default]
+    Text,
+    ChannelPointsHighlighted,
+    ChannelPointsSubOnly,
+    UserIntro,
+    PowerUpsMessageEffect,
+    PowerUpsGigantifiedEmote,
+    /// Any message type this crate does not know yet.
+    #[serde(other)]
+    Unknown,
+}
+
+/// Reply metadata of a chat message; present only when the message replies to
+/// another one.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EventSubChatReply {
+    #[serde(default)]
+    pub parent_message_id: String,
+    #[serde(default)]
+    pub parent_message_body: String,
+    #[serde(default)]
+    pub parent_user_id: String,
+    #[serde(default)]
+    pub parent_user_name: String,
+    #[serde(default)]
+    pub parent_user_login: String,
+    #[serde(default)]
+    pub thread_message_id: String,
+    #[serde(default)]
+    pub thread_user_id: String,
+    #[serde(default)]
+    pub thread_user_name: String,
+    #[serde(default)]
+    pub thread_user_login: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -386,11 +484,32 @@ pub struct EventSubChatMessage {
     pub message_id: String,
     pub message: EventSubChatMessageText,
     #[serde(default)]
+    pub message_type: EventSubChatMessageType,
+    #[serde(default)]
     pub cheer: Option<EventSubCheer>,
     #[serde(default)]
     pub badges: Vec<EventSubChatBadge>,
     #[serde(default)]
     pub color: Option<String>,
+    #[serde(default)]
+    pub reply: Option<EventSubChatReply>,
+    #[serde(default)]
+    pub channel_points_custom_reward_id: Option<String>,
+    /// Shared chat only: the channel the message was sent from when it is not
+    /// the broadcaster's own. The `source_*` fields are `None` otherwise.
+    #[serde(default)]
+    pub source_broadcaster_user_id: Option<String>,
+    #[serde(default)]
+    pub source_broadcaster_user_login: Option<String>,
+    #[serde(default)]
+    pub source_broadcaster_user_name: Option<String>,
+    #[serde(default)]
+    pub source_message_id: Option<String>,
+    /// Twitch sends `null` outside shared chat; that decodes as an empty list.
+    #[serde(default, deserialize_with = "null_default")]
+    pub source_badges: Vec<EventSubChatBadge>,
+    #[serde(default)]
+    pub is_source_only: Option<bool>,
     #[serde(default, with = "time::serde::rfc3339::option")]
     pub source_timestamp: Option<OffsetDateTime>,
 }
@@ -400,7 +519,15 @@ pub struct EventSubChatMessageDeleted {
     #[serde(default)]
     pub broadcaster_user_id: String,
     #[serde(default)]
+    pub broadcaster_user_login: String,
+    #[serde(default)]
+    pub broadcaster_user_name: String,
+    #[serde(default)]
     pub target_user_id: Option<String>,
+    #[serde(default)]
+    pub target_user_login: Option<String>,
+    #[serde(default)]
+    pub target_user_name: Option<String>,
     #[serde(default)]
     pub message_id: String,
     #[serde(default, with = "time::serde::rfc3339::option")]
@@ -492,9 +619,7 @@ impl EventSubWebSocketEnvelope {
     }
 
     fn deserialize_event<T: serde::de::DeserializeOwned + HasSourceTimestamp>(&self) -> Option<T> {
-        let mut value: T = T::deserialize(self.payload.event.as_ref()?).ok()?;
-        value.set_source_timestamp(self.message_timestamp());
-        Some(value)
+        generated::decode_typed_event(self.payload.event.as_ref(), self.message_timestamp())
     }
 
     fn subscription_type_str(&self) -> Option<&str> {
@@ -509,7 +634,7 @@ impl EventSubWebSocketEnvelope {
             self.subscription()
                 .and_then(|subscription| subscription.version.as_deref())
                 .or(self.metadata.subscription_version.as_deref()),
-            self.payload.event.clone(),
+            self.payload.event.as_ref(),
             self.message_timestamp(),
         )
     }
@@ -561,7 +686,7 @@ impl EventSubWebhookEnvelope {
         generated::decode_known_payload(
             &self.subscription.subscription_type,
             self.subscription.version.as_deref(),
-            self.event.clone(),
+            self.event.as_ref(),
             source_timestamp,
         )
     }
@@ -713,9 +838,8 @@ fn channel_chat_subscription_request(
         version: "1".to_string(),
         condition: EventSubCondition {
             broadcaster_user_id: Some(broadcaster_user_id.to_string()),
-            moderator_user_id: None,
             user_id: Some(user_id.to_string()),
-            extra: BTreeMap::new(),
+            ..Default::default()
         },
         transport: EventSubTransport::websocket(session_id.to_string()),
     }
@@ -774,8 +898,15 @@ pub fn webhook_timestamp_is_fresh(
     now: OffsetDateTime,
     max_age: Duration,
 ) -> Result<bool, EventSubError> {
-    let timestamp = headers.message_timestamp()?;
-    Ok(now >= timestamp && now - timestamp <= max_age)
+    Ok(timestamp_is_fresh(
+        headers.message_timestamp()?,
+        now,
+        max_age,
+    ))
+}
+
+fn timestamp_is_fresh(timestamp: OffsetDateTime, now: OffsetDateTime, max_age: Duration) -> bool {
+    now >= timestamp && now - timestamp <= max_age
 }
 
 pub fn verify_and_decode_webhook_message(
@@ -789,15 +920,14 @@ pub fn verify_and_decode_webhook_message(
     if !verify_webhook_signature(secret, headers, raw_body) {
         return Err(EventSubError::InvalidWebhookSignature);
     }
-    if !webhook_timestamp_is_fresh(headers, now, max_age)? {
+    let timestamp = headers.message_timestamp()?;
+    if !timestamp_is_fresh(timestamp, now, max_age) {
         return Err(EventSubError::StaleWebhookTimestamp);
     }
-    if let Some(replay_store) = replay_store {
-        let is_new =
-            replay_store.remember_message(&headers.message_id, headers.message_timestamp()?)?;
-        if !is_new {
-            return Err(EventSubError::DuplicateWebhookMessage);
-        }
+    if let Some(replay_store) = replay_store
+        && !replay_store.remember_message(&headers.message_id, timestamp)?
+    {
+        return Err(EventSubError::DuplicateWebhookMessage);
     }
     decode_eventsub_webhook_message(raw_body)
 }
@@ -922,6 +1052,24 @@ mod tests {
             EventSubWebhookMessageType::Notification
         );
         assert_eq!(headers.subscription_type.as_deref(), Some("channel.follow"));
+    }
+
+    #[test]
+    fn replay_store_forgets_ids_past_retention() {
+        let store = InMemoryEventSubReplayStore::with_retention(Duration::minutes(1));
+        let start = OffsetDateTime::from_unix_timestamp(1_700_000_000).expect("valid timestamp");
+        let remember = |id: &str, at: OffsetDateTime| {
+            store
+                .remember_message(id, at)
+                .expect("in-memory store should not fail")
+        };
+
+        assert!(remember("a", start));
+        assert!(!remember("a", start));
+        assert!(remember("b", start + Duration::seconds(30)));
+        // `a` is now older than the window and forgotten; `b` is still inside it.
+        assert!(remember("a", start + Duration::seconds(90)));
+        assert!(!remember("b", start + Duration::seconds(90)));
     }
 
     #[test]

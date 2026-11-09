@@ -1,22 +1,15 @@
-#[cfg(feature = "cloudflare-worker")]
+//! Compiled only with the `cloudflare-worker` feature (see `lib.rs`).
 use thiserror::Error;
-#[cfg(feature = "cloudflare-worker")]
 use wasm_bindgen::JsValue;
-#[cfg(feature = "cloudflare-worker")]
 use worker::{Fetch, Headers, Method, Request, RequestInit};
 
-#[cfg(feature = "cloudflare-worker")]
 use crate::eventsub::CreateEventSubSubscriptionRequest;
-#[cfg(feature = "cloudflare-worker")]
 use crate::helix::{
     self, HelixError, HttpMethod, PreparedRequest, RawResponse, TwitchTokenExchange,
 };
-#[cfg(feature = "cloudflare-worker")]
 use crate::http::{HttpResponse, ResponseHeader};
-#[cfg(feature = "cloudflare-worker")]
 use crate::oauth::TwitchAuthOutcome;
 
-#[cfg(feature = "cloudflare-worker")]
 #[derive(Debug, Error)]
 pub enum CloudflareWorkerError {
     #[error("cloudflare worker transport failed: {0}")]
@@ -26,7 +19,6 @@ pub enum CloudflareWorkerError {
 }
 
 /// Sends a [`PreparedRequest`] via the Cloudflare Workers `Fetch` API.
-#[cfg(feature = "cloudflare-worker")]
 pub async fn send_prepared_request(
     prepared: PreparedRequest,
 ) -> Result<RawResponse, worker::Error> {
@@ -36,7 +28,6 @@ pub async fn send_prepared_request(
 }
 
 /// Sends a [`PreparedRequest`] and includes response headers for pagination/rate-limit metadata.
-#[cfg(feature = "cloudflare-worker")]
 pub async fn send_prepared_request_with_metadata(
     prepared: PreparedRequest,
 ) -> Result<HttpResponse, worker::Error> {
@@ -71,7 +62,6 @@ pub async fn send_prepared_request_with_metadata(
 }
 
 /// Exchanges an OAuth authorization code for tokens and fetches the user identity.
-#[cfg(feature = "cloudflare-worker")]
 pub async fn exchange_twitch_code(
     client_id: &str,
     client_secret: &str,
@@ -95,7 +85,6 @@ pub async fn exchange_twitch_code(
 }
 
 /// Refreshes an access token using a refresh token.
-#[cfg(feature = "cloudflare-worker")]
 pub async fn refresh_access_token(
     client_id: &str,
     client_secret: &str,
@@ -111,32 +100,22 @@ pub async fn refresh_access_token(
 }
 
 /// Creates an EventSub subscription via the Helix API.
-#[cfg(feature = "cloudflare-worker")]
 pub async fn create_eventsub_subscription(
     client_id: &str,
     access_token: &str,
     subscription: &CreateEventSubSubscriptionRequest,
 ) -> Result<helix::eventsub_endpoints::CreateEventsubSubscriptionResponse, CloudflareWorkerError> {
-    if client_id.is_empty() || access_token.is_empty() {
-        return Err(HelixError::MissingCredentials.into());
-    }
-
     let req = helix::create_eventsub_subscription_request(client_id, access_token, subscription)?;
     let raw = send_prepared_request(req).await?;
     helix::parse_create_eventsub_subscription(raw).map_err(CloudflareWorkerError::from)
 }
 
 /// Lists EventSub subscriptions, optionally filtered by subscription type.
-#[cfg(feature = "cloudflare-worker")]
 pub async fn list_eventsub_subscriptions(
     client_id: &str,
     access_token: &str,
     subscription_type: Option<&str>,
 ) -> Result<helix::eventsub_endpoints::GetEventsubSubscriptionsResponse, CloudflareWorkerError> {
-    if client_id.is_empty() || access_token.is_empty() {
-        return Err(HelixError::MissingCredentials.into());
-    }
-
     let req =
         helix::list_eventsub_subscriptions_request(client_id, access_token, subscription_type)?;
     let raw = send_prepared_request(req).await?;
@@ -144,16 +123,11 @@ pub async fn list_eventsub_subscriptions(
 }
 
 /// Deletes an EventSub subscription by ID.
-#[cfg(feature = "cloudflare-worker")]
 pub async fn delete_eventsub_subscription(
     client_id: &str,
     access_token: &str,
     subscription_id: &str,
 ) -> Result<(), CloudflareWorkerError> {
-    if client_id.is_empty() || access_token.is_empty() {
-        return Err(HelixError::MissingCredentials.into());
-    }
-
     let req =
         helix::delete_eventsub_subscription_request(client_id, access_token, subscription_id)?;
     let raw = send_prepared_request(req).await?;

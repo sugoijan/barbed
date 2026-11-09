@@ -2,18 +2,10 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 use barbed_core::emotes::Emote;
-#[cfg(any(test, feature = "reqwest-client"))]
-use barbed_core::emotes::{
-    EmoteId, EmoteImage, EmoteImageFormat, EmoteImageScale, EmoteProvider, EmoteThemeMode,
-};
-#[cfg(any(test, feature = "reqwest-client"))]
-use serde::Deserialize;
 use thiserror::Error;
 
 #[cfg(feature = "reqwest-client")]
 const API_BASE: &str = "https://api.betterttv.net";
-#[cfg(any(test, feature = "reqwest-client"))]
-const CDN_BASE: &str = "https://cdn.betterttv.net/emote";
 
 #[derive(Debug, Error)]
 pub enum BttvError {
@@ -128,9 +120,19 @@ impl BttvClient {
     pub fn new() -> Result<Self, BttvError> {
         Ok(Self {
             http: reqwest::Client::builder()
-                .user_agent("barbed/0.0.2")
+                .user_agent(barbed_core::USER_AGENT)
                 .build()?,
         })
+    }
+
+    async fn fetch_text(&self, path: &str) -> Result<String, reqwest::Error> {
+        self.http
+            .get(format!("{API_BASE}{path}"))
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await
     }
 }
 
@@ -138,15 +140,7 @@ impl BttvClient {
 #[async_trait]
 impl BttvApi for BttvClient {
     async fn global_emotes(&self) -> Result<BttvEmoteSet, BttvError> {
-        let body = self
-            .http
-            .get(format!("{API_BASE}/3/cached/emotes/global"))
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await?;
-        parse_global_emotes_json(&body)
+        wire::parse_global_emotes_json(&self.fetch_text("/3/cached/emotes/global").await?)
     }
 
     async fn channel_emotes_by_twitch_id(
@@ -154,113 +148,109 @@ impl BttvApi for BttvClient {
         twitch_id: &str,
     ) -> Result<BttvChannelEmoteSets, BttvError> {
         let body = self
-            .http
-            .get(format!("{API_BASE}/3/cached/users/twitch/{twitch_id}"))
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
+            .fetch_text(&format!("/3/cached/users/twitch/{twitch_id}"))
             .await?;
-        parse_channel_emotes_json(twitch_id, &body)
+        wire::parse_channel_emotes_json(twitch_id, &body)
     }
 }
 
+/// BetterTTV wire models and their conversion into the shared emote types.
 #[cfg(any(test, feature = "reqwest-client"))]
-fn parse_global_emotes_json(body: &str) -> Result<BttvEmoteSet, BttvError> {
-    let models: Vec<EmoteModel> = serde_json::from_str(body)?;
-    Ok(BttvEmoteSet {
-        id: "global".to_string(),
-        name: "BetterTTV Global".to_string(),
-        emotes: models.into_iter().map(emote_from_model).collect(),
-    })
-}
+mod wire {
+    use barbed_core::emotes::{
+        Emote, EmoteId, EmoteImage, EmoteImageFormat, EmoteImageScale, EmoteProvider,
+    };
+    use serde::Deserialize;
 
-#[cfg(any(test, feature = "reqwest-client"))]
-fn parse_channel_emotes_json(
-    twitch_id: &str,
-    body: &str,
-) -> Result<BttvChannelEmoteSets, BttvError> {
-    let response: ChannelResponse = serde_json::from_str(body)?;
-    Ok(BttvChannelEmoteSets {
-        channel: (!response.channel_emotes.is_empty()).then(|| BttvEmoteSet {
-            id: format!("channel:{twitch_id}"),
-            name: "Channel Emotes".to_string(),
-            emotes: response
-                .channel_emotes
-                .into_iter()
-                .map(emote_from_model)
-                .collect(),
-        }),
-        shared: (!response.shared_emotes.is_empty()).then(|| BttvEmoteSet {
-            id: format!("shared:{twitch_id}"),
-            name: "Shared Emotes".to_string(),
-            emotes: response
-                .shared_emotes
-                .into_iter()
-                .map(emote_from_model)
-                .collect(),
-        }),
-    })
-}
+    use super::{BttvChannelEmoteSets, BttvEmoteSet, BttvError};
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct EmoteModel {
-    id: String,
-    code: String,
-    #[serde(rename = "imageType", default)]
-    image_type: String,
-    #[serde(default)]
-    animated: bool,
-}
+    const CDN_BASE: &str = "https://cdn.betterttv.net/emote";
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct ChannelResponse {
-    #[serde(rename = "channelEmotes", default)]
-    channel_emotes: Vec<EmoteModel>,
-    #[serde(rename = "sharedEmotes", default)]
-    shared_emotes: Vec<EmoteModel>,
-}
+    pub(super) fn parse_global_emotes_json(body: &str) -> Result<BttvEmoteSet, BttvError> {
+        let models: Vec<EmoteModel> = serde_json::from_str(body)?;
+        Ok(BttvEmoteSet {
+            id: "global".to_string(),
+            name: "BetterTTV Global".to_string(),
+            emotes: models.into_iter().map(emote_from_model).collect(),
+        })
+    }
 
-#[cfg(any(test, feature = "reqwest-client"))]
-fn emote_from_model(model: EmoteModel) -> Emote {
-    let is_animated = model.animated
-        || matches!(
-            model.image_type.to_ascii_lowercase().as_str(),
-            "gif" | "webm"
-        );
-    let format = EmoteImageFormat::from_animated(is_animated);
-    let images = vec![
-        EmoteImage {
-            format: format.clone(),
-            theme_mode: EmoteThemeMode::Light,
-            scale: EmoteImageScale::One,
-            url: format!("{CDN_BASE}/{}/1x", model.id),
-        },
-        EmoteImage {
-            format: format.clone(),
-            theme_mode: EmoteThemeMode::Light,
-            scale: EmoteImageScale::Two,
-            url: format!("{CDN_BASE}/{}/2x", model.id),
-        },
-        EmoteImage {
-            format,
-            theme_mode: EmoteThemeMode::Light,
-            scale: EmoteImageScale::Three,
-            url: format!("{CDN_BASE}/{}/3x", model.id),
-        },
-    ];
+    pub(super) fn parse_channel_emotes_json(
+        twitch_id: &str,
+        body: &str,
+    ) -> Result<BttvChannelEmoteSets, BttvError> {
+        let response: ChannelResponse = serde_json::from_str(body)?;
+        Ok(BttvChannelEmoteSets {
+            channel: (!response.channel_emotes.is_empty()).then(|| BttvEmoteSet {
+                id: format!("channel:{twitch_id}"),
+                name: "Channel Emotes".to_string(),
+                emotes: response
+                    .channel_emotes
+                    .into_iter()
+                    .map(emote_from_model)
+                    .collect(),
+            }),
+            shared: (!response.shared_emotes.is_empty()).then(|| BttvEmoteSet {
+                id: format!("shared:{twitch_id}"),
+                name: "Shared Emotes".to_string(),
+                emotes: response
+                    .shared_emotes
+                    .into_iter()
+                    .map(emote_from_model)
+                    .collect(),
+            }),
+        })
+    }
 
-    Emote::new(
-        EmoteId::new(EmoteProvider::BetterTtv, model.id),
-        model.code,
-        images,
-    )
+    #[derive(Deserialize)]
+    struct EmoteModel {
+        id: String,
+        code: String,
+        #[serde(rename = "imageType", default)]
+        image_type: String,
+        #[serde(default)]
+        animated: bool,
+    }
+
+    #[derive(Deserialize)]
+    struct ChannelResponse {
+        #[serde(rename = "channelEmotes", default)]
+        channel_emotes: Vec<EmoteModel>,
+        #[serde(rename = "sharedEmotes", default)]
+        shared_emotes: Vec<EmoteModel>,
+    }
+
+    fn emote_from_model(model: EmoteModel) -> Emote {
+        let is_animated = model.animated
+            || model.image_type.eq_ignore_ascii_case("gif")
+            || model.image_type.eq_ignore_ascii_case("webm");
+        let format = EmoteImageFormat::from_animated(is_animated);
+        let images = [
+            (EmoteImageScale::One, "1x"),
+            (EmoteImageScale::Two, "2x"),
+            (EmoteImageScale::Three, "3x"),
+        ]
+        .into_iter()
+        .map(|(scale, suffix)| {
+            EmoteImage::new(
+                format.clone(),
+                scale,
+                format!("{CDN_BASE}/{}/{suffix}", model.id),
+            )
+        })
+        .collect();
+
+        Emote::new(
+            EmoteId::new(EmoteProvider::BetterTtv, model.id),
+            model.code,
+            images,
+        )
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::wire::{parse_channel_emotes_json, parse_global_emotes_json};
     use super::*;
 
     #[test]

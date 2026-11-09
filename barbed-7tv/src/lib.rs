@@ -2,12 +2,6 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 use barbed_core::emotes::Emote;
-#[cfg(any(test, feature = "reqwest-client"))]
-use barbed_core::emotes::{
-    EmoteId, EmoteImage, EmoteImageFormat, EmoteImageScale, EmoteProvider, EmoteThemeMode,
-};
-#[cfg(any(test, feature = "reqwest-client"))]
-use serde::Deserialize;
 use thiserror::Error;
 
 #[cfg(feature = "reqwest-client")]
@@ -120,9 +114,19 @@ impl SevenTvClient {
     pub fn new() -> Result<Self, SevenTvError> {
         Ok(Self {
             http: reqwest::Client::builder()
-                .user_agent("barbed/0.0.2")
+                .user_agent(barbed_core::USER_AGENT)
                 .build()?,
         })
+    }
+
+    async fn fetch_text(&self, path: &str) -> Result<String, reqwest::Error> {
+        self.http
+            .get(format!("{API_BASE}{path}"))
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await
     }
 }
 
@@ -130,196 +134,166 @@ impl SevenTvClient {
 #[async_trait]
 impl SevenTvApi for SevenTvClient {
     async fn global_emote_set(&self) -> Result<SevenTvEmoteSet, SevenTvError> {
-        let body = self
-            .http
-            .get(format!("{API_BASE}/emote-sets/global"))
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await?;
-        parse_emote_set_json(&body)
+        wire::parse_emote_set_json(&self.fetch_text("/emote-sets/global").await?)
     }
 
     async fn user_by_twitch_id(&self, twitch_id: &str) -> Result<SevenTvUser, SevenTvError> {
-        let body = self
-            .http
-            .get(format!("{API_BASE}/users/twitch/{twitch_id}"))
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await?;
-        parse_user_json(&body)
+        wire::parse_user_json(
+            &self
+                .fetch_text(&format!("/users/twitch/{twitch_id}"))
+                .await?,
+        )
     }
 
     async fn emote_set(&self, set_id: &str) -> Result<SevenTvEmoteSet, SevenTvError> {
-        let body = self
-            .http
-            .get(format!("{API_BASE}/emote-sets/{set_id}"))
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await?;
-        parse_emote_set_json(&body)
+        wire::parse_emote_set_json(&self.fetch_text(&format!("/emote-sets/{set_id}")).await?)
     }
 }
 
+/// 7TV wire models and their conversion into the shared emote types.
 #[cfg(any(test, feature = "reqwest-client"))]
-fn parse_user_json(body: &str) -> Result<SevenTvUser, SevenTvError> {
-    let user: SevenTvUserModel = serde_json::from_str(body)?;
-    Ok(SevenTvUser {
-        default_emote_set_id: user.default_emote_set_id(),
-    })
-}
+mod wire {
+    use barbed_core::emotes::{
+        Emote, EmoteId, EmoteImage, EmoteImageFormat, EmoteImageScale, EmoteProvider,
+    };
+    use serde::Deserialize;
 
-#[cfg(any(test, feature = "reqwest-client"))]
-fn parse_emote_set_json(body: &str) -> Result<SevenTvEmoteSet, SevenTvError> {
-    let model: EmoteSetModel = serde_json::from_str(body)?;
-    Ok(SevenTvEmoteSet {
-        id: model.id,
-        name: model.name,
-        emotes: model.emotes.into_iter().map(emote_from_model).collect(),
-    })
-}
+    use super::{SevenTvEmoteSet, SevenTvError, SevenTvUser};
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct SevenTvUserModel {
-    #[serde(default)]
-    emote_set: Option<SetRef>,
-    #[serde(default)]
-    connections: Vec<UserConnection>,
-    #[serde(default)]
-    emote_sets: Vec<SetRef>,
-}
+    pub(super) fn parse_user_json(body: &str) -> Result<SevenTvUser, SevenTvError> {
+        let user: SevenTvUserModel = serde_json::from_str(body)?;
+        Ok(SevenTvUser {
+            default_emote_set_id: user.default_emote_set_id(),
+        })
+    }
 
-#[cfg(any(test, feature = "reqwest-client"))]
-impl SevenTvUserModel {
-    fn default_emote_set_id(&self) -> Option<String> {
-        if let Some(set) = &self.emote_set {
-            return Some(set.id.clone());
-        }
-        for connection in &self.connections {
-            if connection.platform.eq_ignore_ascii_case("twitch") {
-                if let Some(set) = &connection.emote_set {
-                    return Some(set.id.clone());
-                }
-                if let Some(id) = &connection.emote_set_id {
-                    return Some(id.clone());
+    pub(super) fn parse_emote_set_json(body: &str) -> Result<SevenTvEmoteSet, SevenTvError> {
+        let model: EmoteSetModel = serde_json::from_str(body)?;
+        Ok(SevenTvEmoteSet {
+            id: model.id,
+            name: model.name,
+            emotes: model.emotes.into_iter().map(emote_from_model).collect(),
+        })
+    }
+
+    #[derive(Deserialize)]
+    struct SevenTvUserModel {
+        #[serde(default)]
+        emote_set: Option<SetRef>,
+        #[serde(default)]
+        connections: Vec<UserConnection>,
+        #[serde(default)]
+        emote_sets: Vec<SetRef>,
+    }
+
+    impl SevenTvUserModel {
+        fn default_emote_set_id(&self) -> Option<String> {
+            if let Some(set) = &self.emote_set {
+                return Some(set.id.clone());
+            }
+            for connection in &self.connections {
+                if connection.platform.eq_ignore_ascii_case("twitch") {
+                    if let Some(set) = &connection.emote_set {
+                        return Some(set.id.clone());
+                    }
+                    if let Some(id) = &connection.emote_set_id {
+                        return Some(id.clone());
+                    }
                 }
             }
+            self.emote_sets.first().map(|set| set.id.clone())
         }
-        self.emote_sets.first().map(|set| set.id.clone())
     }
-}
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct UserConnection {
-    platform: String,
-    #[serde(default)]
-    emote_set: Option<SetRef>,
-    #[serde(default)]
-    emote_set_id: Option<String>,
-}
+    #[derive(Deserialize)]
+    struct UserConnection {
+        platform: String,
+        #[serde(default)]
+        emote_set: Option<SetRef>,
+        #[serde(default)]
+        emote_set_id: Option<String>,
+    }
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct SetRef {
-    id: String,
-}
+    #[derive(Deserialize)]
+    struct SetRef {
+        id: String,
+    }
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct EmoteSetModel {
-    id: String,
-    name: String,
-    emotes: Vec<SetEmote>,
-}
+    #[derive(Deserialize)]
+    struct EmoteSetModel {
+        id: String,
+        name: String,
+        emotes: Vec<SetEmote>,
+    }
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct SetEmote {
-    id: String,
-    name: String,
-    data: EmoteData,
-}
+    #[derive(Deserialize)]
+    struct SetEmote {
+        id: String,
+        name: String,
+        data: EmoteData,
+    }
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct EmoteData {
-    host: EmoteHost,
-    #[serde(default)]
-    animated: bool,
-}
+    #[derive(Deserialize)]
+    struct EmoteData {
+        host: EmoteHost,
+        #[serde(default)]
+        animated: bool,
+    }
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct EmoteHost {
-    url: String,
-    #[serde(default)]
-    files: Vec<HostFile>,
-}
+    #[derive(Deserialize)]
+    struct EmoteHost {
+        url: String,
+        #[serde(default)]
+        files: Vec<HostFile>,
+    }
 
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct HostFile {
-    name: String,
-}
+    #[derive(Deserialize)]
+    struct HostFile {
+        name: String,
+    }
 
-#[cfg(any(test, feature = "reqwest-client"))]
-fn emote_from_model(model: SetEmote) -> Emote {
-    let format = EmoteImageFormat::from_animated(model.data.animated);
-    let images = if model.data.host.files.is_empty() {
-        vec![EmoteImage {
-            format: format.clone(),
-            theme_mode: EmoteThemeMode::Light,
-            scale: EmoteImageScale::One,
-            url: model.data.host.url.clone(),
-        }]
-    } else {
-        model
-            .data
-            .host
-            .files
-            .into_iter()
-            .map(|file| EmoteImage {
-                format: format.clone(),
-                theme_mode: EmoteThemeMode::Light,
-                scale: parse_scale_from_name(&file.name),
-                url: format!(
-                    "{}/{}",
-                    model.data.host.url.trim_end_matches('/'),
-                    file.name
-                ),
-            })
-            .collect()
-    };
+    fn emote_from_model(model: SetEmote) -> Emote {
+        let format = EmoteImageFormat::from_animated(model.data.animated);
+        let host = model.data.host;
+        let images = if host.files.is_empty() {
+            vec![EmoteImage::new(format, EmoteImageScale::One, host.url)]
+        } else {
+            let base = host.url.trim_end_matches('/');
+            host.files
+                .iter()
+                .map(|file| {
+                    EmoteImage::new(
+                        format.clone(),
+                        parse_scale_from_name(&file.name),
+                        format!("{base}/{}", file.name),
+                    )
+                })
+                .collect()
+        };
 
-    Emote::new(
-        EmoteId::new(EmoteProvider::SevenTv, model.id),
-        model.name,
-        images,
-    )
-}
+        Emote::new(
+            EmoteId::new(EmoteProvider::SevenTv, model.id),
+            model.name,
+            images,
+        )
+    }
 
-#[cfg(any(test, feature = "reqwest-client"))]
-fn parse_scale_from_name(name: &str) -> EmoteImageScale {
-    if name.contains("1x") {
-        EmoteImageScale::One
-    } else if name.contains("2x") {
-        EmoteImageScale::Two
-    } else if name.contains("3x") {
-        EmoteImageScale::Three
-    } else {
-        EmoteImageScale::Other(name.to_string())
+    fn parse_scale_from_name(name: &str) -> EmoteImageScale {
+        if name.contains("1x") {
+            EmoteImageScale::One
+        } else if name.contains("2x") {
+            EmoteImageScale::Two
+        } else if name.contains("3x") {
+            EmoteImageScale::Three
+        } else {
+            EmoteImageScale::Other(name.to_string())
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::wire::{parse_emote_set_json, parse_user_json};
     use super::*;
 
     #[test]

@@ -2,7 +2,119 @@
 
 This file is append-only and records `barbed` changesO. Each entry lists the public API involved, the root feature flags needed, and any known gaps that still remain.
 
-## Unreleased
+## 0.0.5 - 2026-11-09
+
+### Twitch surface refreshed against the 2026-11-09 docs
+
+- Public API added/changed:
+  - catalog refresh: still 149 Helix endpoints and 83 EventSub subscriptions;
+    Helix is unchanged, EventSub picks up every change Twitch logged between
+    2026-07-16 and 2026-10-01
+  - `channel.chat.message` v1: the hand-written structs now cover the whole
+    documented schema: `EventSubMessageFragmentType::Gif` and
+    `EventSubMessageFragment::gif` (`EventSubMessageGif { id, url }`; `gif_id`
+    is accepted as an alias because the change log and the reference table
+    disagree on the name), `EventSubCheermote::tier`, and on
+    `EventSubChatMessage` the fields `message_type` (`EventSubChatMessageType`),
+    `reply` (`EventSubChatReply`), `channel_points_custom_reward_id`,
+    `source_broadcaster_user_{id,login,name}`, `source_message_id`,
+    `source_badges`, and `is_source_only`
+  - `channel.chat.message_delete` v1: `EventSubChatMessageDeleted` gains
+    `broadcaster_user_{login,name}` and `target_user_{login,name}`
+  - fixed: `EventSubMessageFragmentType::Unknown` (and the new
+    `EventSubChatMessageType::Unknown`) are `#[serde(other)]` catch-alls; since
+    Twitch shipped `gif` fragments on 2026-07-16 every chat message containing
+    a GIF failed to decode through `EventSubChatMessage`, and a future fragment
+    or message type can no longer fail the whole decode
+  - breaking: the new enum variants and struct fields above break exhaustive
+    matches and struct literals downstream
+  - `channel.chat.notification` v1: generated `gifted_drops_summary`
+    (`recipient_count`) and `shared_chat_gifted_drops_summary` fields plus the
+    two matching `notice_type` values
+  - `automod.message.hold`/`automod.message.update` v2: `blocked_link` is
+    documented as a `reason` value (doc comments only; the fields are strings)
+  - fixed: `tools/twitch_surface.py` slugifies named doc types, so
+    `channel.custom_power_up_redemption.add` keeps `SharedCustomPowerUp` after
+    Twitch changed the type cell from `custom_power_up` to a "Custom Power Up"
+    link; without the fix the field regressed to `serde_json::Value`
+- Root feature flags:
+  - none
+- Known remaining gaps:
+  - `shared_chat_gifted_drops_summary` stays `serde_json::Value` like the other
+    `shared_chat_*` notice objects; the docs publish no field table for them
+  - the IRC `gifs` PRIVMSG tag (2026-07-17) is not modeled; `parse_privmsg`
+    still extracts only `display-name` and `badges`
+
+### Code cleanup pass
+
+- Public API added/changed:
+  - `barbed_core::USER_AGENT` (`barbed/<version>`) replaces the three
+    hard-coded `barbed/0.0.2` user agents in the 7TV, BetterTTV, and FFZ
+    clients, which had drifted from the workspace version
+  - `barbed_core::emotes::EmoteImage::{new, with_theme}`; providers no longer
+    spell out four-field image literals
+  - `helix::TwitchTokenExchange::into_token_state` is the one place a token
+    response becomes `TwitchTokenState` (used by `build_auth_outcome` and
+    `native::refresh_access_token`); breaking: `oauth::refreshed_twitch_token_state`
+    (seven positional parameters, no callers) was removed in its favour
+  - breaking: the hidden `barbed::client` alias of `barbed::cloudflare_worker`
+    was removed
+  - `helix::HelixEndpoint::prepare` treats an empty access token like a
+    missing one (`MissingAccessToken`), so the `cloudflare-worker` helpers no
+    longer pre-check credentials themselves
+  - `eventsub::InMemoryEventSubReplayStore` now forgets message ids after a
+    retention window (`DEFAULT_RETENTION` of ten minutes, `with_retention`)
+    instead of growing forever; the `seen_at` argument was previously ignored
+  - typed EventSub decoding no longer clones the event JSON per
+    `known_payload()` call; the generated and hand-written decode paths share
+    one helper, and `GenericEventSubPayload` implements the same timestamp hook
+  - `helix::HelixEndpoint::parse_json_response` parses the body once instead of
+    twice (pagination cursor and result), and `native::send_prepared_request`
+    no longer collects response headers it then drops
+  - `tokio-irc`: the client reuses one line buffer, writes each line in a
+    single syscall, and keeps only the fields it needs after connecting (the
+    OAuth token is no longer retained)
+  - `tools/twitch_surface.py`: event sections and named types are resolved
+    from the links the docs already carry (the types page links each
+    subscription's `event` row to its reference section; type cells link to
+    their shared object), so the nine-entry section override table and the
+    name-guessing fallback are gone; the array/struct-name tables merged into
+    one `SHARED_SECTIONS` map; `generated_at` is stamped once per build
+- Root feature flags:
+  - none
+- Known remaining gaps:
+  - several public helpers have no in-tree callers or tests
+    (`oauth::OAuthTokenKind`, `device_code_request`, `openid_jwks_request`,
+    `build_oidc_authorize_url`, `EventSubTransport::{webhook, conduit}`,
+    `GenericCreateEventSubSubscriptionRequest`, `native::fetch_user_by_login`,
+    ...); kept for downstream use, prune or test as needed
+  - `EventSubMessageType` still derives `Serialize`/`Deserialize` with
+    PascalCase spellings that differ from the wire form `parse_message_type`
+    accepts; nothing in tree uses the derives
+
+### Dependency updates
+
+- Public API added/changed:
+  - `base64` 0.22 → 0.23, `hmac` 0.12 → 0.13, `sha2` 0.10 → 0.11, and
+    `tokio-tungstenite` 0.28 → 0.30; none of their types are part of the
+    public API, so nothing changes downstream
+  - breaking: MSRV raised from 1.88 to 1.97. `worker` 0.8.7 and
+    `wasm-streams` 0.7 need 1.91; the rest is deliberate headroom (stable
+    minus two at the time) so the MSRV-aware resolver stops silently holding
+    dependency updates back
+  - `Cargo.lock` refreshed to the newest releases (`reqwest` 0.13.5, `tokio`
+    1.54, `rustls` 0.23.46, `worker` 0.8.7, ...)
+- Root feature flags:
+  - none
+- Known remaining gaps:
+  - none
+
+## 0.0.4 - 2026-07-06
+
+### MSRV
+
+- breaking: MSRV raised from 1.85 to 1.88 after a dependency
+  update stopped building on the older toolchain
 
 ### Typed EventSub notification payloads generated from the documented schemas
 

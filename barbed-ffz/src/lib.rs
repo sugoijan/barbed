@@ -2,13 +2,6 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 use barbed_core::emotes::Emote;
-#[cfg(any(test, feature = "reqwest-client"))]
-use barbed_core::emotes::{
-    EmoteId, EmoteImage, EmoteImageFormat, EmoteImageScale, EmoteModifier, EmoteModifierFlags,
-    EmoteProvider, EmoteThemeMode,
-};
-#[cfg(any(test, feature = "reqwest-client"))]
-use serde::Deserialize;
 use thiserror::Error;
 
 #[cfg(feature = "reqwest-client")]
@@ -156,9 +149,19 @@ impl FfzClient {
     pub fn new() -> Result<Self, FfzError> {
         Ok(Self {
             http: reqwest::Client::builder()
-                .user_agent("barbed/0.0.2")
+                .user_agent(barbed_core::USER_AGENT)
                 .build()?,
         })
+    }
+
+    async fn fetch_text(&self, path: &str) -> Result<String, reqwest::Error> {
+        self.http
+            .get(format!("{API_BASE}{path}"))
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await
     }
 }
 
@@ -166,182 +169,171 @@ impl FfzClient {
 #[async_trait]
 impl FfzApi for FfzClient {
     async fn global_emote_sets(&self) -> Result<FfzGlobalEmoteSets, FfzError> {
-        let body = self
-            .http
-            .get(format!("{API_BASE}/set/global"))
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await?;
-        parse_global_sets_json(&body)
+        wire::parse_global_sets_json(&self.fetch_text("/set/global").await?)
     }
 
     async fn room_emote_sets_by_twitch_id(
         &self,
         twitch_id: &str,
     ) -> Result<FfzRoomEmoteSets, FfzError> {
-        let body = self
-            .http
-            .get(format!("{API_BASE}/room/id/{twitch_id}"))
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await?;
-        parse_room_sets_json(&body)
+        wire::parse_room_sets_json(&self.fetch_text(&format!("/room/id/{twitch_id}")).await?)
     }
 }
 
+/// FrankerFaceZ wire models and their conversion into the shared emote types.
 #[cfg(any(test, feature = "reqwest-client"))]
-fn parse_global_sets_json(body: &str) -> Result<FfzGlobalEmoteSets, FfzError> {
-    let response: GlobalSetsResponse = serde_json::from_str(body)?;
-    let sets = response
-        .sets
-        .into_iter()
-        .map(|(id, model)| (id, emote_set_from_model(model)))
-        .collect();
-    Ok(FfzGlobalEmoteSets {
-        sets,
-        default_set_ids: response
-            .default_sets
-            .into_iter()
-            .map(|id| id.to_string())
-            .collect(),
-        user_scoped: response.users,
-    })
-}
+mod wire {
+    use std::collections::HashMap;
 
-#[cfg(any(test, feature = "reqwest-client"))]
-fn parse_room_sets_json(body: &str) -> Result<FfzRoomEmoteSets, FfzError> {
-    let response: RoomResponse = serde_json::from_str(body)?;
-    let room = response.room.ok_or(FfzError::MissingRoomPayload)?;
-    Ok(FfzRoomEmoteSets {
-        room_id: room.id,
-        twitch_id: room.twitch_id.to_string(),
-        sets: response
+    use barbed_core::emotes::{
+        Emote, EmoteId, EmoteImage, EmoteImageFormat, EmoteImageScale, EmoteModifier,
+        EmoteModifierFlags, EmoteProvider,
+    };
+    use serde::Deserialize;
+
+    use super::{FfzEmoteSet, FfzError, FfzGlobalEmoteSets, FfzRoomEmoteSets};
+
+    pub(super) fn parse_global_sets_json(body: &str) -> Result<FfzGlobalEmoteSets, FfzError> {
+        let response: GlobalSetsResponse = serde_json::from_str(body)?;
+        let sets = response
             .sets
-            .into_values()
-            .map(emote_set_from_model)
-            .collect(),
-    })
-}
-
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct GlobalSetsResponse {
-    #[serde(default)]
-    default_sets: Vec<u64>,
-    #[serde(default)]
-    sets: HashMap<String, EmoteSetModel>,
-    #[serde(default)]
-    users: HashMap<String, Vec<String>>,
-}
-
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct RoomResponse {
-    room: Option<RoomModel>,
-    #[serde(default)]
-    sets: HashMap<String, EmoteSetModel>,
-}
-
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct RoomModel {
-    id: String,
-    #[serde(rename = "twitch_id")]
-    twitch_id: u64,
-}
-
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct EmoteSetModel {
-    id: u64,
-    title: Option<String>,
-    #[serde(default)]
-    emoticons: Vec<EmoteModel>,
-}
-
-#[derive(Deserialize)]
-#[cfg(any(test, feature = "reqwest-client"))]
-struct EmoteModel {
-    id: u64,
-    name: String,
-    #[serde(default)]
-    hidden: bool,
-    #[serde(default)]
-    modifier: bool,
-    #[serde(default)]
-    modifier_flags: u32,
-    #[serde(default)]
-    urls: HashMap<String, Option<String>>,
-    animated: Option<HashMap<String, Option<String>>>,
-    mask: Option<HashMap<String, Option<String>>>,
-    mask_animated: Option<HashMap<String, Option<String>>>,
-}
-
-#[cfg(any(test, feature = "reqwest-client"))]
-fn emote_set_from_model(model: EmoteSetModel) -> FfzEmoteSet {
-    FfzEmoteSet {
-        id: model.id.to_string(),
-        title: model.title,
-        emotes: model.emoticons.into_iter().map(emote_from_model).collect(),
-    }
-}
-
-#[cfg(any(test, feature = "reqwest-client"))]
-fn emote_from_model(model: EmoteModel) -> Emote {
-    let mut images = image_variants(&model.urls, EmoteImageFormat::Static);
-    if let Some(animated) = &model.animated {
-        images.extend(image_variants(animated, EmoteImageFormat::Animated));
-    }
-
-    let mut emote = Emote::new(
-        EmoteId::new(EmoteProvider::FrankerFaceZ, model.id.to_string()),
-        model.name,
-        images,
-    );
-
-    if model.modifier {
-        let mut flags = EmoteModifierFlags::from_bits_retain(model.modifier_flags);
-        if model.hidden {
-            flags |= EmoteModifierFlags::HIDDEN;
-        }
-        let mut mask_images = Vec::new();
-        if let Some(mask) = &model.mask {
-            mask_images.extend(image_variants(mask, EmoteImageFormat::Static));
-        }
-        if let Some(mask) = &model.mask_animated {
-            mask_images.extend(image_variants(mask, EmoteImageFormat::Animated));
-        }
-        emote = emote.with_modifier(EmoteModifier { flags, mask_images });
-    }
-
-    emote
-}
-
-#[cfg(any(test, feature = "reqwest-client"))]
-fn image_variants(
-    images: &HashMap<String, Option<String>>,
-    format: EmoteImageFormat,
-) -> Vec<EmoteImage> {
-    images
-        .iter()
-        .filter_map(|(scale_key, url)| {
-            let url = url.clone()?;
-            Some(EmoteImage {
-                format: format.clone(),
-                theme_mode: EmoteThemeMode::Light,
-                scale: EmoteImageScale::parse(scale_key),
-                url,
-            })
+            .into_iter()
+            .map(|(id, model)| (id, emote_set_from_model(model)))
+            .collect();
+        Ok(FfzGlobalEmoteSets {
+            sets,
+            default_set_ids: response
+                .default_sets
+                .into_iter()
+                .map(|id| id.to_string())
+                .collect(),
+            user_scoped: response.users,
         })
-        .collect()
+    }
+
+    pub(super) fn parse_room_sets_json(body: &str) -> Result<FfzRoomEmoteSets, FfzError> {
+        let response: RoomResponse = serde_json::from_str(body)?;
+        let room = response.room.ok_or(FfzError::MissingRoomPayload)?;
+        Ok(FfzRoomEmoteSets {
+            room_id: room.id,
+            twitch_id: room.twitch_id.to_string(),
+            sets: response
+                .sets
+                .into_values()
+                .map(emote_set_from_model)
+                .collect(),
+        })
+    }
+
+    #[derive(Deserialize)]
+    struct GlobalSetsResponse {
+        #[serde(default)]
+        default_sets: Vec<u64>,
+        #[serde(default)]
+        sets: HashMap<String, EmoteSetModel>,
+        #[serde(default)]
+        users: HashMap<String, Vec<String>>,
+    }
+
+    #[derive(Deserialize)]
+    struct RoomResponse {
+        room: Option<RoomModel>,
+        #[serde(default)]
+        sets: HashMap<String, EmoteSetModel>,
+    }
+
+    #[derive(Deserialize)]
+    struct RoomModel {
+        id: String,
+        twitch_id: u64,
+    }
+
+    #[derive(Deserialize)]
+    struct EmoteSetModel {
+        id: u64,
+        title: Option<String>,
+        #[serde(default)]
+        emoticons: Vec<EmoteModel>,
+    }
+
+    #[derive(Deserialize)]
+    struct EmoteModel {
+        id: u64,
+        name: String,
+        #[serde(default)]
+        hidden: bool,
+        #[serde(default)]
+        modifier: bool,
+        #[serde(default)]
+        modifier_flags: u32,
+        #[serde(default)]
+        urls: HashMap<String, Option<String>>,
+        animated: Option<HashMap<String, Option<String>>>,
+        mask: Option<HashMap<String, Option<String>>>,
+        mask_animated: Option<HashMap<String, Option<String>>>,
+    }
+
+    fn emote_set_from_model(model: EmoteSetModel) -> FfzEmoteSet {
+        FfzEmoteSet {
+            id: model.id.to_string(),
+            title: model.title,
+            emotes: model.emoticons.into_iter().map(emote_from_model).collect(),
+        }
+    }
+
+    fn emote_from_model(model: EmoteModel) -> Emote {
+        let mut images = image_variants(&model.urls, EmoteImageFormat::Static);
+        if let Some(animated) = &model.animated {
+            images.extend(image_variants(animated, EmoteImageFormat::Animated));
+        }
+
+        let mut emote = Emote::new(
+            EmoteId::new(EmoteProvider::FrankerFaceZ, model.id.to_string()),
+            model.name,
+            images,
+        );
+
+        if model.modifier {
+            let mut flags = EmoteModifierFlags::from_bits_retain(model.modifier_flags);
+            if model.hidden {
+                flags |= EmoteModifierFlags::HIDDEN;
+            }
+            let mut mask_images = Vec::new();
+            if let Some(mask) = &model.mask {
+                mask_images.extend(image_variants(mask, EmoteImageFormat::Static));
+            }
+            if let Some(mask) = &model.mask_animated {
+                mask_images.extend(image_variants(mask, EmoteImageFormat::Animated));
+            }
+            emote = emote.with_modifier(EmoteModifier { flags, mask_images });
+        }
+
+        emote
+    }
+
+    fn image_variants(
+        images: &HashMap<String, Option<String>>,
+        format: EmoteImageFormat,
+    ) -> Vec<EmoteImage> {
+        images
+            .iter()
+            .filter_map(|(scale_key, url)| {
+                let url = url.clone()?;
+                Some(EmoteImage::new(
+                    format.clone(),
+                    EmoteImageScale::parse(scale_key),
+                    url,
+                ))
+            })
+            .collect()
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use barbed_core::emotes::EmoteModifierFlags;
+
+    use super::wire::{parse_global_sets_json, parse_room_sets_json};
     use super::*;
 
     #[test]

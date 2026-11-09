@@ -14,7 +14,7 @@
     "helix_typed_responses": 147,
     "helix_untyped_responses": 2
   },
-  "generated_at": "2026-07-05T22:57:37+00:00",
+  "generated_at": "2026-11-09T15:22:48+00:00",
   "sources": {
     "changelog": "https://dev.twitch.tv/docs/change-log",
     "eventsub_reference": "https://dev.twitch.tv/docs/eventsub/eventsub-reference/",

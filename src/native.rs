@@ -15,8 +15,8 @@ use crate::eventsub::{
 use crate::helix::{self, TwitchTokenExchange};
 use crate::http::{HttpMethod, HttpResponse, PreparedRequest, RawResponse, ResponseHeader};
 use crate::oauth::{
-    OpenIdConfiguration, OpenIdUserInfo, TokenValidation, TwitchAuthConfig, TwitchAuthOutcome,
-    TwitchDeviceAuthorization, TwitchTokenState, client_credentials_request,
+    DeviceCodeResponse, OpenIdConfiguration, OpenIdUserInfo, TokenValidation, TwitchAuthConfig,
+    TwitchAuthOutcome, TwitchDeviceAuthorization, TwitchTokenState, client_credentials_request,
     device_code_request_with_scope, device_token_request, normalize_scopes,
     openid_configuration_request, openid_userinfo_request, refresh_token_request,
     revoke_token_request, validate_token_request,
@@ -54,17 +54,8 @@ impl TwitchAuthClient {
         )
         .await?;
 
-        let now = OffsetDateTime::now_utc();
-        TwitchDeviceAuthorization::new(
-            payload.user_code,
-            payload.verification_uri,
-            payload.verification_uri_complete,
-            payload.expires_in,
-            payload.interval,
-            payload.device_code,
-            now,
-        )
-        .map_err(|err| anyhow!("failed to construct Twitch device authorization: {err}"))
+        TwitchDeviceAuthorization::from_response(payload, OffsetDateTime::now_utc())
+            .map_err(|err| anyhow!("failed to construct Twitch device authorization: {err}"))
     }
 
     pub async fn complete_device_code_flow(
@@ -85,7 +76,7 @@ impl TwitchAuthClient {
             .await?;
 
             if response.status == 200 {
-                let exchange: TwitchTokenExchange = serde_json::from_str(&response.body)
+                let exchange: TwitchTokenExchange = helix::parse_typed_response(response, 200)
                     .context("failed to parse Twitch token exchange response")?;
                 let identity = fetch_authenticated_user(
                     &self.http,
@@ -186,29 +177,26 @@ async fn send_json<T: serde::de::DeserializeOwned>(
     what: &str,
 ) -> Result<T> {
     let response = send_prepared_request(http, prepared).await?;
-    if response.status != 200 {
-        bail!(
-            "{what} request failed with status {}: {}",
-            response.status,
-            response.body
-        );
+    helix::parse_typed_response(response, 200).with_context(|| format!("{what} request failed"))
+}
+
+/// Like [`send_json`], but statuses in `absent_statuses` yield `Ok(None)`.
+async fn send_json_or_none<T: serde::de::DeserializeOwned>(
+    http: &Client,
+    prepared: PreparedRequest,
+    absent_statuses: &[u16],
+    what: &str,
+) -> Result<Option<T>> {
+    let response = send_prepared_request(http, prepared).await?;
+    if absent_statuses.contains(&response.status) {
+        return Ok(None);
     }
-    serde_json::from_str(&response.body).with_context(|| format!("failed to parse {what} response"))
+    helix::parse_typed_response(response, 200)
+        .map(Some)
+        .with_context(|| format!("{what} request failed"))
 }
 
-pub async fn send_prepared_request(
-    http: &Client,
-    prepared: PreparedRequest,
-) -> Result<RawResponse> {
-    Ok(send_prepared_request_with_metadata(http, prepared)
-        .await?
-        .into_raw_response())
-}
-
-pub async fn send_prepared_request_with_metadata(
-    http: &Client,
-    prepared: PreparedRequest,
-) -> Result<HttpResponse> {
+async fn dispatch(http: &Client, prepared: PreparedRequest) -> Result<reqwest::Response> {
     let PreparedRequest {
         url,
         method,
@@ -229,10 +217,28 @@ pub async fn send_prepared_request_with_metadata(
     if let Some(body) = body {
         request = request.body(body);
     }
-    let response = request
+    request
         .send()
         .await
-        .with_context(|| format!("failed to send request to {}", url))?;
+        .with_context(|| format!("failed to send request to {url}"))
+}
+
+pub async fn send_prepared_request(
+    http: &Client,
+    prepared: PreparedRequest,
+) -> Result<RawResponse> {
+    let response = dispatch(http, prepared).await?;
+    Ok(RawResponse {
+        status: response.status().as_u16(),
+        body: response.text().await.unwrap_or_default(),
+    })
+}
+
+pub async fn send_prepared_request_with_metadata(
+    http: &Client,
+    prepared: PreparedRequest,
+) -> Result<HttpResponse> {
+    let response = dispatch(http, prepared).await?;
     let status = response.status().as_u16();
     let headers = response
         .headers()
@@ -250,61 +256,37 @@ pub async fn send_prepared_request_with_metadata(
     })
 }
 
+/// Validates a token; `Ok(None)` means Twitch rejected it.
 pub async fn validate_access_token(
     http: &Client,
     access_token: &str,
 ) -> Result<Option<TokenValidation>> {
-    let response = send_prepared_request(http, validate_token_request(access_token)).await?;
-
-    if response.status == 200 {
-        let payload = serde_json::from_str::<TokenValidation>(&response.body)
-            .context("failed to parse Twitch token validation response")?;
-        return Ok(Some(payload));
-    }
-
-    if response.status == 401 {
-        return Ok(None);
-    }
-
-    bail!(
-        "Twitch token validation failed with status {}: {}",
-        response.status,
-        response.body
-    );
+    send_json_or_none(
+        http,
+        validate_token_request(access_token),
+        &[401],
+        "Twitch token validation",
+    )
+    .await
 }
 
+/// Refreshes a token; `Ok(None)` means Twitch rejected the refresh token.
 pub async fn refresh_access_token(
     http: &Client,
     client_id: &str,
     refresh_token: &str,
 ) -> Result<Option<TwitchTokenState>> {
-    let response =
-        send_prepared_request(http, refresh_token_request(client_id, refresh_token)).await?;
-
-    if response.status == 200 {
-        let exchange: TwitchTokenExchange = serde_json::from_str(&response.body)
-            .context("failed to parse Twitch refresh token response")?;
-        return Ok(Some(TwitchTokenState {
-            access_token: exchange.access_token,
-            refresh_token: exchange
-                .refresh_token
-                .unwrap_or_else(|| refresh_token.to_string()),
-            expires_in_seconds: exchange.expires_in,
-            scope: exchange.scope.unwrap_or_default(),
-            token_type: exchange.token_type.unwrap_or_else(|| "bearer".to_string()),
-            linked_at_ms: now_ms(),
-        }));
-    }
-
-    if response.status == 400 || response.status == 401 {
-        return Ok(None);
-    }
-
-    bail!(
-        "Twitch refresh token request failed with status {}: {}",
-        response.status,
-        response.body
-    );
+    let exchange: Option<TwitchTokenExchange> = send_json_or_none(
+        http,
+        refresh_token_request(client_id, refresh_token),
+        &[400, 401],
+        "Twitch refresh token",
+    )
+    .await?;
+    exchange
+        .map(|exchange| exchange.into_token_state(Some(refresh_token), now_ms()))
+        .transpose()
+        .map_err(anyhow::Error::from)
 }
 
 pub async fn fetch_authenticated_user(
@@ -354,14 +336,17 @@ use tokio_tungstenite::connect_async;
 #[cfg(feature = "tokio-eventsub")]
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 #[cfg(feature = "tokio-eventsub")]
-use tokio_tungstenite::tungstenite::{Message as WsMessage, http::Uri};
+use tokio_tungstenite::tungstenite::{Message as WsMessage, Utf8Bytes, http::Uri};
 
 #[cfg(feature = "tokio-eventsub")]
 const EVENTSUB_WEBSOCKET_URL: &str = "wss://eventsub.wss.twitch.tv/ws";
 
 #[cfg(feature = "tokio-eventsub")]
+type EventSubSocket = WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>;
+
+#[cfg(feature = "tokio-eventsub")]
 pub struct EventSubChatStream {
-    ws: WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>,
+    ws: EventSubSocket,
     session: EventSubWebSocketSession,
 }
 
@@ -372,34 +357,14 @@ impl EventSubChatStream {
     }
 
     pub async fn next_event(&mut self) -> Result<Option<EventSubStreamEvent>> {
-        while let Some(message) = self.ws.next().await {
-            let message = message.context("EventSub WebSocket error")?;
-            match message {
-                WsMessage::Text(text) => {
-                    let envelope = decode_eventsub_websocket_message(&text)
-                        .context("failed to parse EventSub payload")?;
-                    if let Some(event) = envelope
-                        .stream_event()
-                        .context("failed to decode EventSub stream event")?
-                    {
-                        return Ok(Some(event));
-                    }
-                }
-                WsMessage::Ping(payload) => {
-                    self.ws
-                        .send(WsMessage::Pong(payload))
-                        .await
-                        .context("failed to reply to EventSub ping")?;
-                }
-                WsMessage::Pong(_) => {}
-                WsMessage::Binary(_) => {
-                    debug!("dropping unexpected binary EventSub payload");
-                }
-                WsMessage::Close(frame) => {
-                    debug!(?frame, "EventSub WebSocket closed by server");
-                    return Ok(None);
-                }
-                WsMessage::Frame(_) => {}
+        while let Some(text) = next_text_frame(&mut self.ws).await? {
+            let envelope = decode_eventsub_websocket_message(&text)
+                .context("failed to parse EventSub payload")?;
+            if let Some(event) = envelope
+                .stream_event()
+                .context("failed to decode EventSub stream event")?
+            {
+                return Ok(Some(event));
             }
         }
 
@@ -437,12 +402,35 @@ pub async fn connect_chat_stream(
     Ok(EventSubChatStream { ws, session })
 }
 
+/// Reads the next text frame, answering pings and skipping binary, pong, and
+/// raw frames. `Ok(None)` means the server closed the socket.
+#[cfg(feature = "tokio-eventsub")]
+async fn next_text_frame(ws: &mut EventSubSocket) -> Result<Option<Utf8Bytes>> {
+    while let Some(message) = ws.next().await {
+        match message.context("EventSub WebSocket error")? {
+            WsMessage::Text(text) => return Ok(Some(text)),
+            WsMessage::Ping(payload) => {
+                ws.send(WsMessage::Pong(payload))
+                    .await
+                    .context("failed to reply to EventSub ping")?;
+            }
+            WsMessage::Binary(_) => debug!("dropping unexpected binary EventSub payload"),
+            WsMessage::Close(frame) => {
+                debug!(?frame, "EventSub WebSocket closed by server");
+                return Ok(None);
+            }
+            WsMessage::Pong(_) | WsMessage::Frame(_) => {}
+        }
+    }
+    Ok(None)
+}
+
 #[cfg(feature = "tokio-eventsub")]
 async fn connect_eventsub_websocket(
     endpoint: &str,
     client_id: &str,
     access_token: &str,
-) -> Result<WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>> {
+) -> Result<EventSubSocket> {
     ensure_rustls_crypto_provider()?;
 
     let uri: Uri = endpoint
@@ -487,49 +475,33 @@ fn ensure_rustls_crypto_provider() -> Result<()> {
 }
 
 #[cfg(feature = "tokio-eventsub")]
-async fn wait_for_session_welcome(
-    ws: &mut WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>,
-) -> Result<EventSubWebSocketSession> {
-    while let Some(message) = ws.next().await {
-        let message = message.context("EventSub WebSocket error during welcome")?;
-        match message {
-            WsMessage::Text(text) => {
-                let envelope = decode_eventsub_websocket_message(&text)
-                    .context("failed to parse EventSub welcome payload")?;
-                match envelope.message_type()? {
-                    EventSubMessageType::SessionWelcome => {
-                        return envelope
-                            .session()
-                            .cloned()
-                            .ok_or_else(|| anyhow!("EventSub welcome payload missing session"));
-                    }
-                    EventSubMessageType::SessionReconnect => {
-                        let url = envelope
-                            .session()
-                            .and_then(|session| session.reconnect_url.clone())
-                            .unwrap_or_else(|| "<missing reconnect URL>".to_string());
-                        bail!("EventSub requested reconnect before welcome: {url}");
-                    }
-                    EventSubMessageType::SessionDisconnect => {
-                        let status = envelope
-                            .session()
-                            .and_then(|session| session.status.clone())
-                            .unwrap_or_else(|| "disconnected".to_string());
-                        let reason = envelope
-                            .session()
-                            .and_then(|session| session.disconnect_reason.clone());
-                        bail!("EventSub disconnected before welcome (status {status}): {reason:?}");
-                    }
-                    _ => {}
-                }
+async fn wait_for_session_welcome(ws: &mut EventSubSocket) -> Result<EventSubWebSocketSession> {
+    while let Some(text) = next_text_frame(ws).await? {
+        let envelope = decode_eventsub_websocket_message(&text)
+            .context("failed to parse EventSub welcome payload")?;
+        match envelope.message_type()? {
+            EventSubMessageType::SessionWelcome => {
+                return envelope
+                    .session()
+                    .cloned()
+                    .ok_or_else(|| anyhow!("EventSub welcome payload missing session"));
             }
-            WsMessage::Ping(payload) => {
-                ws.send(WsMessage::Pong(payload))
-                    .await
-                    .context("failed to reply to EventSub ping")?;
+            EventSubMessageType::SessionReconnect => {
+                let url = envelope
+                    .session()
+                    .and_then(|session| session.reconnect_url.clone())
+                    .unwrap_or_else(|| "<missing reconnect URL>".to_string());
+                bail!("EventSub requested reconnect before welcome: {url}");
             }
-            WsMessage::Close(frame) => {
-                bail!("EventSub WebSocket closed before welcome (frame: {frame:?})");
+            EventSubMessageType::SessionDisconnect => {
+                let status = envelope
+                    .session()
+                    .and_then(|session| session.status.clone())
+                    .unwrap_or_else(|| "disconnected".to_string());
+                let reason = envelope
+                    .session()
+                    .and_then(|session| session.disconnect_reason.clone());
+                bail!("EventSub disconnected before welcome (status {status}): {reason:?}");
             }
             _ => {}
         }
@@ -606,18 +578,6 @@ async fn create_subscription(
 
 fn now_ms() -> i64 {
     OffsetDateTime::now_utc().unix_timestamp() * 1_000
-}
-
-#[derive(Debug, Deserialize)]
-struct DeviceCodeResponse {
-    device_code: String,
-    user_code: String,
-    verification_uri: String,
-    #[serde(default)]
-    verification_uri_complete: Option<String>,
-    expires_in: u64,
-    #[serde(default)]
-    interval: Option<u64>,
 }
 
 #[derive(Debug, Default, Deserialize)]

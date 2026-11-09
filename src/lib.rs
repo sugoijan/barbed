@@ -30,7 +30,7 @@
 //!
 //! # MSRV
 //!
-//! `barbed` currently targets Rust `1.88.0`.
+//! `barbed` currently targets Rust `1.97.0`.
 //!
 //! # Example
 //!
@@ -110,13 +110,6 @@ pub mod twitch_catalog;
 #[cfg(feature = "cloudflare-worker")]
 #[path = "client.rs"]
 pub mod cloudflare_worker;
-
-/// Backwards-compatible alias for the legacy `client` module path.
-#[cfg(feature = "cloudflare-worker")]
-#[doc(hidden)]
-pub mod client {
-    pub use super::cloudflare_worker::*;
-}
 
 /// Re-export of the core Twitch identity model.
 pub use identity::TwitchIdentity;

@@ -119,6 +119,23 @@ pub struct EmoteImage {
     pub url: String,
 }
 
+impl EmoteImage {
+    /// Builds a light-theme image, the only theme most providers publish.
+    pub fn new(format: EmoteImageFormat, scale: EmoteImageScale, url: impl Into<String>) -> Self {
+        Self {
+            format,
+            theme_mode: EmoteThemeMode::Light,
+            scale,
+            url: url.into(),
+        }
+    }
+
+    pub fn with_theme(mut self, theme_mode: EmoteThemeMode) -> Self {
+        self.theme_mode = theme_mode;
+        self
+    }
+}
+
 bitflags! {
     #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
     pub struct EmoteModifierFlags: u32 {

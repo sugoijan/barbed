@@ -3,9 +3,7 @@ use thiserror::Error;
 
 use crate::TwitchIdentity;
 use crate::eventsub::CreateEventSubSubscriptionRequest;
-use crate::http::{
-    HttpResponse, PreparedRequestBuilder, ResponseMeta, append_query_params, form_post_request,
-};
+use crate::http::{HttpResponse, PreparedRequestBuilder, ResponseMeta, form_post_request};
 use crate::oauth::{TWITCH_TOKEN_URL, TwitchAuthOutcome, TwitchTokenState};
 
 #[derive(Debug, Error)]
@@ -115,6 +113,7 @@ impl HelixEndpoint {
         if client_id.is_empty() {
             return Err(HelixError::MissingCredentials);
         }
+        let access_token = access_token.filter(|token| !token.is_empty());
         if matches!(
             self.auth_kind,
             HelixAuthKind::App
@@ -132,10 +131,14 @@ impl HelixEndpoint {
             path = path.replace(&needle, &crate::http::percent_encode(value));
         }
 
-        let base_url = format!("https://api.twitch.tv/helix{path}");
-        let url = append_query_params(&base_url, &request.query_params);
-        let mut builder =
-            PreparedRequestBuilder::new(self.method.clone(), url).header("Client-Id", client_id);
+        let mut builder = PreparedRequestBuilder::new(
+            self.method.clone(),
+            format!("https://api.twitch.tv/helix{path}"),
+        )
+        .header("Client-Id", client_id);
+        for (name, value) in &request.query_params {
+            builder = builder.query_param(name.clone(), value.clone());
+        }
         if let Some(access_token) = access_token {
             builder = builder.header("Authorization", format!("Bearer {access_token}"));
         }
@@ -158,12 +161,15 @@ impl HelixEndpoint {
                 body: response.body,
             });
         }
-        let meta = response.meta();
-        let body = if response.body.trim().is_empty() {
+        let HttpResponse { headers, body, .. } = response;
+        let body = if body.trim().is_empty() {
             serde_json::Value::Null
         } else {
-            serde_json::from_str(&response.body)?
+            serde_json::from_str(&body)?
         };
+        let meta = crate::http::response_meta(headers, || {
+            crate::http::pagination_cursor_from_value(&body)
+        });
         Ok(HelixJsonResponse { meta, body })
     }
 }
@@ -250,6 +256,32 @@ pub struct TwitchTokenExchange {
     pub expires_in: Option<u32>,
     pub scope: Option<Vec<String>>,
     pub token_type: Option<String>,
+}
+
+impl TwitchTokenExchange {
+    /// Converts a token response into persisted [`TwitchTokenState`].
+    ///
+    /// Refresh grants may omit the refresh token, in which case
+    /// `fallback_refresh_token` (the one just used) is kept; without either the
+    /// result is [`HelixError::MissingRefreshToken`]. A missing scope list is
+    /// empty and a missing token type is `bearer`.
+    pub fn into_token_state(
+        self,
+        fallback_refresh_token: Option<&str>,
+        now_ms: i64,
+    ) -> Result<TwitchTokenState, HelixError> {
+        Ok(TwitchTokenState {
+            access_token: self.access_token,
+            refresh_token: self
+                .refresh_token
+                .or_else(|| fallback_refresh_token.map(ToOwned::to_owned))
+                .ok_or(HelixError::MissingRefreshToken)?,
+            expires_in_seconds: self.expires_in,
+            scope: self.scope.unwrap_or_default(),
+            token_type: self.token_type.unwrap_or_else(|| "bearer".to_string()),
+            linked_at_ms: now_ms,
+        })
+    }
 }
 
 // -- Request builders --
@@ -395,16 +427,7 @@ pub fn build_auth_outcome(
 ) -> Result<TwitchAuthOutcome, HelixError> {
     Ok(TwitchAuthOutcome {
         identity,
-        tokens: TwitchTokenState {
-            access_token: exchange.access_token,
-            refresh_token: exchange
-                .refresh_token
-                .ok_or(HelixError::MissingRefreshToken)?,
-            expires_in_seconds: exchange.expires_in,
-            scope: exchange.scope.unwrap_or_default(),
-            token_type: exchange.token_type.unwrap_or_else(|| "bearer".to_string()),
-            linked_at_ms: now_ms,
-        },
+        tokens: exchange.into_token_state(None, now_ms)?,
     })
 }
 
@@ -462,6 +485,41 @@ mod tests {
                 .iter()
                 .any(|(k, v)| k == "Client-Id" && v == "my-client")
         );
+    }
+
+    #[test]
+    fn token_exchange_into_state_uses_fallback_refresh_token_and_defaults() {
+        let exchange = TwitchTokenExchange {
+            access_token: "new-access".to_string(),
+            refresh_token: None,
+            expires_in: Some(7_200),
+            scope: None,
+            token_type: None,
+        };
+
+        let state = exchange
+            .clone()
+            .into_token_state(Some("old-refresh"), 1_741_515_300_000)
+            .expect("fallback refresh token should be used");
+        assert_eq!(state.access_token, "new-access");
+        assert_eq!(state.refresh_token, "old-refresh");
+        assert_eq!(state.expires_in_seconds, Some(7_200));
+        assert!(state.scope.is_empty());
+        assert_eq!(state.token_type, "bearer");
+        assert_eq!(state.linked_at_ms, 1_741_515_300_000);
+
+        assert!(matches!(
+            exchange.into_token_state(None, 0),
+            Err(HelixError::MissingRefreshToken)
+        ));
+    }
+
+    #[test]
+    fn prepare_treats_empty_access_token_as_missing() {
+        let error = users::GetUsersRequest::new()
+            .prepare("cid", Some(""))
+            .expect_err("empty token should be rejected");
+        assert!(matches!(error, HelixError::MissingAccessToken { .. }));
     }
 
     #[test]

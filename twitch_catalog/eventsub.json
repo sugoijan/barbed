@@ -1,6 +1,6 @@
 {
   "event_source": "https://dev.twitch.tv/docs/eventsub/eventsub-reference/",
-  "generated_at": "2026-07-05T22:57:37+00:00",
+  "generated_at": "2026-11-09T15:22:48+00:00",
   "shared_objects": {
     "bits-voting": {
       "fields": [
@@ -412,6 +412,7 @@
           }
         ]
       },
+      "event_section": "automod-message-hold-event",
       "id": "automod_message_hold_1",
       "name": "Automod Message Hold",
       "stability": "ga",
@@ -531,7 +532,7 @@
             "type": "string"
           },
           {
-            "description": "Possible values are: automod blocked_term",
+            "description": "Possible values are: automod blocked_term blocked_link",
             "name": "reason",
             "type": "string"
           },
@@ -616,12 +617,13 @@
                 "type": "object[]"
               }
             ],
-            "description": "Optional. If the message was caught due to a blocked term, this will be populated.",
+            "description": "Optional. If the message was caught due to a blocked term or a blocked link, this will be populated.",
             "name": "blocked_term",
             "type": "object"
           }
         ]
       },
+      "event_section": "automod-message-hold-event-v2",
       "id": "automod_message_hold_2",
       "name": "Automod Message Hold V2",
       "stability": "ga",
@@ -767,6 +769,7 @@
           }
         ]
       },
+      "event_section": "automod-message-update-event",
       "id": "automod_message_update_1",
       "name": "Automod Message Update",
       "stability": "ga",
@@ -906,7 +909,7 @@
             "type": "string"
           },
           {
-            "description": "The reason why the message was caught. Possible values are: automod blocked_term",
+            "description": "The reason why the message was caught. Possible values are: automod blocked_term blocked_link",
             "name": "reason",
             "type": "string"
           },
@@ -991,12 +994,13 @@
                 "type": "object[]"
               }
             ],
-            "description": "Optional. If the message was caught due to a blocked term, this will be populated.",
+            "description": "Optional. If the message was caught due to a blocked term or a blocked link, this will be populated.",
             "name": "blocked_term",
             "type": "object"
           }
         ]
       },
+      "event_section": "automod-message-update-event-v2",
       "id": "automod_message_update_2",
       "name": "Automod Message Update V2",
       "stability": "ga",
@@ -1084,6 +1088,7 @@
           }
         ]
       },
+      "event_section": "automod-settings-update-event",
       "id": "automod_settings_update_1",
       "name": "Automod Settings Update",
       "stability": "ga",
@@ -1141,6 +1146,7 @@
           }
         ]
       },
+      "event_section": "automod-terms-update-event",
       "id": "automod_terms_update_1",
       "name": "Automod Terms Update",
       "stability": "ga",
@@ -1322,6 +1328,7 @@
           }
         ]
       },
+      "event_section": "channel-bits-use-event",
       "id": "channel_bits_use_1",
       "name": "Channel Bits Use\nNEW",
       "stability": "new",
@@ -1374,6 +1381,7 @@
           }
         ]
       },
+      "event_section": "channel-update-event",
       "id": "channel_update_2",
       "name": "Channel Update",
       "stability": "ga",
@@ -1421,6 +1429,7 @@
           }
         ]
       },
+      "event_section": "channel-follow-event",
       "id": "channel_follow_2",
       "name": "Channel Follow",
       "stability": "ga",
@@ -1478,6 +1487,7 @@
           }
         ]
       },
+      "event_section": "channel-ad-break-begin-event",
       "id": "channel_ad_break_begin_1",
       "name": "Channel Ad Break Begin",
       "stability": "ga",
@@ -1505,6 +1515,7 @@
           }
         ]
       },
+      "event_section": "channel-chat-clear-event",
       "id": "channel_chat_clear_1",
       "name": "Channel Chat Clear",
       "stability": "ga",
@@ -1547,6 +1558,7 @@
           }
         ]
       },
+      "event_section": "channel-chat-clear-user-messages-event",
       "id": "channel_chat_clear_user_messages_1",
       "name": "Channel Chat Clear User Messages",
       "stability": "ga",
@@ -1602,7 +1614,7 @@
               {
                 "children": [
                   {
-                    "description": "The type of message fragment. Possible values: text cheermote emote mention",
+                    "description": "The type of message fragment. Possible values: text cheermote emote mention gif",
                     "name": "type",
                     "type": "string"
                   },
@@ -1680,6 +1692,23 @@
                     ],
                     "description": "Optional. Metadata pertaining to the mention.",
                     "name": "mention",
+                    "type": "object"
+                  },
+                  {
+                    "children": [
+                      {
+                        "description": "An ID that uniquely identifies this GIF.",
+                        "name": "id",
+                        "type": "string"
+                      },
+                      {
+                        "description": "The URL of the GIF asset. Applications rendering the GIF must use the full URL provided; it must not be modified.",
+                        "name": "url",
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Optional. Metadata pertaining to the GIF.",
+                    "name": "gif",
                     "type": "object"
                   }
                 ],
@@ -1842,6 +1871,7 @@
           }
         ]
       },
+      "event_section": "channel-chat-message-event",
       "id": "channel_chat_message_1",
       "name": "Channel Chat Message",
       "stability": "ga",
@@ -1889,6 +1919,7 @@
           }
         ]
       },
+      "event_section": "channel-chat-message-delete-event",
       "id": "channel_chat_message_delete_1",
       "name": "Channel Chat Message Delete",
       "stability": "ga",
@@ -2067,7 +2098,7 @@
             "type": "object"
           },
           {
-            "description": "The type of notice. Possible values are: sub resub sub_gift community_sub_gift gift_paid_upgrade prime_paid_upgrade raid unraid pay_it_forward announcement bits_badge_tier charity_donation watch_streak modiversary shared_chat_sub shared_chat_resub shared_chat_sub_gift shared_chat_community_sub_gift shared_chat_gift_paid_upgrade shared_chat_prime_paid_upgrade shared_chat_raid shared_chat_pay_it_forward shared_chat_announcement shared_chat_modiversary unknown",
+            "description": "The type of notice. Possible values are: sub resub sub_gift community_sub_gift gift_paid_upgrade prime_paid_upgrade raid unraid pay_it_forward announcement bits_badge_tier charity_donation watch_streak modiversary gifted_drops_summary shared_chat_sub shared_chat_resub shared_chat_sub_gift shared_chat_community_sub_gift shared_chat_gift_paid_upgrade shared_chat_prime_paid_upgrade shared_chat_raid shared_chat_pay_it_forward shared_chat_announcement shared_chat_modiversary shared_chat_gifted_drops_summary unknown",
             "name": "notice_type",
             "type": "string"
           },
@@ -2405,6 +2436,18 @@
             "type": "object"
           },
           {
+            "children": [
+              {
+                "description": "The number of users who received a gifted Drop.",
+                "name": "recipient_count",
+                "type": "integer"
+              }
+            ],
+            "description": "Information about the gifted Drops summary event. Null if notice_type is not gifted_drops_summary.",
+            "name": "gifted_drops_summary",
+            "type": "object"
+          },
+          {
             "description": "Optional. The broadcaster user ID of the channel the message was sent from. Is null when the message notification happens in the same channel as the broadcaster. Is not null when in a shared chat session, and the action happens in the channel of a participant other than the broadcaster.",
             "name": "source_broadcaster_user_id",
             "type": "string"
@@ -2500,9 +2543,15 @@
             "description": "Optional. Information about the shared_chat_modiversary event. Is null if notice_type is not shared_chat_modiversary. This field has the same information as the modiversary field but for a notice that happened for a channel in a shared chat session other than the broadcaster in the subscription condition.",
             "name": "shared_chat_modiversary",
             "type": "object"
+          },
+          {
+            "description": "Optional. Information about the shared_chat_gifted_drops_summary event. Is null if notice_type is not shared_chat_gifted_drops_summary. This field has the same information as the gifted_drops_summary field but for a notice that happened for a channel in a shared chat session other than the broadcaster in the subscription condition.",
+            "name": "shared_chat_gifted_drops_summary",
+            "type": "object"
           }
         ]
       },
+      "event_section": "channel-chat-notification-event",
       "id": "channel_chat_notification_1",
       "name": "Channel Chat Notification",
       "stability": "ga",
@@ -2565,6 +2614,7 @@
           }
         ]
       },
+      "event_section": "channel-chat-settings-update-event",
       "id": "channel_chat_settings_update_1",
       "name": "Channel Chat Settings Update",
       "stability": "ga",
@@ -2675,6 +2725,7 @@
           }
         ]
       },
+      "event_section": "channel-chat-user-message-hold-event",
       "id": "channel_chat_user_message_hold_1",
       "name": "Channel Chat User Message Hold",
       "stability": "ga",
@@ -2790,6 +2841,7 @@
           }
         ]
       },
+      "event_section": "channel-chat-user-message-update-event",
       "id": "channel_chat_user_message_update_1",
       "name": "Channel Chat User Message Update",
       "stability": "ga",
@@ -2859,6 +2911,7 @@
           }
         ]
       },
+      "event_section": "channel-shared-chat-session-begin-event",
       "id": "channel_shared_chat_begin_1",
       "name": "Channel Shared Chat Session Begin",
       "stability": "ga",
@@ -2928,6 +2981,7 @@
           }
         ]
       },
+      "event_section": "channel-shared-chat-session-update-event",
       "id": "channel_shared_chat_update_1",
       "name": "Channel Shared Chat Session Update",
       "stability": "ga",
@@ -2975,6 +3029,7 @@
           }
         ]
       },
+      "event_section": "channel-shared-chat-session-end-event",
       "id": "channel_shared_chat_end_1",
       "name": "Channel Shared Chat Session End",
       "stability": "ga",
@@ -3027,6 +3082,7 @@
           }
         ]
       },
+      "event_section": "channel-subscribe-event",
       "id": "channel_subscribe_1",
       "name": "Channel Subscribe",
       "stability": "ga",
@@ -3079,6 +3135,7 @@
           }
         ]
       },
+      "event_section": "channel-subscription-end-event",
       "id": "channel_subscription_end_1",
       "name": "Channel Subscription End",
       "stability": "ga",
@@ -3141,6 +3198,7 @@
           }
         ]
       },
+      "event_section": "channel-subscription-gift-event",
       "id": "channel_subscription_gift_1",
       "name": "Channel Subscription Gift",
       "stability": "ga",
@@ -3209,6 +3267,7 @@
           }
         ]
       },
+      "event_section": "channel-subscription-message-event",
       "id": "channel_subscription_message_1",
       "name": "Channel Subscription Message",
       "stability": "ga",
@@ -3266,6 +3325,7 @@
           }
         ]
       },
+      "event_section": "channel-cheer-event",
       "id": "channel_cheer_1",
       "name": "Channel Cheer",
       "stability": "ga",
@@ -3313,6 +3373,7 @@
           }
         ]
       },
+      "event_section": "channel-raid-event",
       "id": "channel_raid_1",
       "name": "Channel Raid",
       "stability": "ga",
@@ -3390,6 +3451,7 @@
           }
         ]
       },
+      "event_section": "channel-ban-event",
       "id": "channel_ban_1",
       "name": "Channel Ban",
       "stability": "ga",
@@ -3447,6 +3509,7 @@
           }
         ]
       },
+      "event_section": "channel-unban-event",
       "id": "channel_unban_1",
       "name": "Channel Unban",
       "stability": "ga",
@@ -3504,6 +3567,7 @@
           }
         ]
       },
+      "event_section": "channel-unban-request-create-event",
       "id": "channel_unban_request_create_1",
       "name": "Channel Unban Request Create",
       "stability": "ga",
@@ -3576,6 +3640,7 @@
           }
         ]
       },
+      "event_section": "channel-unban-request-resolve-event",
       "id": "channel_unban_request_resolve_1",
       "name": "Channel Unban Request Resolve",
       "stability": "ga",
@@ -4018,6 +4083,7 @@
           }
         ]
       },
+      "event_section": "channel-moderate-event",
       "id": "channel_moderate_1",
       "name": "Channel Moderate",
       "stability": "ga",
@@ -4492,6 +4558,7 @@
           }
         ]
       },
+      "event_section": "channel-moderate-event-v2",
       "id": "channel_moderate_2",
       "name": "Channel Moderate V2",
       "stability": "ga",
@@ -4534,6 +4601,7 @@
           }
         ]
       },
+      "event_section": "channel-moderator-add-event",
       "id": "channel_moderator_add_1",
       "name": "Channel Moderator Add",
       "stability": "ga",
@@ -4576,6 +4644,7 @@
           }
         ]
       },
+      "event_section": "channel-moderator-remove-event",
       "id": "channel_moderator_remove_1",
       "name": "Channel Moderator Remove",
       "stability": "ga",
@@ -4613,6 +4682,7 @@
           }
         ]
       },
+      "event_section": "channel-guest-star-session-begin-event",
       "id": "channel_guest_star_session_begin_beta",
       "name": "Channel Guest Star Session Begin\nBETA",
       "stability": "beta",
@@ -4670,6 +4740,7 @@
           }
         ]
       },
+      "event_section": "channel-guest-star-session-end-event",
       "id": "channel_guest_star_session_end_beta",
       "name": "Channel Guest Star Session End\nBETA",
       "stability": "beta",
@@ -4772,6 +4843,7 @@
           }
         ]
       },
+      "event_section": "channel-guest-star-guest-update-event",
       "id": "channel_guest_star_guest_update_beta",
       "name": "Channel Guest Star Guest Update\nBETA",
       "stability": "beta",
@@ -4819,6 +4891,7 @@
           }
         ]
       },
+      "event_section": "channel-guest-star-settings-update-event",
       "id": "channel_guest_star_settings_update_beta",
       "name": "Channel Guest Star Settings Update\nBETA",
       "stability": "beta",
@@ -4944,6 +5017,7 @@
           }
         ]
       },
+      "event_section": "channel-points-automatic-reward-redemption-add-event",
       "id": "channel_channel_points_automatic_reward_redemption_add_1",
       "name": "Channel Points Automatic Reward Redemption Add",
       "stability": "ga",
@@ -5071,6 +5145,7 @@
           }
         ]
       },
+      "event_section": "channel-points-automatic-reward-redemption-add-v2-event",
       "id": "channel_channel_points_automatic_reward_redemption_add_2",
       "name": "Channel Points Automatic Reward Redemption Add V2",
       "stability": "ga",
@@ -5188,6 +5263,7 @@
           }
         ]
       },
+      "event_section": "channel-points-custom-reward-add-event",
       "id": "channel_channel_points_custom_reward_add_1",
       "name": "Channel Points Custom Reward Add",
       "stability": "ga",
@@ -5305,6 +5381,7 @@
           }
         ]
       },
+      "event_section": "channel-points-custom-reward-update-event",
       "id": "channel_channel_points_custom_reward_update_1",
       "name": "Channel Points Custom Reward Update",
       "stability": "ga",
@@ -5422,6 +5499,7 @@
           }
         ]
       },
+      "event_section": "channel-points-custom-reward-remove-event",
       "id": "channel_channel_points_custom_reward_remove_1",
       "name": "Channel Points Custom Reward Remove",
       "stability": "ga",
@@ -5490,6 +5568,7 @@
           }
         ]
       },
+      "event_section": "channel-points-custom-reward-redemption-add-event",
       "id": "channel_channel_points_custom_reward_redemption_add_1",
       "name": "Channel Points Custom Reward Redemption Add",
       "stability": "ga",
@@ -5558,6 +5637,7 @@
           }
         ]
       },
+      "event_section": "channel-points-custom-reward-redemption-update-event",
       "id": "channel_channel_points_custom_reward_redemption_update_1",
       "name": "Channel Points Custom Reward Redemption Update",
       "stability": "ga",
@@ -5626,6 +5706,7 @@
           }
         ]
       },
+      "event_section": "channel-custom-power-up-redemption-add-event",
       "id": "channel_custom_power_up_redemption_add_1",
       "name": "Channel Custom Power-ups Redemption Add\nNEW",
       "stability": "new",
@@ -5691,6 +5772,7 @@
           }
         ]
       },
+      "event_section": "channel-poll-begin-event",
       "id": "channel_poll_begin_1",
       "name": "Channel Poll Begin",
       "stability": "ga",
@@ -5756,6 +5838,7 @@
           }
         ]
       },
+      "event_section": "channel-poll-progress-event",
       "id": "channel_poll_progress_1",
       "name": "Channel Poll Progress",
       "stability": "ga",
@@ -5826,6 +5909,7 @@
           }
         ]
       },
+      "event_section": "channel-poll-end-event",
       "id": "channel_poll_end_1",
       "name": "Channel Poll End",
       "stability": "ga",
@@ -5879,6 +5963,7 @@
           }
         ]
       },
+      "event_section": "channel-prediction-begin-event",
       "id": "channel_prediction_begin_1",
       "name": "Channel Prediction Begin",
       "stability": "ga",
@@ -5932,6 +6017,7 @@
           }
         ]
       },
+      "event_section": "channel-prediction-progress-event",
       "id": "channel_prediction_progress_1",
       "name": "Channel Prediction Progress",
       "stability": "ga",
@@ -5985,6 +6071,7 @@
           }
         ]
       },
+      "event_section": "channel-prediction-lock-event",
       "id": "channel_prediction_lock_1",
       "name": "Channel Prediction Lock",
       "stability": "ga",
@@ -6048,6 +6135,7 @@
           }
         ]
       },
+      "event_section": "channel-prediction-end-event",
       "id": "channel_prediction_end_1",
       "name": "Channel Prediction End",
       "stability": "ga",
@@ -6183,6 +6271,7 @@
           }
         ]
       },
+      "event_section": "channel-suspicious-user-message-event",
       "id": "channel_suspicious_user_message_1",
       "name": "Channel Suspicious User Message\nNEW",
       "stability": "new",
@@ -6245,6 +6334,7 @@
           }
         ]
       },
+      "event_section": "channel-suspicious-user-update-event",
       "id": "channel_suspicious_user_update_1",
       "name": "Channel Suspicious User Update\nNEW",
       "stability": "new",
@@ -6287,6 +6377,7 @@
           }
         ]
       },
+      "event_section": "channel-vip-add-event",
       "id": "channel_vip_add_1",
       "name": "Channel VIP Add",
       "stability": "ga",
@@ -6329,6 +6420,7 @@
           }
         ]
       },
+      "event_section": "channel-vip-remove-event",
       "id": "channel_vip_remove_1",
       "name": "Channel VIP Remove",
       "stability": "ga",
@@ -6371,6 +6463,7 @@
           }
         ]
       },
+      "event_section": "channel-warning-acknowledge-event",
       "id": "channel_warning_acknowledge_1",
       "name": "Channel Warning Acknowledgement",
       "stability": "ga",
@@ -6438,6 +6531,7 @@
           }
         ]
       },
+      "event_section": "channel-warning-send-event",
       "id": "channel_warning_send_1",
       "name": "Channel Warning Send\nNEW",
       "stability": "new",
@@ -6532,6 +6626,7 @@
           }
         ]
       },
+      "event_section": "charity-donation-event",
       "id": "channel_charity_campaign_donate_1",
       "name": "Charity Donation",
       "stability": "ga",
@@ -6633,6 +6728,7 @@
           }
         ]
       },
+      "event_section": "charity-campaign-start-event",
       "id": "channel_charity_campaign_start_1",
       "name": "Charity Campaign Start",
       "stability": "ga",
@@ -6729,6 +6825,7 @@
           }
         ]
       },
+      "event_section": "charity-campaign-progress-event",
       "id": "channel_charity_campaign_progress_1",
       "name": "Charity Campaign Progress",
       "stability": "ga",
@@ -6830,6 +6927,7 @@
           }
         ]
       },
+      "event_section": "charity-campaign-stop-event",
       "id": "channel_charity_campaign_stop_1",
       "name": "Charity Campaign Stop",
       "stability": "ga",
@@ -6887,6 +6985,7 @@
           }
         ]
       },
+      "event_section": "conduit-shard-disabled-event",
       "id": "conduit_shard_disabled_1",
       "name": "Conduit Shard Disabled\nNEW",
       "stability": "new",
@@ -6909,6 +7008,7 @@
           }
         ]
       },
+      "event_section": "drop-entitlement-grant-event",
       "id": "drop_entitlement_grant_1",
       "name": "Drop Entitlement Grant",
       "stability": "ga",
@@ -6967,6 +7067,7 @@
           }
         ]
       },
+      "event_section": "extension-bits-transaction-create-event",
       "id": "extension_bits_transaction_create_1",
       "name": "Extension Bits Transaction Create",
       "stability": "ga",
@@ -7034,6 +7135,7 @@
           }
         ]
       },
+      "event_section": "goals-event",
       "id": "channel_goal_begin_1",
       "name": "Goal Begin",
       "stability": "ga",
@@ -7101,6 +7203,7 @@
           }
         ]
       },
+      "event_section": "goals-event",
       "id": "channel_goal_progress_1",
       "name": "Goal Progress",
       "stability": "ga",
@@ -7168,6 +7271,7 @@
           }
         ]
       },
+      "event_section": "goals-event",
       "id": "channel_goal_end_1",
       "name": "Goal End",
       "stability": "ga",
@@ -7304,6 +7408,7 @@
           }
         ]
       },
+      "event_section": "hype-train-begin-event",
       "id": "channel_hype_train_begin_2",
       "name": "Hype Train Begin",
       "stability": "ga",
@@ -7430,6 +7535,7 @@
           }
         ]
       },
+      "event_section": "hype-train-progress-event",
       "id": "channel_hype_train_progress_2",
       "name": "Hype Train Progress",
       "stability": "ga",
@@ -7551,6 +7657,7 @@
           }
         ]
       },
+      "event_section": "hype-train-end-event",
       "id": "channel_hype_train_end_2",
       "name": "Hype Train End",
       "stability": "ga",
@@ -7603,6 +7710,7 @@
           }
         ]
       },
+      "event_section": "shield-mode",
       "id": "channel_shield_mode_begin_1",
       "name": "Shield Mode Begin",
       "stability": "ga",
@@ -7655,6 +7763,7 @@
           }
         ]
       },
+      "event_section": "shield-mode",
       "id": "channel_shield_mode_end_1",
       "name": "Shield Mode End",
       "stability": "ga",
@@ -7732,6 +7841,7 @@
           }
         ]
       },
+      "event_section": "shoutout-create",
       "id": "channel_shoutout_create_1",
       "name": "Shoutout Create",
       "stability": "ga",
@@ -7784,6 +7894,7 @@
           }
         ]
       },
+      "event_section": "shoutout-received",
       "id": "channel_shoutout_receive_1",
       "name": "Shoutout Received",
       "stability": "ga",
@@ -7826,6 +7937,7 @@
           }
         ]
       },
+      "event_section": "stream-online-event",
       "id": "stream_online_1",
       "name": "Stream Online",
       "stability": "ga",
@@ -7858,6 +7970,7 @@
           }
         ]
       },
+      "event_section": "stream-offline-event",
       "id": "stream_offline_1",
       "name": "Stream Offline",
       "stability": "ga",
@@ -7890,6 +8003,7 @@
           }
         ]
       },
+      "event_section": "user-authorization-grant-event",
       "id": "user_authorization_grant_1",
       "name": "User Authorization Grant",
       "stability": "ga",
@@ -7922,6 +8036,7 @@
           }
         ]
       },
+      "event_section": "user-authorization-revoke-event",
       "id": "user_authorization_revoke_1",
       "name": "User Authorization Revoke",
       "stability": "ga",
@@ -7964,6 +8079,7 @@
           }
         ]
       },
+      "event_section": "user-update-event",
       "id": "user_update_1",
       "name": "User Update",
       "stability": "ga",
@@ -8023,6 +8139,7 @@
           }
         ]
       },
+      "event_section": "whisper-received-event",
       "id": "user_whisper_message_1",
       "name": "Whisper Received\nNEW",
       "stability": "new",
