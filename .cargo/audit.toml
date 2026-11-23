@@ -1,0 +1,11 @@
+# Configuration for `cargo audit`, used both locally and by the Audit workflow.
+
+[advisories]
+ignore = [
+    # chrono is unmaintained. It is only pulled in by `worker` (the optional
+    # `cloudflare-worker` feature), which depends on it unconditionally up to
+    # and including 0.9.0; barbed itself uses `time`. Drop this entry once
+    # `worker` ships without chrono, tracked in
+    # https://github.com/cloudflare/workers-rs/pull/1149
+    "RUSTSEC-2026-0543",
+]

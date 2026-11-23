@@ -2,6 +2,29 @@
 
 This file is append-only and records `barbed` changesO. Each entry lists the public API involved, the root feature flags needed, and any known gaps that still remain.
 
+## 0.0.6 - 2026-11-23
+
+### Dependency updates
+
+- Public API added/changed:
+  - breaking: `worker` 0.8 → 0.9 for the `cloudflare-worker` feature.
+    `worker::Error` is part of `CloudflareWorkerError::Transport` and of the
+    `cloudflare_worker::send_prepared_request*` return types, so downstream
+    crates have to move to `worker` 0.9 in the same step; no barbed code
+    needed to change
+  - breaking: MSRV raised from 1.97 to 1.98 (stable minus two); no dependency
+    requires it yet
+  - `Cargo.lock` refreshed; `url` 2.5.9 fixes RUSTSEC-2026-0592 (stack
+    overflow in `Url::origin()` on nested `blob:` URLs, which barbed never
+    calls)
+  - `.cargo/audit.toml` ignores RUSTSEC-2026-0543 (`chrono` is unmaintained);
+    barbed itself uses `time`, and `chrono` only arrives through `worker`
+- Root feature flags:
+  - `cloudflare-worker` for the `worker` bump; none otherwise
+- Known remaining gaps:
+  - `chrono` stays in the dependency tree until `worker` ships its Jiff
+    migration (cloudflare/workers-rs#1149); remove the audit ignore then
+
 ## 0.0.5 - 2026-11-09
 
 ### Twitch surface refreshed against the 2026-11-09 docs
