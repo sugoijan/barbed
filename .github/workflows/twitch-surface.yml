@@ -27,9 +27,9 @@ jobs:
 
       - name: Download current Twitch docs
         run: |
-          curl -L https://dev.twitch.tv/docs/api/reference -o /tmp/twitch_reference.html
-          curl -L https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/ -o /tmp/twitch_eventsub_types.html
-          curl -L https://dev.twitch.tv/docs/eventsub/eventsub-reference/ -o /tmp/twitch_eventsub_reference.html
+          curl -sSL --fail https://dev.twitch.tv/docs/api/reference -o /tmp/twitch_reference.html
+          curl -sSL --fail https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/ -o /tmp/twitch_eventsub_types.html
+          curl -sSL --fail https://dev.twitch.tv/docs/eventsub/eventsub-reference/ -o /tmp/twitch_eventsub_reference.html
 
       - name: Generate candidate catalog
         run: |
@@ -103,7 +103,7 @@ jobs:
 
   live-smoke:
     name: Live Smoke
-    if: (github.event_name == 'workflow_dispatch' || github.event.schedule == '0 7 * * 1') && secrets.TWITCH_TEST_CLIENT_ID != '' && secrets.TWITCH_TEST_CLIENT_SECRET != ''
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 7 * * 1'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -111,14 +111,30 @@ jobs:
       TWITCH_TEST_CLIENT_SECRET: ${{ secrets.TWITCH_TEST_CLIENT_SECRET }}
       CARGO_TERM_COLOR: always
     steps:
+      # The `secrets` context is not available in a job-level `if`, so the
+      # credential gate is a step and the remaining steps key off its output.
+      - name: Check for Twitch test credentials
+        id: credentials
+        run: |
+          if [ -n "$TWITCH_TEST_CLIENT_ID" ] && [ -n "$TWITCH_TEST_CLIENT_SECRET" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::TWITCH_TEST_CLIENT_ID and TWITCH_TEST_CLIENT_SECRET are not configured; skipping the live smoke test."
+          fi
+
       - name: Checkout
+        if: steps.credentials.outputs.available == 'true'
         uses: actions/checkout@v5
 
       - name: Install stable toolchain
+        if: steps.credentials.outputs.available == 'true'
         uses: dtolnay/rust-toolchain@stable
 
       - name: Restore Rust cache
+        if: steps.credentials.outputs.available == 'true'
         uses: Swatinem/rust-cache@v2
 
       - name: Run ignored live smoke test
+        if: steps.credentials.outputs.available == 'true'
         run: cargo test --features reqwest-client --test live_twitch_smoke -- --ignored --nocapture
