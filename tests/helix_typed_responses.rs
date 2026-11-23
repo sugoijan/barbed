@@ -1,7 +1,7 @@
 //! Decodes representative Twitch documentation example payloads through the
 //! generated typed response structs.
 
-use barbed::helix::{HelixError, RawResponse, eventsub_endpoints, streams, users};
+use barbed::helix::{HelixError, RawResponse, eventsub_endpoints, predictions, streams, users};
 
 fn response(status: u16, body: &str) -> RawResponse {
     RawResponse {
@@ -150,4 +150,45 @@ fn omitted_fields_fall_back_to_defaults() {
     let empty = users::GetUsersResponse::parse(response(200, "{}"))
         .expect("empty envelope should decode via defaults");
     assert!(empty.data.is_empty());
+}
+
+#[test]
+fn null_fields_decode_as_defaults() {
+    // Shape of the documented Get Predictions example: an active prediction
+    // has no winning outcome, end time, or lock time yet.
+    let body = r#"{
+        "data": [
+            {
+                "id": "d6676d5c-c86e-44d2-bfc4-100fb48f0656",
+                "broadcaster_id": "55696719",
+                "title": "Will there be any leaks today?",
+                "winning_outcome_id": null,
+                "outcomes": [
+                    {
+                        "id": "021e9234-5893-49b4-982e-cfe9a0aaddd9",
+                        "title": "Yes",
+                        "users": 0,
+                        "channel_points": 0,
+                        "top_predictors": null,
+                        "color": "BLUE"
+                    }
+                ],
+                "prediction_window": 600,
+                "status": "ACTIVE",
+                "created_at": "2021-04-28T16:03:06.320848689Z",
+                "ended_at": null,
+                "locked_at": null
+            }
+        ],
+        "pagination": {}
+    }"#;
+
+    let decoded =
+        predictions::GetPredictionsResponse::parse(response(200, body)).expect("should decode");
+    let prediction = &decoded.data[0];
+    assert_eq!(prediction.status, "ACTIVE");
+    assert_eq!(prediction.winning_outcome_id, "");
+    assert_eq!(prediction.ended_at, "");
+    assert!(prediction.outcomes[0].top_predictors.is_empty());
+    assert_eq!(decoded.pagination.cursor, None);
 }

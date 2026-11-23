@@ -235,25 +235,25 @@ pub struct SharedTopPredictor {
 /// Event payload for `automod.message.hold` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold1Event {
-    /// The ID of the broadcaster specified in the request.
+    /// The ID of the broadcaster specified in the subscription condition.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_id: String,
-    /// The login of the broadcaster specified in the request.
+    /// The login of the broadcaster specified in the subscription condition.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_login: String,
-    /// The user name of the broadcaster specified in the request.
+    /// The display name of the broadcaster specified in the subscription condition.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The message sender’s user ID.
+    /// The message sender's User ID.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_id: String,
-    /// The message sender’s login name.
+    /// The message sender's login name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_login: String,
-    /// The message sender’s display name.
+    /// The message sender's display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
-    /// The ID of the message that was flagged by automod.
+    /// The ID of the message that was flagged by AutoMod.
     #[serde(default, deserialize_with = "super::null_default")]
     pub message_id: String,
     /// The body of the message.
@@ -265,7 +265,7 @@ pub struct AutomodMessageHold1Event {
     /// The level of severity.
     #[serde(default, deserialize_with = "super::null_default")]
     pub level: i64,
-    /// The timestamp of when automod saved the message.
+    /// The timestamp of when AutoMod saved the message.
     #[serde(default, deserialize_with = "super::null_default")]
     pub held_at: String,
     /// Timestamp from the delivery envelope; not part of the payload itself.
@@ -276,7 +276,7 @@ pub struct AutomodMessageHold1Event {
 /// The body of the message.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold1EventMessage {
-    /// The contents of the message caught by automod.
+    /// The contents of the message caught by AutoMod.
     #[serde(default, deserialize_with = "super::null_default")]
     pub text: String,
     /// Metadata surrounding the potential inappropriate fragments of the message.
@@ -287,18 +287,18 @@ pub struct AutomodMessageHold1EventMessage {
 /// Metadata surrounding the potential inappropriate fragments of the message.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold1EventMessageFragments {
-    /// Message text in a fragment.
+    /// Message text within a fragment.
     #[serde(default, deserialize_with = "super::null_default")]
     pub text: String,
-    /// Optional.
+    /// Metadata pertaining to the emote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub emote: AutomodMessageHold1EventMessageFragmentsEmote,
-    /// Optional.
+    /// Metadata pertaining to the cheermote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub cheermote: AutomodMessageHold1EventMessageFragmentsCheermote,
 }
 
-/// Optional.
+/// Metadata pertaining to the emote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold1EventMessageFragmentsEmote {
     /// An ID that uniquely identifies this emote.
@@ -309,7 +309,7 @@ pub struct AutomodMessageHold1EventMessageFragmentsEmote {
     pub emote_set_id: String,
 }
 
-/// Optional.
+/// Metadata pertaining to the cheermote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold1EventMessageFragmentsCheermote {
     /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
@@ -341,13 +341,13 @@ pub struct AutomodMessageHold2Event {
     /// The user name of the broadcaster specified in the request.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The message sender’s user ID.
+    /// The message sender's user ID.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_id: String,
-    /// The message sender’s login name.
+    /// The message sender's login name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_login: String,
-    /// The message sender’s display name.
+    /// The message sender's display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
     /// The ID of the held message.
@@ -359,13 +359,13 @@ pub struct AutomodMessageHold2Event {
     /// The timestamp of when automod saved the message.
     #[serde(default, deserialize_with = "super::null_default")]
     pub held_at: String,
-    /// Possible values are: automod blocked_term blocked_link.
+    /// Possible values: automod blocked_term blocked_link.
     #[serde(default, deserialize_with = "super::null_default")]
     pub reason: String,
-    /// Optional.
+    /// If the message was caught by automod, this will be populated.
     #[serde(default, deserialize_with = "super::null_default")]
     pub automod: AutomodMessageHold2EventAutomod,
-    /// Optional.
+    /// If the message was caught due to a blocked term or blocked link, this will be populated.
     #[serde(default, deserialize_with = "super::null_default")]
     pub blocked_term: AutomodMessageHold2EventBlockedTerm,
     /// Timestamp from the delivery envelope; not part of the payload itself.
@@ -387,21 +387,21 @@ pub struct AutomodMessageHold2EventMessage {
 /// Metadata surrounding the potential inappropriate fragments of the message.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold2EventMessageFragments {
-    /// One of three options:text emote cheermote.
+    /// Possible values: text emote cheermote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub r#type: String,
     /// Message text in a fragment.
     #[serde(default, deserialize_with = "super::null_default")]
     pub text: String,
-    /// Optional.
+    /// Metadata pertaining to the emote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub emote: AutomodMessageHold2EventMessageFragmentsEmote,
-    /// Optional.
+    /// Metadata pertaining to the cheermote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub cheermote: AutomodMessageHold2EventMessageFragmentsCheermote,
 }
 
-/// Optional.
+/// Metadata pertaining to the emote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold2EventMessageFragmentsEmote {
     /// An ID that uniquely identifies this emote.
@@ -412,7 +412,7 @@ pub struct AutomodMessageHold2EventMessageFragmentsEmote {
     pub emote_set_id: String,
 }
 
-/// Optional.
+/// Metadata pertaining to the cheermote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold2EventMessageFragmentsCheermote {
     /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
@@ -426,7 +426,7 @@ pub struct AutomodMessageHold2EventMessageFragmentsCheermote {
     pub tier: i64,
 }
 
-/// Optional.
+/// If the message was caught by automod, this will be populated.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold2EventAutomod {
     /// The category of the caught message.
@@ -451,7 +451,7 @@ pub struct AutomodMessageHold2EventAutomodBoundaries {
     pub end_pos: i64,
 }
 
-/// Optional.
+/// If the message was caught due to a blocked term or blocked link, this will be populated.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold2EventBlockedTerm {
     /// The list of blocked terms found in the message.
@@ -508,19 +508,19 @@ pub struct AutomodMessageUpdate1Event {
     /// The user name of the broadcaster specified in the request.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The message sender’s user ID.
+    /// The message sender's user ID.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_id: String,
-    /// The message sender’s login name.
+    /// The message sender's login name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_login: String,
-    /// The message sender’s display name.
+    /// The message sender's display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
     /// The ID of the moderator.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_id: String,
-    /// TThe moderator’s user name.
+    /// TThe moderator's user name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_name: String,
     /// The login of the moderator.
@@ -538,7 +538,7 @@ pub struct AutomodMessageUpdate1Event {
     /// The level of severity.
     #[serde(default, deserialize_with = "super::null_default")]
     pub level: i64,
-    /// The message’s status.
+    /// The message's status.
     #[serde(default, deserialize_with = "super::null_default")]
     pub status: String,
     /// The timestamp of when automod saved the message.
@@ -566,15 +566,15 @@ pub struct AutomodMessageUpdate1EventMessageFragments {
     /// Message text in a fragment.
     #[serde(default, deserialize_with = "super::null_default")]
     pub text: String,
-    /// Optional.
+    /// Metadata pertaining to the emote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub emote: AutomodMessageUpdate1EventMessageFragmentsEmote,
-    /// Optional.
+    /// Metadata pertaining to the cheermote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub cheermote: AutomodMessageUpdate1EventMessageFragmentsCheermote,
 }
 
-/// Optional.
+/// Metadata pertaining to the emote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageUpdate1EventMessageFragmentsEmote {
     /// An ID that uniquely identifies this emote.
@@ -585,7 +585,7 @@ pub struct AutomodMessageUpdate1EventMessageFragmentsEmote {
     pub emote_set_id: String,
 }
 
-/// Optional.
+/// Metadata pertaining to the cheermote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageUpdate1EventMessageFragmentsCheermote {
     /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
@@ -617,19 +617,19 @@ pub struct AutomodMessageUpdate2Event {
     /// The user name of the broadcaster specified in the request.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The message sender’s user ID.
+    /// The message sender's user ID.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_id: String,
-    /// The message sender’s login name.
+    /// The message sender's login name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_login: String,
-    /// The message sender’s display name.
+    /// The message sender's display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
     /// The ID of the moderator.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_id: String,
-    /// TThe moderator’s user name.
+    /// TThe moderator's user name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_name: String,
     /// The login of the moderator.
@@ -641,7 +641,7 @@ pub struct AutomodMessageUpdate2Event {
     /// The body of the message.
     #[serde(default, deserialize_with = "super::null_default")]
     pub message: AutomodMessageUpdate2EventMessage,
-    /// The message’s status.
+    /// The message's status.
     #[serde(default, deserialize_with = "super::null_default")]
     pub status: String,
     /// The timestamp of when automod saved the message.
@@ -650,10 +650,10 @@ pub struct AutomodMessageUpdate2Event {
     /// The reason why the message was caught.
     #[serde(default, deserialize_with = "super::null_default")]
     pub reason: String,
-    /// Optional.
+    /// If the message was caught by automod, this will be populated.
     #[serde(default, deserialize_with = "super::null_default")]
     pub automod: AutomodMessageUpdate2EventAutomod,
-    /// Optional.
+    /// If the message was caught due to a blocked term or a blocked link, this will be populated.
     #[serde(default, deserialize_with = "super::null_default")]
     pub blocked_term: AutomodMessageUpdate2EventBlockedTerm,
     /// Timestamp from the delivery envelope; not part of the payload itself.
@@ -678,18 +678,18 @@ pub struct AutomodMessageUpdate2EventMessageFragments {
     /// Message text in a fragment.
     #[serde(default, deserialize_with = "super::null_default")]
     pub text: String,
-    /// One of three options:text emote cheermote.
+    /// Possible values: text emote cheermote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub r#type: String,
-    /// Optional.
+    /// Metadata pertaining to the emote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub emote: AutomodMessageUpdate2EventMessageFragmentsEmote,
-    /// Optional.
+    /// Metadata pertaining to the cheermote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub cheermote: AutomodMessageUpdate2EventMessageFragmentsCheermote,
 }
 
-/// Optional.
+/// Metadata pertaining to the emote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageUpdate2EventMessageFragmentsEmote {
     /// An ID that uniquely identifies this emote.
@@ -700,7 +700,7 @@ pub struct AutomodMessageUpdate2EventMessageFragmentsEmote {
     pub emote_set_id: String,
 }
 
-/// Optional.
+/// Metadata pertaining to the cheermote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageUpdate2EventMessageFragmentsCheermote {
     /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
@@ -714,7 +714,7 @@ pub struct AutomodMessageUpdate2EventMessageFragmentsCheermote {
     pub tier: i64,
 }
 
-/// Optional.
+/// If the message was caught by automod, this will be populated.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageUpdate2EventAutomod {
     /// The category of the caught message.
@@ -739,7 +739,7 @@ pub struct AutomodMessageUpdate2EventAutomodBoundaries {
     pub end_pos: i64,
 }
 
-/// Optional.
+/// If the message was caught due to a blocked term or a blocked link, this will be populated.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageUpdate2EventBlockedTerm {
     /// The list of blocked terms found in the message.
@@ -799,10 +799,10 @@ pub struct AutomodSettingsUpdate1Event {
     /// The ID of the moderator who changed the channel settings.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_id: String,
-    /// The moderator’s login.
+    /// The moderator's login.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_login: String,
-    /// The moderator’s user name.
+    /// The moderator's user name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_name: String,
     /// The Automod level for hostility involving name calling or insults.
@@ -858,10 +858,10 @@ pub struct AutomodTermsUpdate1Event {
     /// The ID of the moderator who changed the channel settings.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_id: String,
-    /// The moderator’s login.
+    /// The moderator's login.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_login: String,
-    /// The moderator’s user name.
+    /// The moderator's user name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_name: String,
     /// The status change applied to the terms.
@@ -879,6 +879,47 @@ pub struct AutomodTermsUpdate1Event {
 }
 
 impl super::HasSourceTimestamp for AutomodTermsUpdate1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.ad_break.begin` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelAdBreakBegin1Event {
+    /// Length in seconds of the mid-roll ad break requested.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub duration_seconds: i64,
+    /// The UTC timestamp of when the ad break began, in RFC3339 format.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// Indicates if the ad was automatically scheduled via Ads Manager.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_automatic: bool,
+    /// The broadcaster's user ID for the channel the ad was run on.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster's user login for the channel the ad was run on.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The broadcaster's user display name for the channel the ad was run on.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The ID of the user that requested the ad.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub requester_user_id: String,
+    /// The login of the user that requested the ad.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub requester_user_login: String,
+    /// The display name of the user that requested the ad.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub requester_user_name: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelAdBreakBegin1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -908,16 +949,16 @@ pub struct ChannelBitsUse1Event {
     /// The number of Bits used.
     #[serde(default, deserialize_with = "super::null_default")]
     pub bits: i64,
-    /// Possible values are: cheer power_up custom_power_up.
+    /// Possible values: cheer power_up custom_power_up.
     #[serde(default, deserialize_with = "super::null_default")]
     pub r#type: String,
-    /// Optional.
+    /// An object that contains the user message and emote information needed to recreate the message.
     #[serde(default, deserialize_with = "super::null_default")]
     pub message: ChannelBitsUse1EventMessage,
-    /// Optional.
+    /// Data about a default (i.e.
     #[serde(default, deserialize_with = "super::null_default")]
     pub power_up: ChannelBitsUse1EventPowerUp,
-    /// Optional.
+    /// Data about a custom Power-up.
     #[serde(default, deserialize_with = "super::null_default")]
     pub custom_power_up: ChannelBitsUse1EventCustomPowerUp,
     /// Timestamp from the delivery envelope; not part of the payload itself.
@@ -925,7 +966,7 @@ pub struct ChannelBitsUse1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-/// Optional.
+/// An object that contains the user message and emote information needed to recreate the message.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelBitsUse1EventMessage {
     /// The chat message in plain text.
@@ -945,15 +986,15 @@ pub struct ChannelBitsUse1EventMessageFragments {
     /// The type of message fragment.
     #[serde(default, deserialize_with = "super::null_default")]
     pub r#type: String,
-    /// Optional.
+    /// The metadata pertaining to the emote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub emote: ChannelBitsUse1EventMessageFragmentsEmote,
-    /// Optional.
+    /// The metadata pertaining to the cheermote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub cheermote: ChannelBitsUse1EventMessageFragmentsCheermote,
 }
 
-/// Optional.
+/// The metadata pertaining to the emote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelBitsUse1EventMessageFragmentsEmote {
     /// The ID that uniquely identifies this emote.
@@ -970,7 +1011,7 @@ pub struct ChannelBitsUse1EventMessageFragmentsEmote {
     pub format: Vec<String>,
 }
 
-/// Optional.
+/// The metadata pertaining to the cheermote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelBitsUse1EventMessageFragmentsCheermote {
     /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
@@ -984,21 +1025,21 @@ pub struct ChannelBitsUse1EventMessageFragmentsCheermote {
     pub tier: i64,
 }
 
-/// Optional.
+/// Data about a default (i.e.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelBitsUse1EventPowerUp {
     /// Possible values: message_effect celebration gigantify_an_emote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub r#type: String,
-    /// Optional.
+    /// Emote associated with the reward.
     #[serde(default, deserialize_with = "super::null_default")]
     pub emote: ChannelBitsUse1EventPowerUpEmote,
-    /// Optional.
+    /// The ID of the message effect.
     #[serde(default, deserialize_with = "super::null_default")]
     pub message_effect_id: String,
 }
 
-/// Optional.
+/// Emote associated with the reward.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelBitsUse1EventPowerUpEmote {
     /// The ID that uniquely identifies this emote.
@@ -1009,7 +1050,7 @@ pub struct ChannelBitsUse1EventPowerUpEmote {
     pub name: String,
 }
 
-/// Optional.
+/// Data about a custom Power-up.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelBitsUse1EventCustomPowerUp {
     /// The title of the custom Power-up.
@@ -1026,39 +1067,89 @@ impl super::HasSourceTimestamp for ChannelBitsUse1Event {
     }
 }
 
-/// Event payload for `channel.update` version 2. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.cheer` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelUpdate2Event {
-    /// The broadcaster’s user ID.
+pub struct ChannelCheer1Event {
+    /// Whether the user cheered anonymously or not.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_anonymous: bool,
+    /// The user ID for the user who cheered on the specified channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user login for the user who cheered on the specified channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user display name for the user who cheered on the specified channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The requested broadcaster ID.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_id: String,
-    /// The broadcaster’s user login.
+    /// The requested broadcaster login.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_login: String,
-    /// The broadcaster’s user display name.
+    /// The requested broadcaster display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The channel’s stream title.
+    /// The message sent with the cheer.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub title: String,
-    /// The channel’s broadcast language.
+    pub message: String,
+    /// The number of Bits cheered.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub language: String,
-    /// The channel’s category ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub category_id: String,
-    /// The category name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub category_name: String,
-    /// Array of content classification label IDs currently applied on the Channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub content_classification_labels: Vec<String>,
+    pub bits: i64,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelUpdate2Event {
+impl super::HasSourceTimestamp for ChannelCheer1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.custom_power_up_redemption.add` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCustomPowerUpRedemptionAdd1Event {
+    /// The redemption identifier.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The requested broadcaster ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The requested broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The requested broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// User ID of the user that redeemed the custom Power-up.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// Login of the user that redeemed the custom Power-up.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// Display name of the user that redeemed the custom Power-up.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The user input provided.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_input: String,
+    /// Defaults to unfulfilled.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub status: String,
+    /// Basic information about the custom Power-up that was redeemed, at the time it was redeemed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub custom_power_up: SharedCustomPowerUp,
+    /// RFC3339 timestamp of when the custom Power-up was redeemed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub redeemed_at: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelCustomPowerUpRedemptionAdd1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -1099,928 +1190,127 @@ impl super::HasSourceTimestamp for ChannelFollow2Event {
     }
 }
 
-/// Event payload for `channel.ad_break.begin` version 1. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.raid` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelAdBreakBegin1Event {
-    /// Length in seconds of the mid-roll ad break requested.
+pub struct ChannelRaid1Event {
+    /// The broadcaster ID that created the raid.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub duration_seconds: i64,
-    /// The UTC timestamp of when the ad break began, in RFC3339 format.
+    pub from_broadcaster_user_id: String,
+    /// The broadcaster login that created the raid.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// Indicates if the ad was automatically scheduled via Ads Manager.
+    pub from_broadcaster_user_login: String,
+    /// The broadcaster display name that created the raid.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub is_automatic: bool,
-    /// The broadcaster’s user ID for the channel the ad was run on.
+    pub from_broadcaster_user_name: String,
+    /// The broadcaster ID that received the raid.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s user login for the channel the ad was run on.
+    pub to_broadcaster_user_id: String,
+    /// The broadcaster login that received the raid.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The broadcaster’s user display name for the channel the ad was run on.
+    pub to_broadcaster_user_login: String,
+    /// The broadcaster display name that received the raid.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The ID of the user that requested the ad.
+    pub to_broadcaster_user_name: String,
+    /// The number of viewers in the raid.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub requester_user_id: String,
-    /// The login of the user that requested the ad.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub requester_user_login: String,
-    /// The display name of the user that requested the ad.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub requester_user_name: String,
+    pub viewers: i64,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelAdBreakBegin1Event {
+impl super::HasSourceTimestamp for ChannelRaid1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
 }
 
-/// Event payload for `channel.chat.clear` version 1. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.shoutout.create` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatClear1Event {
-    /// The broadcaster user ID.
+pub struct ChannelShoutoutCreate1Event {
+    /// An ID that identifies the broadcaster that sent the Shoutout.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_id: String,
-    /// The broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The broadcaster login.
+    /// The broadcaster's login name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_login: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelChatClear1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.chat.clear_user_messages` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatClearUserMessages1Event {
-    /// The broadcaster user ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster display name.
+    /// The broadcaster's display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The broadcaster login.
+    /// An ID that identifies the broadcaster that received the Shoutout.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The ID of the user that was banned or put in a timeout.
+    pub to_broadcaster_user_id: String,
+    /// The broadcaster's login name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub target_user_id: String,
-    /// The user name of the user that was banned or put in a timeout.
+    pub to_broadcaster_user_login: String,
+    /// The broadcaster's display name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub target_user_name: String,
-    /// The user login of the user that was banned or put in a timeout.
+    pub to_broadcaster_user_name: String,
+    /// An ID that identifies the moderator that sent the Shoutout.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub target_user_login: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelChatClearUserMessages1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.chat.notification` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1Event {
-    /// The broadcaster user ID.
+    pub moderator_user_id: String,
+    /// The moderator's login name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster display name.
+    pub moderator_user_login: String,
+    /// The moderator's display name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The user ID of the user that sent the message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub chatter_user_id: String,
-    /// The user login of the user that sent the message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub chatter_user_name: String,
-    /// Whether or not the chatter is anonymous.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub chatter_is_anonymous: bool,
-    /// The color of the user’s name in the chat room.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub color: String,
-    /// The color of the user’s name in the chat room.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub badges: Vec<ChannelChatNotification1EventBadges>,
-    /// The message Twitch shows in the chat room for this notice.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub system_message: String,
-    /// A UUID that identifies the message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub message_id: String,
-    /// The structured chat message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub message: ChannelChatNotification1EventMessage,
-    /// The type of notice.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub notice_type: String,
-    /// Information about the sub event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub sub: ChannelChatNotification1EventSub,
-    /// Information about the resub event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub resub: ChannelChatNotification1EventResub,
-    /// Information about the gift sub event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub sub_gift: ChannelChatNotification1EventSubGift,
-    /// Information about the community gift sub event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub community_sub_gift: ChannelChatNotification1EventCommunitySubGift,
-    /// Information about the community gift paid upgrade event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gift_paid_upgrade: ChannelChatNotification1EventGiftPaidUpgrade,
-    /// Information about the Prime gift paid upgrade event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub prime_paid_upgrade: ChannelChatNotification1EventPrimePaidUpgrade,
-    /// Information about the pay it forward event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub pay_it_forward: ChannelChatNotification1EventPayItForward,
-    /// Information about the raid event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub raid: ChannelChatNotification1EventRaid,
-    /// Returns an empty payload if notice_type is not unraid, otherwise returns null.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub unraid: serde_json::Value,
-    /// Information about the announcement event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub announcement: ChannelChatNotification1EventAnnouncement,
-    /// Information about the Bits badge tier event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub bits_badge_tier: ChannelChatNotification1EventBitsBadgeTier,
-    /// Information about the announcement event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_donation: ChannelChatNotification1EventCharityDonation,
-    /// Information about the Watch Streak event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub watch_streak: ChannelChatNotification1EventWatchStreak,
-    /// Information about the modiversary event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub modiversary: ChannelChatNotification1EventModiversary,
-    /// Information about the gifted Drops summary event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifted_drops_summary: ChannelChatNotification1EventGiftedDropsSummary,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub source_broadcaster_user_id: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub source_broadcaster_user_name: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub source_broadcaster_user_login: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub source_message_id: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub source_badges: ChannelChatNotification1EventSourceBadges,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_source_only: bool,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_sub: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_resub: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_sub_gift: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_community_sub_gift: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_gift_paid_upgrade: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_prime_paid_upgrade: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_pay_it_forward: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_raid: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_announcement: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_modiversary: serde_json::Value,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_chat_gifted_drops_summary: serde_json::Value,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-/// The color of the user’s name in the chat room.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventBadges {
-    /// An ID that identifies this set of chat badges.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub set_id: String,
-    /// An ID that identifies this version of the badge.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// Contains metadata related to the chat badges in the badges tag.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub info: String,
-}
-
-/// The structured chat message.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventMessage {
-    /// The chat message in plain text.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: serde_json::Value,
-    /// Ordered list of chat message fragments.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub fragments: Vec<ChannelChatNotification1EventMessageFragments>,
-}
-
-/// Ordered list of chat message fragments.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventMessageFragments {
-    /// The type of message fragment.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// Message text in fragment.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cheermote: ChannelChatNotification1EventMessageFragmentsCheermote,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emote: ChannelChatNotification1EventMessageFragmentsEmote,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub mention: ChannelChatNotification1EventMessageFragmentsMention,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventMessageFragmentsCheermote {
-    /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub prefix: String,
-    /// The amount of Bits cheered.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub bits: i64,
-    /// The tier level of the cheermote.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub tier: i64,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventMessageFragmentsEmote {
-    /// An ID that uniquely identifies this emote.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that identifies the emote set that the emote belongs to.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emote_set_id: String,
-    /// The ID of the broadcaster who owns the emote.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub owner_id: String,
-    /// The formats that the emote is available in.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub format: Vec<String>,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventMessageFragmentsMention {
-    /// The user ID of the mentioned user.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user name of the mentioned user.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The user login of the mentioned user.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-}
-
-/// Information about the sub event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventSub {
-    /// The type of subscription plan being used.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub sub_tier: String,
-    /// Indicates if the subscription was obtained through Amazon Prime.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_prime: bool,
-    /// The number of months the subscription is for.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub duration_months: i64,
-}
-
-/// Information about the resub event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventResub {
-    /// The total number of months the user has subscribed.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cumulative_months: i64,
-    /// The number of months the subscription is for.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub duration_months: i64,
-    /// The total number of months the user has subscribed.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub streak_months: i64,
-    /// The type of subscription plan being used.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub sub_tier: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_prime: bool,
-    /// Whether or not the resub was a result of a gift.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_gift: bool,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_is_anonymous: bool,
-    /// The user ID of the subscription gifter.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_user_id: String,
-    /// The user name of the subscription gifter.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_user_name: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_user_login: String,
-}
-
-/// Information about the gift sub event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventSubGift {
-    /// The number of months the subscription is for.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub duration_months: i64,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cumulative_total: i64,
-    /// The user ID of the subscription gift recipient.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub recipient_user_id: String,
-    /// The user name of the subscription gift recipient.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub recipient_user_name: String,
-    /// The user login of the subscription gift recipient.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub recipient_user_login: String,
-    /// The type of subscription plan being used.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub sub_tier: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub community_gift_id: String,
-}
-
-/// Information about the community gift sub event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventCommunitySubGift {
-    /// The ID of the associated community gift.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// Number of subscriptions being gifted.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub total: i64,
-    /// The type of subscription plan being used.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub sub_tier: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cumulative_total: i64,
-}
-
-/// Information about the community gift paid upgrade event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventGiftPaidUpgrade {
-    /// Whether the gift was given anonymously.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_is_anonymous: bool,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_user_id: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_user_name: String,
-}
-
-/// Information about the Prime gift paid upgrade event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventPrimePaidUpgrade {
-    /// The type of subscription plan being used.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub sub_tier: String,
-}
-
-/// Information about the pay it forward event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventPayItForward {
-    /// Whether the gift was given anonymously.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_is_anonymous: bool,
-    /// The user ID of the user who gifted the subscription.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_user_id: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_user_name: String,
-    /// The user login of the user who gifted the subscription.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub gifter_user_login: String,
-}
-
-/// Information about the raid event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventRaid {
-    /// The user ID of the broadcaster raiding this channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user name of the broadcaster raiding this channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The login name of the broadcaster raiding this channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The number of viewers raiding this channel from the broadcaster’s channel.
+    pub moderator_user_name: String,
+    /// The number of users that were watching the broadcaster's stream at the time of the Shoutout.
     #[serde(default, deserialize_with = "super::null_default")]
     pub viewer_count: i64,
-    /// Profile image URL of the broadcaster raiding this channel.
+    /// The UTC timestamp (in RFC3339 format) of when the moderator sent the Shoutout.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub profile_image_url: String,
-}
-
-/// Information about the announcement event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventAnnouncement {
-    /// Color of the announcement.
+    pub started_at: String,
+    /// The UTC timestamp (in RFC3339 format) of when the broadcaster may send a Shoutout to a different broadcaster.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub color: String,
-}
-
-/// Information about the Bits badge tier event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventBitsBadgeTier {
-    /// The tier of the Bits badge the user just earned.
+    pub cooldown_ends_at: String,
+    /// The UTC timestamp (in RFC3339 format) of when the broadcaster may send another Shoutout to the broadcaster in to_broadcaster_user_id.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub tier: i64,
-}
-
-/// Information about the announcement event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventCharityDonation {
-    /// Name of the charity.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_name: String,
-    /// An object that contains the amount of money that the user paid.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub amount: ChannelChatNotification1EventCharityDonationAmount,
-}
-
-/// An object that contains the amount of money that the user paid.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventCharityDonationAmount {
-    /// The monetary amount.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub value: i64,
-    /// The number of decimal places used by the currency.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub decimal_place: i64,
-    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub currency: String,
-}
-
-/// Information about the Watch Streak event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventWatchStreak {
-    /// The number of consecutive broadcasts for which the user has been watching.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub streak_count: i64,
-    /// The number of channel points awarded for the Watch Streak milestone.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub channel_points_awarded: i64,
-}
-
-/// Information about the modiversary event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventModiversary {
-    /// The number of months the user has been a moderator in this channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub months: i64,
-}
-
-/// Information about the gifted Drops summary event.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventGiftedDropsSummary {
-    /// The number of users who received a gifted Drop.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub recipient_count: i64,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatNotification1EventSourceBadges {
-    /// The ID that identifies this set of chat badges.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub set_id: String,
-    /// The ID that identifies this version of the badge.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// Contains metadata related to the chat badges in the badges tag.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub info: String,
-}
-
-impl super::HasSourceTimestamp for ChannelChatNotification1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.chat_settings.update` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatSettingsUpdate1Event {
-    /// The ID of the broadcaster specified in the request.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The login of the broadcaster specified in the request.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The user name of the broadcaster specified in the request.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// A Boolean value that determines whether chat messages must contain only emotes.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emote_mode: bool,
-    /// A Boolean value that determines whether the broadcaster restricts the chat room to followers only, based on how long they’ve followed.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub follower_mode: bool,
-    /// The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub follower_mode_duration_minutes: i64,
-    /// A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub slow_mode: bool,
-    /// The amount of time, in seconds, that users need to wait between sending messages.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub slow_mode_wait_time_seconds: i64,
-    /// A Boolean value that determines whether only users that subscribe to the broadcaster’s channel can talk in the chat room.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub subscriber_mode: bool,
-    /// A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub unique_chat_mode: bool,
+    pub target_cooldown_ends_at: String,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelChatSettingsUpdate1Event {
+impl super::HasSourceTimestamp for ChannelShoutoutCreate1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
 }
 
-/// Event payload for `channel.chat.user_message_hold` version 1. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.shoutout.receive` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageHold1Event {
-    /// The ID of the broadcaster specified in the request.
+pub struct ChannelShoutoutReceive1Event {
+    /// An ID that identifies the broadcaster that received the Shoutout.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_id: String,
-    /// The login of the broadcaster specified in the request.
+    /// The broadcaster's login name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_login: String,
-    /// The user name of the broadcaster specified in the request.
+    /// The broadcaster's display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The User ID of the message sender.
+    /// An ID that identifies the broadcaster that sent the Shoutout.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The message sender’s login.
+    pub from_broadcaster_user_id: String,
+    /// The broadcaster's login name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The message sender’s display name.
+    pub from_broadcaster_user_login: String,
+    /// The broadcaster's display name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The ID of the message that was flagged by automod.
+    pub from_broadcaster_user_name: String,
+    /// The number of users that were watching the from-broadcaster's stream at the time of the Shoutout.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub message_id: String,
-    /// The body of the message.
+    pub viewer_count: i64,
+    /// The UTC timestamp (in RFC3339 format) of when the moderator sent the Shoutout.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub message: ChannelChatUserMessageHold1EventMessage,
+    pub started_at: String,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-/// The body of the message.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageHold1EventMessage {
-    /// The contents of the message caught by automod.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: String,
-    /// Ordered list of chat message fragments.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub fragments: Vec<ChannelChatUserMessageHold1EventMessageFragments>,
-}
-
-/// Ordered list of chat message fragments.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageHold1EventMessageFragments {
-    /// Message text in a fragment.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emote: ChannelChatUserMessageHold1EventMessageFragmentsEmote,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cheermote: ChannelChatUserMessageHold1EventMessageFragmentsCheermote,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageHold1EventMessageFragmentsEmote {
-    /// An ID that uniquely identifies this emote.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that identifies the emote set that the emote belongs to.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emote_set_id: String,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageHold1EventMessageFragmentsCheermote {
-    /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub prefix: String,
-    /// The amount of Bits cheered.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub bits: i64,
-    /// The tier level of the cheermote.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub tier: i64,
-}
-
-impl super::HasSourceTimestamp for ChannelChatUserMessageHold1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.chat.user_message_update` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageUpdate1Event {
-    /// The ID of the broadcaster specified in the request.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The login of the broadcaster specified in the request.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The user name of the broadcaster specified in the request.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The User ID of the message sender.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The message sender’s login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The message sender’s user name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The message’s status.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub status: String,
-    /// The ID of the message that was flagged by automod.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub message_id: String,
-    /// The body of the message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub message: ChannelChatUserMessageUpdate1EventMessage,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-/// The body of the message.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageUpdate1EventMessage {
-    /// The contents of the message caught by automod.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: String,
-    /// Ordered list of chat message fragments.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub fragments: Vec<ChannelChatUserMessageUpdate1EventMessageFragments>,
-}
-
-/// Ordered list of chat message fragments.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageUpdate1EventMessageFragments {
-    /// Message text in a fragment.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emote: ChannelChatUserMessageUpdate1EventMessageFragmentsEmote,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cheermote: ChannelChatUserMessageUpdate1EventMessageFragmentsCheermote,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageUpdate1EventMessageFragmentsEmote {
-    /// An ID that uniquely identifies this emote.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that identifies the emote set that the emote belongs to.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emote_set_id: String,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChatUserMessageUpdate1EventMessageFragmentsCheermote {
-    /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub prefix: String,
-    /// The amount of Bits cheered.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub bits: i64,
-    /// The tier level of the cheermote.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub tier: i64,
-}
-
-impl super::HasSourceTimestamp for ChannelChatUserMessageUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.shared_chat.begin` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSharedChatBegin1Event {
-    /// The unique identifier for the shared chat session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub session_id: String,
-    /// The User ID of the channel in the subscription condition which is now active in the shared chat session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The display name of the channel in the subscription condition which is now active in the shared chat session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The user login of the channel in the subscription condition which is now active in the shared chat session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The User ID of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_broadcaster_user_id: String,
-    /// The display name of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_broadcaster_user_name: String,
-    /// The user login of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_broadcaster_user_login: String,
-    /// The list of participants in the session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub participants: ChannelSharedChatBegin1EventParticipants,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-/// The list of participants in the session.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSharedChatBegin1EventParticipants {
-    /// The User ID of the participant channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The display name of the participant channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The user login of the participant channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-}
-
-impl super::HasSourceTimestamp for ChannelSharedChatBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.shared_chat.update` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSharedChatUpdate1Event {
-    /// The unique identifier for the shared chat session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub session_id: String,
-    /// The User ID of the channel in the subscription condition.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The display name of the channel in the subscription condition.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The user login of the channel in the subscription condition.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The User ID of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_broadcaster_user_id: String,
-    /// The display name of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_broadcaster_user_name: String,
-    /// The user login of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_broadcaster_user_login: String,
-    /// The list of participants in the session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub participants: ChannelSharedChatUpdate1EventParticipants,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-/// The list of participants in the session.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSharedChatUpdate1EventParticipants {
-    /// The User ID of the participant channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The display name of the participant channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The user login of the participant channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-}
-
-impl super::HasSourceTimestamp for ChannelSharedChatUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.shared_chat.end` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSharedChatEnd1Event {
-    /// The unique identifier for the shared chat session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub session_id: String,
-    /// The User ID of the channel in the subscription condition which is no longer active in the shared chat session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The display name of the channel in the subscription condition which is no longer active in the shared chat session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The user login of the channel in the subscription condition which is no longer active in the shared chat session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The User ID of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_broadcaster_user_id: String,
-    /// The display name of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_broadcaster_user_name: String,
-    /// The user login of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_broadcaster_user_login: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelSharedChatEnd1Event {
+impl super::HasSourceTimestamp for ChannelShoutoutReceive1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -2167,7 +1457,7 @@ pub struct ChannelSubscriptionMessage1Event {
     /// The broadcaster display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The tier of the user’s subscription.
+    /// The tier of the user's subscription.
     #[serde(default, deserialize_with = "super::null_default")]
     pub tier: String,
     /// An object that contains the resubscription message and emote information needed to recreate the message.
@@ -2176,7 +1466,7 @@ pub struct ChannelSubscriptionMessage1Event {
     /// The total number of months the user has been subscribed to the channel.
     #[serde(default, deserialize_with = "super::null_default")]
     pub cumulative_months: i64,
-    /// The number of consecutive months the user’s current subscription has been active.
+    /// The number of consecutive months the user's current subscription has been active.
     #[serde(default, deserialize_with = "super::null_default")]
     pub streak_months: i64,
     /// The month duration of the subscription.
@@ -2193,77 +1483,103 @@ impl super::HasSourceTimestamp for ChannelSubscriptionMessage1Event {
     }
 }
 
-/// Event payload for `channel.cheer` version 1. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.update` version 2. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCheer1Event {
-    /// Whether the user cheered anonymously or not.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_anonymous: bool,
-    /// The user ID for the user who cheered on the specified channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user login for the user who cheered on the specified channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user display name for the user who cheered on the specified channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The requested broadcaster ID.
+pub struct ChannelUpdate2Event {
+    /// The broadcaster's user ID.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_id: String,
-    /// The requested broadcaster login.
+    /// The broadcaster's user login.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_login: String,
-    /// The requested broadcaster display name.
+    /// The broadcaster's user display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The message sent with the cheer.
+    /// The channel's stream title.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub message: String,
-    /// The number of Bits cheered.
+    pub title: String,
+    /// The channel's broadcast language.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub bits: i64,
+    pub language: String,
+    /// The channel's category ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub category_id: String,
+    /// The category name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub category_name: String,
+    /// Array of content classification label IDs currently applied on the Channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub content_classification_labels: Vec<String>,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelCheer1Event {
+impl super::HasSourceTimestamp for ChannelUpdate2Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
 }
 
-/// Event payload for `channel.raid` version 1. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.vip.add` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelRaid1Event {
-    /// The broadcaster ID that created the raid.
+pub struct ChannelVipAdd1Event {
+    /// The ID of the user who was added as a VIP.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub from_broadcaster_user_id: String,
-    /// The broadcaster login that created the raid.
+    pub user_id: String,
+    /// The login of the user who was added as a VIP.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub from_broadcaster_user_login: String,
-    /// The broadcaster display name that created the raid.
+    pub user_login: String,
+    /// The display name of the user who was added as a VIP.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub from_broadcaster_user_name: String,
-    /// The broadcaster ID that received the raid.
+    pub user_name: String,
+    /// The ID of the broadcaster.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub to_broadcaster_user_id: String,
-    /// The broadcaster login that received the raid.
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub to_broadcaster_user_login: String,
-    /// The broadcaster display name that received the raid.
+    pub broadcaster_user_login: String,
+    /// The display name of the broadcaster.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub to_broadcaster_user_name: String,
-    /// The number of viewers in the raid.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub viewers: i64,
+    pub broadcaster_user_name: String,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelRaid1Event {
+impl super::HasSourceTimestamp for ChannelVipAdd1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.vip.remove` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelVipRemove1Event {
+    /// The ID of the user who was removed as a VIP.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The login of the user who was removed as a VIP.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The display name of the user who was removed as a VIP.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The ID of the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The display name of the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelVipRemove1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -2322,138 +1638,6 @@ impl super::HasSourceTimestamp for ChannelBan1Event {
     }
 }
 
-/// Event payload for `channel.unban` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelUnban1Event {
-    /// The user id for the user who was unbanned on the specified channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user login for the user who was unbanned on the specified channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user display name for the user who was unbanned on the specified channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The requested broadcaster ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The requested broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The requested broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The user ID of the issuer of the unban.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_id: String,
-    /// The user login of the issuer of the unban.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_login: String,
-    /// The user name of the issuer of the unban.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_name: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelUnban1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.unban_request.create` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelUnbanRequestCreate1Event {
-    /// The ID of the unban request.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The broadcaster’s user ID for the channel the unban request was created for.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// User ID of user that is requesting to be unbanned.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// Message sent in the unban request.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: String,
-    /// The UTC timestamp (in RFC3339 format) of when the unban request was created.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub created_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelUnbanRequestCreate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.unban_request.resolve` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelUnbanRequestResolve1Event {
-    /// The ID of the unban request.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The broadcaster’s user ID for the channel the unban request was updated for.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_id: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_login: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_name: String,
-    /// User ID of user that requested to be unbanned.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub resolution_text: String,
-    /// Dictates whether the unban request was approved or denied.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub status: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelUnbanRequestResolve1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.moderate` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1Event {
@@ -2484,67 +1668,67 @@ pub struct ChannelModerate1Event {
     /// The user name of the moderator.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_name: String,
-    /// The type of action: Possible values are: ban timeout unban untimeout clear emoteonly emoteonlyoff followers followersoff uniquechat uniquechatoff slow slowoff subscribers subscribersoff unraid dele...
+    /// The type of action: Possible values are.
     #[serde(default, deserialize_with = "super::null_default")]
     pub action: String,
-    /// Optional.
+    /// Metadata associated with the followers command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub followers: ChannelModerate1EventFollowers,
-    /// Optional.
+    /// Metadata associated with the slow command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub slow: ChannelModerate1EventSlow,
-    /// Optional.
+    /// Metadata associated with the vip command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub vip: ChannelModerate1EventVip,
-    /// Optional.
+    /// Metadata associated with the unvip command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unvip: ChannelModerate1EventUnvip,
-    /// Optional.
+    /// Metadata associated with the mod command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub r#mod: ChannelModerate1EventMod,
-    /// Optional.
+    /// Metadata associated with the unmod command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unmod: ChannelModerate1EventUnmod,
-    /// Optional.
+    /// Metadata associated with the ban command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub ban: ChannelModerate1EventBan,
-    /// Optional.
+    /// Metadata associated with the unban command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unban: ChannelModerate1EventUnban,
-    /// Optional.
+    /// Metadata associated with the timeout command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub timeout: ChannelModerate1EventTimeout,
-    /// Optional.
+    /// Metadata associated with the untimeout command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub untimeout: ChannelModerate1EventUntimeout,
-    /// Optional.
+    /// Metadata associated with the raid command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub raid: ChannelModerate1EventRaid,
-    /// Optional.
+    /// Metadata associated with the unraid command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unraid: ChannelModerate1EventUnraid,
-    /// Optional.
+    /// Metadata associated with the delete command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub delete: ChannelModerate1EventDelete,
-    /// Optional.
+    /// Metadata associated with the automod terms changes.
     #[serde(default, deserialize_with = "super::null_default")]
     pub automod_terms: ChannelModerate1EventAutomodTerms,
-    /// Optional.
+    /// Metadata associated with an unban request.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unban_request: ChannelModerate1EventUnbanRequest,
-    /// Optional.
+    /// Information about the shared_chat_ban event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_ban: serde_json::Value,
-    /// Optional.
+    /// Information about the shared_chat_unban event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_unban: serde_json::Value,
-    /// Optional.
+    /// Information about the shared_chat_timeout event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_timeout: serde_json::Value,
-    /// Optional.
+    /// Information about the shared_chat_untimeout event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_untimeout: serde_json::Value,
-    /// Optional.
+    /// Information about the shared_chat_delete event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_delete: serde_json::Value,
     /// Timestamp from the delivery envelope; not part of the payload itself.
@@ -2552,7 +1736,7 @@ pub struct ChannelModerate1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-/// Optional.
+/// Metadata associated with the followers command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventFollowers {
     /// The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room.
@@ -2560,7 +1744,7 @@ pub struct ChannelModerate1EventFollowers {
     pub follow_duration_minutes: i64,
 }
 
-/// Optional.
+/// Metadata associated with the slow command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventSlow {
     /// The amount of time, in seconds, that users need to wait between sending messages.
@@ -2568,7 +1752,7 @@ pub struct ChannelModerate1EventSlow {
     pub wait_time_seconds: i64,
 }
 
-/// Optional.
+/// Metadata associated with the vip command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventVip {
     /// The ID of the user gaining VIP status.
@@ -2582,7 +1766,7 @@ pub struct ChannelModerate1EventVip {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the unvip command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventUnvip {
     /// The ID of the user losing VIP status.
@@ -2596,7 +1780,7 @@ pub struct ChannelModerate1EventUnvip {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the mod command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventMod {
     /// The ID of the user gaining mod status.
@@ -2610,7 +1794,7 @@ pub struct ChannelModerate1EventMod {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the unmod command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventUnmod {
     /// The ID of the user losing mod status.
@@ -2624,7 +1808,7 @@ pub struct ChannelModerate1EventUnmod {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the ban command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventBan {
     /// The ID of the user being banned.
@@ -2636,12 +1820,12 @@ pub struct ChannelModerate1EventBan {
     /// The user name of the user being banned.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
-    /// Optional.
+    /// Reason given for the ban.
     #[serde(default, deserialize_with = "super::null_default")]
     pub reason: String,
 }
 
-/// Optional.
+/// Metadata associated with the unban command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventUnban {
     /// The ID of the user being unbanned.
@@ -2655,7 +1839,7 @@ pub struct ChannelModerate1EventUnban {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the timeout command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventTimeout {
     /// The ID of the user being timed out.
@@ -2667,7 +1851,7 @@ pub struct ChannelModerate1EventTimeout {
     /// The user name of the user being timed out.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
-    /// Optional.
+    /// The reason given for the timeout.
     #[serde(default, deserialize_with = "super::null_default")]
     pub reason: String,
     /// The time at which the timeout ends.
@@ -2675,7 +1859,7 @@ pub struct ChannelModerate1EventTimeout {
     pub expires_at: String,
 }
 
-/// Optional.
+/// Metadata associated with the untimeout command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventUntimeout {
     /// The ID of the user being untimed out.
@@ -2689,7 +1873,7 @@ pub struct ChannelModerate1EventUntimeout {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the raid command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventRaid {
     /// The ID of the user being raided.
@@ -2706,7 +1890,7 @@ pub struct ChannelModerate1EventRaid {
     pub viewer_count: i64,
 }
 
-/// Optional.
+/// Metadata associated with the unraid command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventUnraid {
     /// The ID of the user no longer being raided.
@@ -2720,7 +1904,7 @@ pub struct ChannelModerate1EventUnraid {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the delete command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventDelete {
     /// The ID of the user whose message is being deleted.
@@ -2740,7 +1924,7 @@ pub struct ChannelModerate1EventDelete {
     pub message_body: String,
 }
 
-/// Optional.
+/// Metadata associated with the automod terms changes.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventAutomodTerms {
     /// Either “add” or “remove”.
@@ -2757,7 +1941,7 @@ pub struct ChannelModerate1EventAutomodTerms {
     pub from_automod: bool,
 }
 
-/// Optional.
+/// Metadata associated with an unban request.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate1EventUnbanRequest {
     /// Whether or not the unban request was approved or denied.
@@ -2816,67 +2000,67 @@ pub struct ChannelModerate2Event {
     /// The action performed.
     #[serde(default, deserialize_with = "super::null_default")]
     pub action: String,
-    /// Optional.
+    /// Metadata associated with the followers command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub followers: ChannelModerate2EventFollowers,
-    /// Optional.
+    /// Metadata associated with the slow command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub slow: ChannelModerate2EventSlow,
-    /// Optional.
+    /// Metadata associated with the vip command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub vip: ChannelModerate2EventVip,
-    /// Optional.
+    /// Metadata associated with the unvip command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unvip: ChannelModerate2EventUnvip,
-    /// Optional.
+    /// Metadata associated with the mod command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub r#mod: ChannelModerate2EventMod,
-    /// Optional.
+    /// Metadata associated with the unmod command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unmod: ChannelModerate2EventUnmod,
-    /// Optional.
+    /// Metadata associated with the ban command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub ban: ChannelModerate2EventBan,
-    /// Optional.
+    /// Metadata associated with the unban command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unban: ChannelModerate2EventUnban,
-    /// Optional.
+    /// Metadata associated with the timeout command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub timeout: ChannelModerate2EventTimeout,
-    /// Optional.
+    /// Metadata associated with the untimeout command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub untimeout: ChannelModerate2EventUntimeout,
-    /// Optional.
+    /// Metadata associated with the raid command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub raid: ChannelModerate2EventRaid,
-    /// Optional.
+    /// Metadata associated with the unraid command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unraid: ChannelModerate2EventUnraid,
-    /// Optional.
+    /// Metadata associated with the delete command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub delete: ChannelModerate2EventDelete,
-    /// Optional.
+    /// Metadata associated with the automod terms changes.
     #[serde(default, deserialize_with = "super::null_default")]
     pub automod_terms: ChannelModerate2EventAutomodTerms,
-    /// Optional.
+    /// Metadata associated with an unban request.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unban_request: ChannelModerate2EventUnbanRequest,
-    /// Optional.
+    /// Metadata associated with the warn command.
     #[serde(default, deserialize_with = "super::null_default")]
     pub warn: ChannelModerate2EventWarn,
-    /// Optional.
+    /// Information about the shared_chat_ban event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_ban: serde_json::Value,
-    /// Optional.
+    /// Information about the shared_chat_unban event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_unban: serde_json::Value,
-    /// Optional.
+    /// Information about the shared_chat_timeout event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_timeout: serde_json::Value,
-    /// Optional.
+    /// Information about the shared_chat_untimeout event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_untimeout: serde_json::Value,
-    /// Optional.
+    /// Information about the shared_chat_delete event.
     #[serde(default, deserialize_with = "super::null_default")]
     pub shared_chat_delete: serde_json::Value,
     /// Timestamp from the delivery envelope; not part of the payload itself.
@@ -2884,7 +2068,7 @@ pub struct ChannelModerate2Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-/// Optional.
+/// Metadata associated with the followers command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventFollowers {
     /// The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room.
@@ -2892,7 +2076,7 @@ pub struct ChannelModerate2EventFollowers {
     pub follow_duration_minutes: i64,
 }
 
-/// Optional.
+/// Metadata associated with the slow command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventSlow {
     /// The amount of time, in seconds, that users need to wait between sending messages.
@@ -2900,7 +2084,7 @@ pub struct ChannelModerate2EventSlow {
     pub wait_time_seconds: i64,
 }
 
-/// Optional.
+/// Metadata associated with the vip command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventVip {
     /// The ID of the user gaining VIP status.
@@ -2914,7 +2098,7 @@ pub struct ChannelModerate2EventVip {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the unvip command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventUnvip {
     /// The ID of the user losing VIP status.
@@ -2928,7 +2112,7 @@ pub struct ChannelModerate2EventUnvip {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the mod command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventMod {
     /// The ID of the user gaining mod status.
@@ -2942,7 +2126,7 @@ pub struct ChannelModerate2EventMod {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the unmod command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventUnmod {
     /// The ID of the user losing mod status.
@@ -2956,7 +2140,7 @@ pub struct ChannelModerate2EventUnmod {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the ban command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventBan {
     /// The ID of the user being banned.
@@ -2968,12 +2152,12 @@ pub struct ChannelModerate2EventBan {
     /// The user name of the user being banned.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
-    /// Optional.
+    /// Reason given for the ban.
     #[serde(default, deserialize_with = "super::null_default")]
     pub reason: String,
 }
 
-/// Optional.
+/// Metadata associated with the unban command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventUnban {
     /// The ID of the user being unbanned.
@@ -2987,7 +2171,7 @@ pub struct ChannelModerate2EventUnban {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the timeout command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventTimeout {
     /// The ID of the user being timed out.
@@ -2999,7 +2183,7 @@ pub struct ChannelModerate2EventTimeout {
     /// The user name of the user being timed out.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
-    /// Optional.
+    /// The reason given for the timeout.
     #[serde(default, deserialize_with = "super::null_default")]
     pub reason: String,
     /// The time at which the timeout ends.
@@ -3007,7 +2191,7 @@ pub struct ChannelModerate2EventTimeout {
     pub expires_at: String,
 }
 
-/// Optional.
+/// Metadata associated with the untimeout command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventUntimeout {
     /// The ID of the user being untimed out.
@@ -3021,7 +2205,7 @@ pub struct ChannelModerate2EventUntimeout {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the raid command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventRaid {
     /// The ID of the user being raided.
@@ -3038,7 +2222,7 @@ pub struct ChannelModerate2EventRaid {
     pub viewer_count: i64,
 }
 
-/// Optional.
+/// Metadata associated with the unraid command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventUnraid {
     /// The ID of the user no longer being raided.
@@ -3052,7 +2236,7 @@ pub struct ChannelModerate2EventUnraid {
     pub user_name: String,
 }
 
-/// Optional.
+/// Metadata associated with the delete command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventDelete {
     /// The ID of the user whose message is being deleted.
@@ -3072,7 +2256,7 @@ pub struct ChannelModerate2EventDelete {
     pub message_body: String,
 }
 
-/// Optional.
+/// Metadata associated with the automod terms changes.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventAutomodTerms {
     /// Either “add” or “remove”.
@@ -3089,7 +2273,7 @@ pub struct ChannelModerate2EventAutomodTerms {
     pub from_automod: bool,
 }
 
-/// Optional.
+/// Metadata associated with an unban request.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventUnbanRequest {
     /// Whether or not the unban request was approved or denied.
@@ -3109,7 +2293,7 @@ pub struct ChannelModerate2EventUnbanRequest {
     pub moderator_message: String,
 }
 
-/// Optional.
+/// Metadata associated with the warn command.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModerate2EventWarn {
     /// The ID of the user being warned.
@@ -3121,10 +2305,10 @@ pub struct ChannelModerate2EventWarn {
     /// The user name of the user being warned.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
-    /// Optional.
+    /// Reason given for the warning.
     #[serde(default, deserialize_with = "super::null_default")]
     pub reason: String,
-    /// Optional.
+    /// Chat rules cited for the warning.
     #[serde(default, deserialize_with = "super::null_default")]
     pub chat_rules_cited: Vec<String>,
 }
@@ -3199,174 +2383,435 @@ impl super::HasSourceTimestamp for ChannelModeratorRemove1Event {
     }
 }
 
-/// Event payload for `channel.guest_star_session.begin` version beta. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.shield_mode.begin` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelGuestStarSessionBeginBetaEvent {
-    /// The broadcaster user ID.
+pub struct ChannelShieldModeBegin1Event {
+    /// An ID that identifies the broadcaster whose Shield Mode status was updated.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_id: String,
-    /// The broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The broadcaster login.
+    /// The broadcaster's login name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_login: String,
-    /// ID representing the unique session that was started.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub session_id: String,
-    /// RFC3339 timestamp indicating the time the session began.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelGuestStarSessionBeginBetaEvent {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.guest_star_session.end` version beta. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelGuestStarSessionEndBetaEvent {
-    /// The non-host broadcaster user ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The non-host broadcaster display name.
+    /// The broadcaster's display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// The non-host broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// ID representing the unique session that was started.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub session_id: String,
-    /// RFC3339 timestamp indicating the time the session began.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// RFC3339 timestamp indicating the time the session ended.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub ended_at: String,
-    /// User ID of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_user_id: String,
-    /// The host display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_user_name: String,
-    /// The host login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_user_login: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelGuestStarSessionEndBetaEvent {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.guest_star_guest.update` version beta. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelGuestStarGuestUpdateBetaEvent {
-    /// The non-host broadcaster user ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The non-host broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The non-host broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// ID representing the unique session that was started.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub session_id: String,
-    /// The user ID of the moderator who updated the guest’s state (could be the host).
+    /// An ID that identifies the moderator that updated the Shield Mode's status.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_id: String,
-    /// The moderator display name.null if the update was performed by the guest.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_name: String,
-    /// The moderator login.
+    /// The moderator's login name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_user_login: String,
-    /// The user ID of the guest who transitioned states in the session.
+    /// The moderator's display name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub guest_user_id: String,
-    /// The guest display name.
+    pub moderator_user_name: String,
+    /// The UTC timestamp (in RFC3339 format) of when the moderator activated Shield Mode.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub guest_user_name: String,
-    /// The guest login.
+    pub started_at: String,
+    /// The UTC timestamp (in RFC3339 format) of when the moderator deactivated Shield Mode.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub guest_user_login: String,
-    /// The ID of the slot assignment the guest is assigned to.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub slot_id: String,
-    /// The current state of the user after the update has taken place.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub state: String,
-    /// User ID of the host channel.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_user_id: String,
-    /// The host display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_user_name: String,
-    /// The host login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_user_login: String,
-    /// Flag that signals whether the host is allowing the slot’s video to be seen by participants within the session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_video_enabled: bool,
-    /// Flag that signals whether the host is allowing the slot’s audio to be heard by participants within the session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_audio_enabled: bool,
-    /// Value between 0-100 that represents the slot’s audio level as heard by participants within the session.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub host_volume: i64,
+    pub ended_at: String,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelGuestStarGuestUpdateBetaEvent {
+impl super::HasSourceTimestamp for ChannelShieldModeBegin1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
 }
 
-/// Event payload for `channel.guest_star_settings.update` version beta. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.shield_mode.end` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelGuestStarSettingsUpdateBetaEvent {
-    /// User ID of the host channel.
+pub struct ChannelShieldModeEnd1Event {
+    /// An ID that identifies the broadcaster whose Shield Mode status was updated.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_id: String,
-    /// The broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// he broadcaster login.
+    /// The broadcaster's login name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_login: String,
-    /// Flag determining if Guest Star moderators have access to control whether a guest is live once assigned to a slot.
+    /// The broadcaster's display name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub is_moderator_send_live_enabled: bool,
-    /// Number of slots the Guest Star call interface will allow the host to add to a call.
+    pub broadcaster_user_name: String,
+    /// An ID that identifies the moderator that updated the Shield Mode's status.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub slot_count: i64,
-    /// Flag determining if browser sources subscribed to sessions on this channel should output audio.
+    pub moderator_user_id: String,
+    /// The moderator's login name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub is_browser_source_audio_enabled: bool,
-    /// This setting determines how the guests within a session should be laid out within a group browser source.
+    pub moderator_user_login: String,
+    /// The moderator's display name.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub group_layout: String,
+    pub moderator_user_name: String,
+    /// The UTC timestamp (in RFC3339 format) of when the moderator activated Shield Mode.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// The UTC timestamp (in RFC3339 format) of when the moderator deactivated Shield Mode.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub ended_at: String,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelGuestStarSettingsUpdateBetaEvent {
+impl super::HasSourceTimestamp for ChannelShieldModeEnd1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.suspicious_user.message` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSuspiciousUserMessage1Event {
+    /// The ID of the channel where the treatment for a suspicious user was updated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The display name of the channel where the treatment for a suspicious user was updated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The login of the channel where the treatment for a suspicious user was updated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The user ID of the user that sent the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user name of the user that sent the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The user login of the user that sent the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The status set for the suspicious user.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub low_trust_status: String,
+    /// A list of channel IDs where the suspicious user is also banned.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_ban_channel_ids: Vec<String>,
+    /// User types (if any) that apply to the suspicious user, can be “manually_added”, “ban_evader”, or “banned_in_shared_channel”.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub types: Vec<String>,
+    /// A ban evasion likelihood value (if any) that as been applied to the user automatically by Twitch, can be “unknown”, “possible”, or “likely”.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub ban_evasion_evaluation: String,
+    /// The structured chat message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub message: ChannelSuspiciousUserMessage1EventMessage,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The structured chat message.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSuspiciousUserMessage1EventMessage {
+    /// The UUID that identifies the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub message_id: String,
+    /// The chat message in plain text.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub text: String,
+    /// Ordered list of chat message fragments.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub fragments: Vec<ChannelSuspiciousUserMessage1EventMessageFragments>,
+}
+
+/// Ordered list of chat message fragments.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSuspiciousUserMessage1EventMessageFragments {
+    /// The type of message fragment.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// Message text in fragment.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub text: String,
+    /// Metadata pertaining to the cheermote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cheermote: ChannelSuspiciousUserMessage1EventMessageFragmentsCheermote,
+    /// Metadata pertaining to the emote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub emote: ChannelSuspiciousUserMessage1EventMessageFragmentsEmote,
+}
+
+/// Metadata pertaining to the cheermote.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSuspiciousUserMessage1EventMessageFragmentsCheermote {
+    /// The name portion of the Cheermote string that you use in chat to cheer Bits.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub prefix: String,
+    /// The amount of Bits cheered.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub bits: i64,
+    /// The tier level of the cheermote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub tier: i64,
+}
+
+/// Metadata pertaining to the emote.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSuspiciousUserMessage1EventMessageFragmentsEmote {
+    /// An ID that uniquely identifies this emote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that identifies the emote set that the emote belongs to.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub emote_set_id: String,
+}
+
+impl super::HasSourceTimestamp for ChannelSuspiciousUserMessage1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.suspicious_user.update` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSuspiciousUserUpdate1Event {
+    /// The ID of the channel where the treatment for a suspicious user was updated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The display name of the channel where the treatment for a suspicious user was updated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The Login of the channel where the treatment for a suspicious user was updated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The ID of the moderator that updated the treatment for a suspicious user.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_id: String,
+    /// The display name of the moderator that updated the treatment for a suspicious user.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_name: String,
+    /// The login of the moderator that updated the treatment for a suspicious user.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_login: String,
+    /// The ID of the suspicious user whose treatment was updated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The display name of the suspicious user whose treatment was updated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The login of the suspicious user whose treatment was updated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The status set for the suspicious user.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub low_trust_status: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelSuspiciousUserUpdate1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.unban` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelUnban1Event {
+    /// The user id for the user who was unbanned on the specified channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user login for the user who was unbanned on the specified channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user display name for the user who was unbanned on the specified channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The requested broadcaster ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The requested broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The requested broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The user ID of the issuer of the unban.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_id: String,
+    /// The user login of the issuer of the unban.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_login: String,
+    /// The user name of the issuer of the unban.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_name: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelUnban1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.unban_request.create` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelUnbanRequestCreate1Event {
+    /// The ID of the unban request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The broadcaster's user ID for the channel the unban request was created for.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The broadcaster's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// User ID of user that is requesting to be unbanned.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// Message sent in the unban request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub text: String,
+    /// The UTC timestamp (in RFC3339 format) of when the unban request was created.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub created_at: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelUnbanRequestCreate1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.unban_request.resolve` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelUnbanRequestResolve1Event {
+    /// The ID of the unban request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The broadcaster's user ID for the channel the unban request was updated for.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The broadcaster's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// User ID of moderator who approved/denied the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_id: String,
+    /// The moderator's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_login: String,
+    /// The moderator's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_name: String,
+    /// User ID of user that requested to be unbanned.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// Resolution text supplied by the mod/broadcaster upon approval/denial of the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub resolution_text: String,
+    /// Dictates whether the unban request was approved or denied.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub status: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelUnbanRequestResolve1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.warning.acknowledge` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelWarningAcknowledge1Event {
+    /// The user ID of the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The user name of the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The ID of the user that has acknowledged their warning.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The login of the user that has acknowledged their warning.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user name of the user that has acknowledged their warning.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelWarningAcknowledge1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.warning.send` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelWarningSend1Event {
+    /// The user ID of the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The user name of the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The user ID of the moderator who sent the warning.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_id: String,
+    /// The login of the moderator.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_login: String,
+    /// The user name of the moderator.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_name: String,
+    /// The ID of the user being warned.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The login of the user being warned.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user name of the user being.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The reason given for the warning.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub reason: String,
+    /// The chat rules cited for the warning.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub chat_rules_cited: Vec<String>,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelWarningSend1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -3401,8 +2846,8 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd1Event {
     pub reward: ChannelChannelPointsAutomaticRewardRedemptionAdd1EventReward,
     /// An object that contains the user message and emote information needed to recreate the message.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub message: ChannelChannelPointsAutomaticRewardRedemptionAdd1EventMessage,
-    /// Optional.
+    pub message: SharedMessage,
+    /// A string that the user entered if the reward requires input.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_input: String,
     /// The UTC date and time (in RFC3339 format) of when the reward was redeemed.
@@ -3422,12 +2867,12 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd1EventReward {
     /// The reward cost.
     #[serde(default, deserialize_with = "super::null_default")]
     pub cost: i64,
-    /// Optional.
+    /// Emote that was unlocked.
     #[serde(default, deserialize_with = "super::null_default")]
     pub unlocked_emote: ChannelChannelPointsAutomaticRewardRedemptionAdd1EventRewardUnlockedEmote,
 }
 
-/// Optional.
+/// Emote that was unlocked.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd1EventRewardUnlockedEmote {
     /// The emote ID.
@@ -3436,31 +2881,6 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd1EventRewardUnlockedE
     /// The human readable emote token.
     #[serde(default, deserialize_with = "super::null_default")]
     pub name: String,
-}
-
-/// An object that contains the user message and emote information needed to recreate the message.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd1EventMessage {
-    /// The text of the chat message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: String,
-    /// An array that includes the emote ID and start and end positions for where the emote appears in the text.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emotes: Vec<ChannelChannelPointsAutomaticRewardRedemptionAdd1EventMessageEmotes>,
-}
-
-/// An array that includes the emote ID and start and end positions for where the emote appears in the text.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd1EventMessageEmotes {
-    /// The emote ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The index of where the Emote starts in the text.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub begin: i64,
-    /// The index of where the Emote ends in the text.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub end: i64,
 }
 
 impl super::HasSourceTimestamp for ChannelChannelPointsAutomaticRewardRedemptionAdd1Event {
@@ -3496,7 +2916,7 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd2Event {
     /// An object that contains the reward information.
     #[serde(default, deserialize_with = "super::null_default")]
     pub reward: ChannelChannelPointsAutomaticRewardRedemptionAdd2EventReward,
-    /// Optional.
+    /// An object that contains the user message and emote information needed to recreate the message.
     #[serde(default, deserialize_with = "super::null_default")]
     pub message: ChannelChannelPointsAutomaticRewardRedemptionAdd2EventMessage,
     /// The UTC date and time (in RFC3339 format) of when the reward was redeemed.
@@ -3516,12 +2936,12 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd2EventReward {
     /// Number of channel points used.
     #[serde(default, deserialize_with = "super::null_default")]
     pub channel_points: i64,
-    /// Optional.
+    /// Emote associated with the reward.
     #[serde(default, deserialize_with = "super::null_default")]
     pub emote: ChannelChannelPointsAutomaticRewardRedemptionAdd2EventRewardEmote,
 }
 
-/// Optional.
+/// Emote associated with the reward.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd2EventRewardEmote {
     /// The emote ID.
@@ -3532,7 +2952,7 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd2EventRewardEmote {
     pub name: String,
 }
 
-/// Optional.
+/// An object that contains the user message and emote information needed to recreate the message.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd2EventMessage {
     /// The chat message in plain text.
@@ -3552,12 +2972,12 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd2EventMessageFragment
     /// The type of message fragment.
     #[serde(default, deserialize_with = "super::null_default")]
     pub r#type: String,
-    /// Optional.
+    /// The metadata pertaining to the emote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub emote: ChannelChannelPointsAutomaticRewardRedemptionAdd2EventMessageFragmentsEmote,
 }
 
-/// Optional.
+/// The metadata pertaining to the emote.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd2EventMessageFragmentsEmote {
     /// The ID that uniquely identifies this emote.
@@ -3566,228 +2986,6 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd2EventMessageFragment
 }
 
 impl super::HasSourceTimestamp for ChannelChannelPointsAutomaticRewardRedemptionAdd2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.channel_points_custom_reward.add` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChannelPointsCustomRewardAdd1Event {
-    /// The reward identifier.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The requested broadcaster ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The requested broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The requested broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Is the reward currently enabled.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_enabled: bool,
-    /// Is the reward currently paused.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_paused: bool,
-    /// Is the reward currently in stock.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_in_stock: bool,
-    /// The reward title.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub title: String,
-    /// The reward cost.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cost: i64,
-    /// The reward description.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub prompt: String,
-    /// Does the viewer need to enter information when redeeming the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_user_input_required: bool,
-    /// Should redemptions be set to fulfilled status immediately when redeemed and skip the request queue instead of the normal unfulfilled status.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub should_redemptions_skip_request_queue: bool,
-    /// Whether a maximum per stream is enabled and what the maximum is.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub max_per_stream: SharedMaxPerStream,
-    /// Whether a maximum per user per stream is enabled and what the maximum is.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub max_per_user_per_stream: SharedMaxPerUserPerStream,
-    /// Custom background color for the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub background_color: String,
-    /// Set of custom images of 1x, 2x and 4x sizes for the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub image: SharedImage,
-    /// Set of default images of 1x, 2x and 4x sizes for the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub default_image: SharedImage,
-    /// Whether a cooldown is enabled and what the cooldown is in seconds.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub global_cooldown: SharedGlobalCooldown,
-    /// Timestamp of the cooldown expiration.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cooldown_expires_at: String,
-    /// The number of redemptions redeemed during the current live stream.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub redemptions_redeemed_current_stream: i64,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardAdd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.channel_points_custom_reward.update` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChannelPointsCustomRewardUpdate1Event {
-    /// The reward identifier.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The requested broadcaster ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The requested broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The requested broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Is the reward currently enabled.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_enabled: bool,
-    /// Is the reward currently paused.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_paused: bool,
-    /// Is the reward currently in stock.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_in_stock: bool,
-    /// The reward title.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub title: String,
-    /// The reward cost.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cost: i64,
-    /// The reward description.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub prompt: String,
-    /// Does the viewer need to enter information when redeeming the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_user_input_required: bool,
-    /// Should redemptions be set to fulfilled status immediately when redeemed and skip the request queue instead of the normal unfulfilled status.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub should_redemptions_skip_request_queue: bool,
-    /// Whether a maximum per stream is enabled and what the maximum is.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub max_per_stream: SharedMaxPerStream,
-    /// Whether a maximum per user per stream is enabled and what the maximum is.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub max_per_user_per_stream: SharedMaxPerUserPerStream,
-    /// Custom background color for the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub background_color: String,
-    /// Set of custom images of 1x, 2x and 4x sizes for the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub image: SharedImage,
-    /// Set of default images of 1x, 2x and 4x sizes for the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub default_image: SharedImage,
-    /// Whether a cooldown is enabled and what the cooldown is in seconds.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub global_cooldown: SharedGlobalCooldown,
-    /// Timestamp of the cooldown expiration.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cooldown_expires_at: String,
-    /// The number of redemptions redeemed during the current live stream.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub redemptions_redeemed_current_stream: i64,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.channel_points_custom_reward.remove` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelChannelPointsCustomRewardRemove1Event {
-    /// The reward identifier.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The requested broadcaster ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The requested broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The requested broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Is the reward currently enabled.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_enabled: bool,
-    /// Is the reward currently paused.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_paused: bool,
-    /// Is the reward currently in stock.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_in_stock: bool,
-    /// The reward title.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub title: String,
-    /// The reward cost.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cost: i64,
-    /// The reward description.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub prompt: String,
-    /// Does the viewer need to enter information when redeeming the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_user_input_required: bool,
-    /// Should redemptions be set to fulfilled status immediately when redeemed and skip the request queue instead of the normal unfulfilled status.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub should_redemptions_skip_request_queue: bool,
-    /// Whether a maximum per stream is enabled and what the maximum is.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub max_per_stream: SharedMaxPerStream,
-    /// Whether a maximum per user per stream is enabled and what the maximum is.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub max_per_user_per_stream: SharedMaxPerUserPerStream,
-    /// Custom background color for the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub background_color: String,
-    /// Set of custom images of 1x, 2x and 4x sizes for the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub image: SharedImage,
-    /// Set of default images of 1x, 2x and 4x sizes for the reward.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub default_image: SharedImage,
-    /// Whether a cooldown is enabled and what the cooldown is in seconds.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub global_cooldown: SharedGlobalCooldown,
-    /// Timestamp of the cooldown expiration.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cooldown_expires_at: String,
-    /// The number of redemptions redeemed during the current live stream.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub redemptions_redeemed_current_stream: i64,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardRemove1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -3887,10 +3085,10 @@ impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardRedemptionUpd
     }
 }
 
-/// Event payload for `channel.custom_power_up_redemption.add` version 1. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.channel_points_custom_reward.add` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCustomPowerUpRedemptionAdd1Event {
-    /// The redemption identifier.
+pub struct ChannelChannelPointsCustomRewardAdd1Event {
+    /// The reward identifier.
     #[serde(default, deserialize_with = "super::null_default")]
     pub id: String,
     /// The requested broadcaster ID.
@@ -3902,33 +3100,2121 @@ pub struct ChannelCustomPowerUpRedemptionAdd1Event {
     /// The requested broadcaster display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// User ID of the user that redeemed the custom Power-up.
+    /// Is the reward currently enabled.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// Login of the user that redeemed the custom Power-up.
+    pub is_enabled: bool,
+    /// Is the reward currently paused.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// Display name of the user that redeemed the custom Power-up.
+    pub is_paused: bool,
+    /// Is the reward currently in stock.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The user input provided.
+    pub is_in_stock: bool,
+    /// The reward title.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub user_input: String,
-    /// Defaults to unfulfilled.
+    pub title: String,
+    /// The reward cost.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub status: String,
-    /// Basic information about the custom Power-up that was redeemed, at the time it was redeemed.
+    pub cost: i64,
+    /// The reward description.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub custom_power_up: SharedCustomPowerUp,
-    /// RFC3339 timestamp of when the custom Power-up was redeemed.
+    pub prompt: String,
+    /// Does the viewer need to enter information when redeeming the reward.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub redeemed_at: String,
+    pub is_user_input_required: bool,
+    /// Should redemptions be set to fulfilled status immediately when redeemed and skip the request queue instead of the normal unfulfilled status.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub should_redemptions_skip_request_queue: bool,
+    /// Whether a maximum per stream is enabled and what the maximum is.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub max_per_stream: SharedMaxPerStream,
+    /// Whether a maximum per user per stream is enabled and what the maximum is.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub max_per_user_per_stream: SharedMaxPerUserPerStream,
+    /// Custom background color for the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub background_color: String,
+    /// Set of custom images of 1x, 2x and 4x sizes for the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub image: SharedImage,
+    /// Set of default images of 1x, 2x and 4x sizes for the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub default_image: SharedImage,
+    /// Whether a cooldown is enabled and what the cooldown is in seconds.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub global_cooldown: SharedGlobalCooldown,
+    /// Timestamp of the cooldown expiration.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cooldown_expires_at: String,
+    /// The number of redemptions redeemed during the current live stream.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub redemptions_redeemed_current_stream: i64,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelCustomPowerUpRedemptionAdd1Event {
+impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardAdd1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.channel_points_custom_reward.remove` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChannelPointsCustomRewardRemove1Event {
+    /// The reward identifier.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The requested broadcaster ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The requested broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The requested broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// Is the reward currently enabled.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_enabled: bool,
+    /// Is the reward currently paused.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_paused: bool,
+    /// Is the reward currently in stock.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_in_stock: bool,
+    /// The reward title.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub title: String,
+    /// The reward cost.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cost: i64,
+    /// The reward description.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub prompt: String,
+    /// Does the viewer need to enter information when redeeming the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_user_input_required: bool,
+    /// Should redemptions be set to fulfilled status immediately when redeemed and skip the request queue instead of the normal unfulfilled status.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub should_redemptions_skip_request_queue: bool,
+    /// Whether a maximum per stream is enabled and what the maximum is.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub max_per_stream: SharedMaxPerStream,
+    /// Whether a maximum per user per stream is enabled and what the maximum is.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub max_per_user_per_stream: SharedMaxPerUserPerStream,
+    /// Custom background color for the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub background_color: String,
+    /// Set of custom images of 1x, 2x and 4x sizes for the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub image: SharedImage,
+    /// Set of default images of 1x, 2x and 4x sizes for the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub default_image: SharedImage,
+    /// Whether a cooldown is enabled and what the cooldown is in seconds.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub global_cooldown: SharedGlobalCooldown,
+    /// Timestamp of the cooldown expiration.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cooldown_expires_at: String,
+    /// The number of redemptions redeemed during the current live stream.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub redemptions_redeemed_current_stream: i64,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardRemove1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.channel_points_custom_reward.update` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChannelPointsCustomRewardUpdate1Event {
+    /// The reward identifier.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The requested broadcaster ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The requested broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The requested broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// Is the reward currently enabled.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_enabled: bool,
+    /// Is the reward currently paused.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_paused: bool,
+    /// Is the reward currently in stock.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_in_stock: bool,
+    /// The reward title.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub title: String,
+    /// The reward cost.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cost: i64,
+    /// The reward description.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub prompt: String,
+    /// Does the viewer need to enter information when redeeming the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_user_input_required: bool,
+    /// Should redemptions be set to fulfilled status immediately when redeemed and skip the request queue instead of the normal unfulfilled status.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub should_redemptions_skip_request_queue: bool,
+    /// Whether a maximum per stream is enabled and what the maximum is.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub max_per_stream: SharedMaxPerStream,
+    /// Whether a maximum per user per stream is enabled and what the maximum is.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub max_per_user_per_stream: SharedMaxPerUserPerStream,
+    /// Custom background color for the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub background_color: String,
+    /// Set of custom images of 1x, 2x and 4x sizes for the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub image: SharedImage,
+    /// Set of default images of 1x, 2x and 4x sizes for the reward.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub default_image: SharedImage,
+    /// Whether a cooldown is enabled and what the cooldown is in seconds.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub global_cooldown: SharedGlobalCooldown,
+    /// Timestamp of the cooldown expiration.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cooldown_expires_at: String,
+    /// The number of redemptions redeemed during the current live stream.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub redemptions_redeemed_current_stream: i64,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardUpdate1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.charity_campaign.donate` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignDonate1Event {
+    /// An ID that identifies the donation.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that identifies the charity campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub campaign_id: String,
+    /// An ID that identifies the broadcaster that's running the campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The broadcaster's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// An ID that identifies the user that donated to the campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The charity's name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_name: String,
+    /// A description of the charity.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_description: String,
+    /// A URL to an image of the charity's logo.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_logo: String,
+    /// A URL to the charity's website.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_website: String,
+    /// An object that contains the amount of money that the user donated.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub amount: ChannelCharityCampaignDonate1EventAmount,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// An object that contains the amount of money that the user donated.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignDonate1EventAmount {
+    /// The monetary amount.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub value: i64,
+    /// The number of decimal places used by the currency.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub decimal_places: i64,
+    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub currency: String,
+}
+
+impl super::HasSourceTimestamp for ChannelCharityCampaignDonate1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.charity_campaign.progress` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignProgress1Event {
+    /// An ID that identifies the charity campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that identifies the broadcaster that's running the campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_id: String,
+    /// The broadcaster's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_login: String,
+    /// The broadcaster's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_name: String,
+    /// The charity's name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_name: String,
+    /// A description of the charity.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_description: String,
+    /// A URL to an image of the charity's logo.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_logo: String,
+    /// A URL to the charity's website.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_website: String,
+    /// An object that contains the current amount of donations that the campaign has received.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub current_amount: ChannelCharityCampaignProgress1EventCurrentAmount,
+    /// An object that contains the campaign's target fundraising goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub target_amount: ChannelCharityCampaignProgress1EventTargetAmount,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// An object that contains the current amount of donations that the campaign has received.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignProgress1EventCurrentAmount {
+    /// The monetary amount.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub value: i64,
+    /// The number of decimal places used by the currency.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub decimal_places: i64,
+    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub currency: String,
+}
+
+/// An object that contains the campaign's target fundraising goal.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignProgress1EventTargetAmount {
+    /// The monetary amount.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub value: i64,
+    /// The number of decimal places used by the currency.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub decimal_places: i64,
+    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub currency: String,
+}
+
+impl super::HasSourceTimestamp for ChannelCharityCampaignProgress1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.charity_campaign.start` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignStart1Event {
+    /// An ID that identifies the charity campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that identifies the broadcaster that's running the campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_id: String,
+    /// The broadcaster's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_login: String,
+    /// The broadcaster's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_name: String,
+    /// The charity's name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_name: String,
+    /// A description of the charity.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_description: String,
+    /// A URL to an image of the charity's logo.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_logo: String,
+    /// A URL to the charity's website.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_website: String,
+    /// An object that contains the current amount of donations that the campaign has received.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub current_amount: ChannelCharityCampaignStart1EventCurrentAmount,
+    /// An object that contains the campaign's target fundraising goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub target_amount: ChannelCharityCampaignStart1EventTargetAmount,
+    /// The UTC timestamp (in RFC3339 format) of when the broadcaster started the campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// An object that contains the current amount of donations that the campaign has received.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignStart1EventCurrentAmount {
+    /// The monetary amount.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub value: i64,
+    /// The number of decimal places used by the currency.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub decimal_places: i64,
+    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub currency: String,
+}
+
+/// An object that contains the campaign's target fundraising goal.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignStart1EventTargetAmount {
+    /// The monetary amount.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub value: i64,
+    /// The number of decimal places used by the currency.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub decimal_places: i64,
+    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub currency: String,
+}
+
+impl super::HasSourceTimestamp for ChannelCharityCampaignStart1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.charity_campaign.stop` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignStop1Event {
+    /// An ID that identifies the charity campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that identifies the broadcaster that ran the campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_id: String,
+    /// The broadcaster's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_login: String,
+    /// The broadcaster's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_name: String,
+    /// The charity's name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_name: String,
+    /// A description of the charity.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_description: String,
+    /// A URL to an image of the charity's logo.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_logo: String,
+    /// A URL to the charity's website.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_website: String,
+    /// An object that contains the final amount of donations that the campaign received.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub current_amount: ChannelCharityCampaignStop1EventCurrentAmount,
+    /// An object that contains the campaign's target fundraising goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub target_amount: ChannelCharityCampaignStop1EventTargetAmount,
+    /// The UTC timestamp (in RFC3339 format) of when the broadcaster stopped the campaign.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub stopped_at: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// An object that contains the final amount of donations that the campaign received.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignStop1EventCurrentAmount {
+    /// The monetary amount.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub value: i64,
+    /// The number of decimal places used by the currency.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub decimal_places: i64,
+    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub currency: String,
+}
+
+/// An object that contains the campaign's target fundraising goal.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelCharityCampaignStop1EventTargetAmount {
+    /// The monetary amount.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub value: i64,
+    /// The number of decimal places used by the currency.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub decimal_places: i64,
+    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub currency: String,
+}
+
+impl super::HasSourceTimestamp for ChannelCharityCampaignStop1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.chat_settings.update` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatSettingsUpdate1Event {
+    /// The ID of the broadcaster specified in the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster specified in the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The user name of the broadcaster specified in the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// A Boolean value that determines whether chat messages must contain only emotes.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub emote_mode: bool,
+    /// A Boolean value that determines whether the broadcaster restricts the chat room to followers only, based on how long they've followed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub follower_mode: bool,
+    /// The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub follower_mode_duration_minutes: i64,
+    /// A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub slow_mode: bool,
+    /// The amount of time, in seconds, that users need to wait between sending messages.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub slow_mode_wait_time_seconds: i64,
+    /// A Boolean value that determines whether only users that subscribe to the broadcaster's channel can talk in the chat room.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub subscriber_mode: bool,
+    /// A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub unique_chat_mode: bool,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelChatSettingsUpdate1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.chat.clear` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatClear1Event {
+    /// The broadcaster user ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelChatClear1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.chat.clear_user_messages` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatClearUserMessages1Event {
+    /// The broadcaster user ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The ID of the user that was banned or put in a timeout.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub target_user_id: String,
+    /// The user name of the user that was banned or put in a timeout.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub target_user_name: String,
+    /// The user login of the user that was banned or put in a timeout.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub target_user_login: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelChatClearUserMessages1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.chat.notification` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1Event {
+    /// The broadcaster user ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The user ID of the user that sent the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub chatter_user_id: String,
+    /// The display name of the user that sent the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub chatter_user_name: String,
+    /// The user login of the user that sent the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub chatter_user_login: String,
+    /// Whether or not the chatter is anonymous.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub chatter_is_anonymous: bool,
+    /// The color of the user's name in the chat room.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub color: String,
+    /// The list of chat badges for the chatter in the channel the message was sent from.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub badges: Vec<ChannelChatNotification1EventBadges>,
+    /// The message Twitch shows in the chat room for this notice.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub system_message: String,
+    /// A UUID that identifies the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub message_id: String,
+    /// The structured chat message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub message: ChannelChatNotification1EventMessage,
+    /// The type of notice.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub notice_type: String,
+    /// Information about the sub event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub sub: ChannelChatNotification1EventSub,
+    /// Information about the resub event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub resub: ChannelChatNotification1EventResub,
+    /// Information about the gift sub event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub sub_gift: ChannelChatNotification1EventSubGift,
+    /// Information about the community gift sub event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub community_sub_gift: ChannelChatNotification1EventCommunitySubGift,
+    /// Information about the community gift paid upgrade event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gift_paid_upgrade: ChannelChatNotification1EventGiftPaidUpgrade,
+    /// Information about the Prime gift paid upgrade event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub prime_paid_upgrade: ChannelChatNotification1EventPrimePaidUpgrade,
+    /// Information about the pay it forward event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub pay_it_forward: ChannelChatNotification1EventPayItForward,
+    /// Information about the raid event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub raid: ChannelChatNotification1EventRaid,
+    /// Returns an empty payload if notice_type is unraid, otherwise returns null.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub unraid: serde_json::Value,
+    /// Information about the announcement event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub announcement: ChannelChatNotification1EventAnnouncement,
+    /// Information about the Bits badge tier event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub bits_badge_tier: ChannelChatNotification1EventBitsBadgeTier,
+    /// Information about the announcement event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_donation: ChannelChatNotification1EventCharityDonation,
+    /// Information about the Watch Streak event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub watch_streak: ChannelChatNotification1EventWatchStreak,
+    /// Information about the modiversary event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub modiversary: ChannelChatNotification1EventModiversary,
+    /// Information about the gifted Drops summary event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifted_drops_summary: ChannelChatNotification1EventGiftedDropsSummary,
+    /// The broadcaster user ID of the channel the message was sent from.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub source_broadcaster_user_id: String,
+    /// The user name of the broadcaster of the channel the message was sent from.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub source_broadcaster_user_name: String,
+    /// The login of the broadcaster of the channel the message was sent from.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub source_broadcaster_user_login: String,
+    /// The UUID that identifies the source message from the channel the message was sent from.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub source_message_id: String,
+    /// The list of chat badges for the chatter in the channel the message was sent from.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub source_badges: Vec<ChannelChatNotification1EventSourceBadges>,
+    /// Whether the notification is only sent to the source channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_source_only: bool,
+    /// Information about the shared_chat_sub event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_sub: serde_json::Value,
+    /// Information about the shared_chat_resub event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_resub: serde_json::Value,
+    /// Information about the shared_chat_sub_gift event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_sub_gift: serde_json::Value,
+    /// Information about the shared_chat_community_sub_gift event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_community_sub_gift: serde_json::Value,
+    /// Information about the shared_chat_gift_paid_upgrade event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_gift_paid_upgrade: serde_json::Value,
+    /// Information about the shared_chat_chat_prime_paid_upgrade event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_prime_paid_upgrade: serde_json::Value,
+    /// Information about the shared_chat_pay_it_forward event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_pay_it_forward: serde_json::Value,
+    /// Information about the shared_chat_raid event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_raid: serde_json::Value,
+    /// Information about the shared_chat_announcement event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_announcement: serde_json::Value,
+    /// Information about the shared_chat_modiversary event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_modiversary: serde_json::Value,
+    /// Information about the shared_chat_gifted_drops_summary event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_chat_gifted_drops_summary: serde_json::Value,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The list of chat badges for the chatter in the channel the message was sent from.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventBadges {
+    /// An ID that identifies this set of chat badges.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub set_id: String,
+    /// An ID that identifies this version of the badge.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// Contains metadata related to the chat badges in the badges tag.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub info: String,
+}
+
+/// The structured chat message.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventMessage {
+    /// The chat message in plain text.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub text: String,
+    /// Ordered list of chat message fragments.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub fragments: Vec<ChannelChatNotification1EventMessageFragments>,
+}
+
+/// Ordered list of chat message fragments.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventMessageFragments {
+    /// The type of message fragment.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// Message text in fragment.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub text: String,
+    /// Metadata pertaining to the cheermote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cheermote: ChannelChatNotification1EventMessageFragmentsCheermote,
+    /// Metadata pertaining to the emote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub emote: ChannelChatNotification1EventMessageFragmentsEmote,
+    /// Metadata pertaining to the mention.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub mention: ChannelChatNotification1EventMessageFragmentsMention,
+}
+
+/// Metadata pertaining to the cheermote.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventMessageFragmentsCheermote {
+    /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub prefix: String,
+    /// The amount of Bits cheered.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub bits: i64,
+    /// The tier level of the cheermote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub tier: i64,
+}
+
+/// Metadata pertaining to the emote.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventMessageFragmentsEmote {
+    /// An ID that uniquely identifies this emote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that identifies the emote set that the emote belongs to.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub emote_set_id: String,
+    /// The ID of the broadcaster who owns the emote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub owner_id: String,
+    /// The formats that the emote is available in.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub format: Vec<String>,
+}
+
+/// Metadata pertaining to the mention.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventMessageFragmentsMention {
+    /// The user ID of the mentioned user.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user name of the mentioned user.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The user login of the mentioned user.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+}
+
+/// Information about the sub event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventSub {
+    /// The type of subscription plan being used.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub sub_tier: String,
+    /// Indicates if the subscription was obtained through Amazon Prime.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_prime: bool,
+    /// The number of months the subscription is for.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub duration_months: i64,
+}
+
+/// Information about the resub event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventResub {
+    /// The total number of months the user has subscribed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cumulative_months: i64,
+    /// The number of months the subscription is for.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub duration_months: i64,
+    /// The total number of months the user has subscribed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub streak_months: i64,
+    /// The type of subscription plan being used.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub sub_tier: String,
+    /// Whether or not this subscription is a Prime subscription.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_prime: bool,
+    /// Whether or not the resub was a result of a gift.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_gift: bool,
+    /// Whether or not the gift was anonymous.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_is_anonymous: bool,
+    /// The user ID of the subscription gifter.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_user_id: String,
+    /// The user name of the subscription gifter.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_user_name: String,
+    /// The user login of the subscription gifter.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_user_login: String,
+}
+
+/// Information about the gift sub event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventSubGift {
+    /// The number of months the subscription is for.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub duration_months: i64,
+    /// The amount of gifts the gifter has given in this channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cumulative_total: i64,
+    /// The user ID of the subscription gift recipient.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub recipient_user_id: String,
+    /// The user name of the subscription gift recipient.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub recipient_user_name: String,
+    /// The user login of the subscription gift recipient.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub recipient_user_login: String,
+    /// The type of subscription plan being used.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub sub_tier: String,
+    /// The ID of the associated community gift.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub community_gift_id: String,
+}
+
+/// Information about the community gift sub event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventCommunitySubGift {
+    /// The ID of the associated community gift.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// Number of subscriptions being gifted.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub total: i64,
+    /// The type of subscription plan being used.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub sub_tier: String,
+    /// The amount of gifts the gifter has given in this channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cumulative_total: i64,
+}
+
+/// Information about the community gift paid upgrade event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventGiftPaidUpgrade {
+    /// Whether the gift was given anonymously.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_is_anonymous: bool,
+    /// The user ID of the user who gifted the subscription.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_user_id: String,
+    /// The user name of the user who gifted the subscription.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_user_name: String,
+}
+
+/// Information about the Prime gift paid upgrade event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventPrimePaidUpgrade {
+    /// The type of subscription plan being used.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub sub_tier: String,
+}
+
+/// Information about the pay it forward event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventPayItForward {
+    /// Whether the gift was given anonymously.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_is_anonymous: bool,
+    /// The user ID of the user who gifted the subscription.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_user_id: String,
+    /// The user name of the user who gifted the subscription.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_user_name: String,
+    /// The user login of the user who gifted the subscription.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub gifter_user_login: String,
+}
+
+/// Information about the raid event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventRaid {
+    /// The user ID of the broadcaster raiding this channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user name of the broadcaster raiding this channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The login name of the broadcaster raiding this channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The number of viewers raiding this channel from the broadcaster's channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub viewer_count: i64,
+    /// Profile image URL of the broadcaster raiding this channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub profile_image_url: String,
+}
+
+/// Information about the announcement event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventAnnouncement {
+    /// Color of the announcement.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub color: String,
+}
+
+/// Information about the Bits badge tier event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventBitsBadgeTier {
+    /// The tier of the Bits badge the user just earned.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub tier: i64,
+}
+
+/// Information about the announcement event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventCharityDonation {
+    /// Name of the charity.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub charity_name: String,
+    /// An object that contains the amount of money that the user paid.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub amount: ChannelChatNotification1EventCharityDonationAmount,
+}
+
+/// An object that contains the amount of money that the user paid.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventCharityDonationAmount {
+    /// The monetary amount.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub value: i64,
+    /// The number of decimal places used by the currency.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub decimal_place: i64,
+    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub currency: String,
+}
+
+/// Information about the Watch Streak event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventWatchStreak {
+    /// The number of consecutive broadcasts for which the user has been watching.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub streak_count: i64,
+    /// The number of channel points awarded for the Watch Streak milestone.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub channel_points_awarded: i64,
+}
+
+/// Information about the modiversary event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventModiversary {
+    /// The number of months the user has been a moderator in this channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub months: i64,
+}
+
+/// Information about the gifted Drops summary event.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventGiftedDropsSummary {
+    /// The number of users who received a gifted Drop.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub recipient_count: i64,
+}
+
+/// The list of chat badges for the chatter in the channel the message was sent from.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatNotification1EventSourceBadges {
+    /// The ID that identifies this set of chat badges.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub set_id: String,
+    /// The ID that identifies this version of the badge.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// Contains metadata related to the chat badges in the badges tag.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub info: String,
+}
+
+impl super::HasSourceTimestamp for ChannelChatNotification1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.chat.user_message_hold` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageHold1Event {
+    /// The ID of the broadcaster specified in the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster specified in the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The user name of the broadcaster specified in the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The User ID of the message sender.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The message sender's login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The message sender's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The ID of the message that was flagged by automod.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub message_id: String,
+    /// The body of the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub message: ChannelChatUserMessageHold1EventMessage,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The body of the message.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageHold1EventMessage {
+    /// The contents of the message caught by automod.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub text: String,
+    /// Ordered list of chat message fragments.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub fragments: Vec<ChannelChatUserMessageHold1EventMessageFragments>,
+}
+
+/// Ordered list of chat message fragments.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageHold1EventMessageFragments {
+    /// The type of message fragment.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// Message text in a fragment.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub text: String,
+    /// Metadata pertaining to the emote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub emote: ChannelChatUserMessageHold1EventMessageFragmentsEmote,
+    /// Metadata pertaining to the cheermote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cheermote: ChannelChatUserMessageHold1EventMessageFragmentsCheermote,
+}
+
+/// Metadata pertaining to the emote.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageHold1EventMessageFragmentsEmote {
+    /// An ID that uniquely identifies this emote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that identifies the emote set that the emote belongs to.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub emote_set_id: String,
+}
+
+/// Metadata pertaining to the cheermote.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageHold1EventMessageFragmentsCheermote {
+    /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub prefix: String,
+    /// The amount of Bits cheered.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub bits: i64,
+    /// The tier level of the cheermote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub tier: i64,
+}
+
+impl super::HasSourceTimestamp for ChannelChatUserMessageHold1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.chat.user_message_update` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageUpdate1Event {
+    /// The ID of the broadcaster specified in the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster specified in the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The user name of the broadcaster specified in the request.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The User ID of the message sender.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The message sender's login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The message sender's user name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The message's status.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub status: String,
+    /// The ID of the message that was flagged by automod.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub message_id: String,
+    /// The body of the message.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub message: ChannelChatUserMessageUpdate1EventMessage,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The body of the message.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageUpdate1EventMessage {
+    /// The contents of the message caught by automod.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub text: String,
+    /// Ordered list of chat message fragments.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub fragments: Vec<ChannelChatUserMessageUpdate1EventMessageFragments>,
+}
+
+/// Ordered list of chat message fragments.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageUpdate1EventMessageFragments {
+    /// The type of message fragment.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// Message text in a fragment.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub text: String,
+    /// Metadata pertaining to the emote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub emote: ChannelChatUserMessageUpdate1EventMessageFragmentsEmote,
+    /// Metadata pertaining to the cheermote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cheermote: ChannelChatUserMessageUpdate1EventMessageFragmentsCheermote,
+}
+
+/// Metadata pertaining to the emote.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageUpdate1EventMessageFragmentsEmote {
+    /// An ID that uniquely identifies this emote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that identifies the emote set that the emote belongs to.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub emote_set_id: String,
+}
+
+/// Metadata pertaining to the cheermote.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelChatUserMessageUpdate1EventMessageFragmentsCheermote {
+    /// The name portion of the Cheermote string that you use in chat to cheer Bits, converted to lowercase.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub prefix: String,
+    /// The amount of Bits cheered.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub bits: i64,
+    /// The tier level of the cheermote.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub tier: i64,
+}
+
+impl super::HasSourceTimestamp for ChannelChatUserMessageUpdate1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.shared_chat.begin` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSharedChatBegin1Event {
+    /// The unique identifier for the shared chat session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub session_id: String,
+    /// The User ID of the channel in the subscription condition which is now active in the shared chat session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The display name of the channel in the subscription condition which is now active in the shared chat session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The user login of the channel in the subscription condition which is now active in the shared chat session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The User ID of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_broadcaster_user_id: String,
+    /// The display name of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_broadcaster_user_name: String,
+    /// The user login of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_broadcaster_user_login: String,
+    /// The list of participants in the session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub participants: Vec<ChannelSharedChatBegin1EventParticipants>,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The list of participants in the session.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSharedChatBegin1EventParticipants {
+    /// The User ID of the participant channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The display name of the participant channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The user login of the participant channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+}
+
+impl super::HasSourceTimestamp for ChannelSharedChatBegin1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.shared_chat.end` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSharedChatEnd1Event {
+    /// The unique identifier for the shared chat session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub session_id: String,
+    /// The User ID of the channel in the subscription condition which is no longer active in the shared chat session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The display name of the channel in the subscription condition which is no longer active in the shared chat session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The user login of the channel in the subscription condition which is no longer active in the shared chat session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The User ID of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_broadcaster_user_id: String,
+    /// The display name of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_broadcaster_user_name: String,
+    /// The user login of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_broadcaster_user_login: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelSharedChatEnd1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.shared_chat.update` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSharedChatUpdate1Event {
+    /// The unique identifier for the shared chat session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub session_id: String,
+    /// The User ID of the channel in the subscription condition.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The display name of the channel in the subscription condition.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The user login of the channel in the subscription condition.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The User ID of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_broadcaster_user_id: String,
+    /// The display name of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_broadcaster_user_name: String,
+    /// The user login of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_broadcaster_user_login: String,
+    /// The list of participants in the session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub participants: Vec<ChannelSharedChatUpdate1EventParticipants>,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The list of participants in the session.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelSharedChatUpdate1EventParticipants {
+    /// The User ID of the participant channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The display name of the participant channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The user login of the participant channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+}
+
+impl super::HasSourceTimestamp for ChannelSharedChatUpdate1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `conduit.shard.disabled` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ConduitShardDisabled1Event {
+    /// The ID of the conduit.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub conduit_id: String,
+    /// The ID of the disabled shard.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shard_id: String,
+    /// The new status of the transport.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub status: String,
+    /// The disabled transport.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub transport: ConduitShardDisabled1EventTransport,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The disabled transport.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ConduitShardDisabled1EventTransport {
+    /// websocket or webhook.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub method: String,
+    /// Webhook callback URL.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub callback: String,
+    /// WebSocket session ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub session_id: String,
+    /// Time that the WebSocket session connected.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub connected_at: String,
+    /// Time that the WebSocket session disconnected.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub disconnected_at: String,
+}
+
+impl super::HasSourceTimestamp for ConduitShardDisabled1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `drop.entitlement.grant` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct DropEntitlementGrant1Event {
+    /// Individual event ID, as assigned by EventSub.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The granted entitlement.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub data: DropEntitlementGrant1EventData,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The granted entitlement.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct DropEntitlementGrant1EventData {
+    /// The ID of the organization that owns the game that has Drops enabled.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub organization_id: String,
+    /// Twitch category ID of the game that was being played when this benefit was entitled.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub category_id: String,
+    /// The category name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub category_name: String,
+    /// The campaign this entitlement is associated with.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub campaign_id: String,
+    /// Twitch user ID of the user who was granted the entitlement.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user display name of the user who was granted the entitlement.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The user login of the user who was granted the entitlement.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// Unique identifier of the entitlement.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub entitlement_id: String,
+    /// Identifier of the Benefit.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub benefit_id: String,
+    /// UTC timestamp in ISO format when this entitlement was granted on Twitch.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub created_at: String,
+}
+
+impl super::HasSourceTimestamp for DropEntitlementGrant1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `extension.bits_transaction.create` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ExtensionBitsTransactionCreate1Event {
+    /// Client ID of the extension.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub extension_client_id: String,
+    /// Transaction ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The transaction's broadcaster ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The transaction's broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The transaction's broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The transaction's user ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The transaction's user login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The transaction's user display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// Additional extension product information.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub product: SharedProduct,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ExtensionBitsTransactionCreate1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.goal.begin` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelGoalBegin1Event {
+    /// An ID that identifies this event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that uniquely identifies the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The broadcaster's user handle.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The type of goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// A description of the goal, if specified.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub description: String,
+    /// A Boolean value that indicates whether the broadcaster achieved their goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_achieved: bool,
+    /// The goal's current value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub current_amount: i64,
+    /// The goal's target value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub target_amount: i64,
+    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster created the goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster ended the goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub ended_at: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelGoalBegin1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.goal.end` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelGoalEnd1Event {
+    /// An ID that identifies this event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that uniquely identifies the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The broadcaster's user handle.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The type of goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// A description of the goal, if specified.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub description: String,
+    /// A Boolean value that indicates whether the broadcaster achieved their goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_achieved: bool,
+    /// The goal's current value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub current_amount: i64,
+    /// The goal's target value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub target_amount: i64,
+    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster created the goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster ended the goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub ended_at: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelGoalEnd1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.goal.progress` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelGoalProgress1Event {
+    /// An ID that identifies this event.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// An ID that uniquely identifies the broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The broadcaster's user handle.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The type of goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// A description of the goal, if specified.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub description: String,
+    /// A Boolean value that indicates whether the broadcaster achieved their goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_achieved: bool,
+    /// The goal's current value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub current_amount: i64,
+    /// The goal's target value.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub target_amount: i64,
+    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster created the goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster ended the goal.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub ended_at: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelGoalProgress1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.guest_star_guest.update` version beta. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelGuestStarGuestUpdateBetaEvent {
+    /// The non-host broadcaster user ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The non-host broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The non-host broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// ID representing the unique session that was started.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub session_id: String,
+    /// The user ID of the moderator who updated the guest's state (could be the host).
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_id: String,
+    /// The moderator display name.null if the update was performed by the guest.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_name: String,
+    /// The moderator login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub moderator_user_login: String,
+    /// The user ID of the guest who transitioned states in the session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub guest_user_id: String,
+    /// The guest display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub guest_user_name: String,
+    /// The guest login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub guest_user_login: String,
+    /// The ID of the slot assignment the guest is assigned to.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub slot_id: String,
+    /// The current state of the user after the update has taken place.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub state: String,
+    /// User ID of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_user_id: String,
+    /// The host display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_user_name: String,
+    /// The host login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_user_login: String,
+    /// Flag that signals whether the host is allowing the slot's video to be seen by participants within the session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_video_enabled: bool,
+    /// Flag that signals whether the host is allowing the slot's audio to be heard by participants within the session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_audio_enabled: bool,
+    /// Value between 0-100 that represents the slot's audio level as heard by participants within the session.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_volume: i64,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelGuestStarGuestUpdateBetaEvent {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.guest_star_session.begin` version beta. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelGuestStarSessionBeginBetaEvent {
+    /// The broadcaster user ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// ID representing the unique session that was started.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub session_id: String,
+    /// RFC3339 timestamp indicating the time the session began.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelGuestStarSessionBeginBetaEvent {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.guest_star_session.end` version beta. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelGuestStarSessionEndBetaEvent {
+    /// The non-host broadcaster user ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The non-host broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// The non-host broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// ID representing the unique session that was started.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub session_id: String,
+    /// RFC3339 timestamp indicating the time the session began.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// RFC3339 timestamp indicating the time the session ended.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub ended_at: String,
+    /// User ID of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_user_id: String,
+    /// The host display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_user_name: String,
+    /// The host login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub host_user_login: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelGuestStarSessionEndBetaEvent {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.guest_star_settings.update` version beta. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelGuestStarSettingsUpdateBetaEvent {
+    /// User ID of the host channel.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// he broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// Flag determining if Guest Star moderators have access to control whether a guest is live once assigned to a slot.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_moderator_send_live_enabled: bool,
+    /// Number of slots the Guest Star call interface will allow the host to add to a call.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub slot_count: i64,
+    /// Flag determining if browser sources subscribed to sessions on this channel should output audio.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_browser_source_audio_enabled: bool,
+    /// This setting determines how the guests within a session should be laid out within a group browser source.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub group_layout: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelGuestStarSettingsUpdateBetaEvent {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.hype_train.begin` version 2. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelHypeTrainBegin2Event {
+    /// The Hype Train ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The requested broadcaster ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The requested broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The requested broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// Total points contributed to the Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub total: i64,
+    /// The number of points contributed to the Hype Train at the current level.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub progress: i64,
+    /// The number of points required to reach the next level.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub goal: i64,
+    /// The contributors with the most points contributed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub top_contributions: Vec<ChannelHypeTrainBegin2EventTopContributions>,
+    /// The current level of the Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub level: i64,
+    /// The all-time high level this type of Hype Train has reached for this broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub all_time_high_level: i64,
+    /// The all-time high total this type of Hype Train has reached for this broadcaster.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub all_time_high_total: i64,
+    /// Non-null for a shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_train_participants: Vec<ChannelHypeTrainBegin2EventSharedTrainParticipants>,
+    /// The time when the Hype Train started.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// The time when the Hype Train expires.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub expires_at: String,
+    /// The type of the Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// Indicates if the Hype Train is shared.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_shared_train: bool,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The contributors with the most points contributed.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelHypeTrainBegin2EventTopContributions {
+    /// The ID of the user that made the contribution.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The contribution method used.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// The total amount contributed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub total: i64,
+}
+
+/// Non-null for a shared Hype Train.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelHypeTrainBegin2EventSharedTrainParticipants {
+    /// The ID of the broadcaster participating in the shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster participating in the shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The display name of the broadcaster participating in the shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+}
+
+impl super::HasSourceTimestamp for ChannelHypeTrainBegin2Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.hype_train.end` version 2. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelHypeTrainEnd2Event {
+    /// The Hype Train ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The requested broadcaster ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The requested broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The requested broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// Total points contributed to the Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub total: i64,
+    /// The contributors with the most points contributed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub top_contributions: Vec<ChannelHypeTrainEnd2EventTopContributions>,
+    /// The current level of the Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub level: i64,
+    /// Non-null for a shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_train_participants: Vec<ChannelHypeTrainEnd2EventSharedTrainParticipants>,
+    /// The time when the Hype Train started.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// The time when the Hype Train cooldown ends so that the next Hype Train can start.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub cooldown_ends_at: String,
+    /// The time when the Hype Train ended.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub ended_at: String,
+    /// The type of the Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// Indicates if the Hype Train is shared.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_shared_train: bool,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The contributors with the most points contributed.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelHypeTrainEnd2EventTopContributions {
+    /// The ID of the user that made the contribution.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The contribution method used.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// The total amount contributed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub total: i64,
+}
+
+/// Non-null for a shared Hype Train.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelHypeTrainEnd2EventSharedTrainParticipants {
+    /// The ID of the broadcaster participating in the shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster participating in the shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The display name of the broadcaster participating in the shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+}
+
+impl super::HasSourceTimestamp for ChannelHypeTrainEnd2Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
+/// Event payload for `channel.hype_train.progress` version 2. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelHypeTrainProgress2Event {
+    /// The Hype Train ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The requested broadcaster ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The requested broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The requested broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// Total points contributed to the Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub total: i64,
+    /// The number of points contributed to the Hype Train at the current level.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub progress: i64,
+    /// The number of points required to reach the next level.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub goal: i64,
+    /// The contributors with the most points contributed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub top_contributions: Vec<ChannelHypeTrainProgress2EventTopContributions>,
+    /// The current level of the Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub level: i64,
+    /// Non-null for a shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub shared_train_participants: Vec<ChannelHypeTrainProgress2EventSharedTrainParticipants>,
+    /// The time when the Hype Train started.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// The time when the Hype Train expires.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub expires_at: String,
+    /// The type of the Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// Indicates if the Hype Train is shared.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub is_shared_train: bool,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+/// The contributors with the most points contributed.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelHypeTrainProgress2EventTopContributions {
+    /// The ID of the user that made the contribution.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_id: String,
+    /// The user's login name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_login: String,
+    /// The user's display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub user_name: String,
+    /// The contribution method used.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub r#type: String,
+    /// The total amount contributed.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub total: i64,
+}
+
+/// Non-null for a shared Hype Train.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelHypeTrainProgress2EventSharedTrainParticipants {
+    /// The ID of the broadcaster participating in the shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The login of the broadcaster participating in the shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The display name of the broadcaster participating in the shared Hype Train.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+}
+
+impl super::HasSourceTimestamp for ChannelHypeTrainProgress2Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -3973,50 +5259,6 @@ pub struct ChannelPollBegin1Event {
 }
 
 impl super::HasSourceTimestamp for ChannelPollBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.poll.progress` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelPollProgress1Event {
-    /// ID of the poll.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The requested broadcaster ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The requested broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The requested broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Question displayed for the poll.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub title: String,
-    /// An array of choices for the poll.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub choices: Vec<SharedChoice>,
-    /// Not supported.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub bits_voting: SharedBitsVoting,
-    /// The Channel Points voting settings for the poll.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub channel_points_voting: SharedChannelPointsVoting,
-    /// The time the poll started.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The time the poll will end.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub ends_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelPollProgress1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -4069,6 +5311,50 @@ impl super::HasSourceTimestamp for ChannelPollEnd1Event {
     }
 }
 
+/// Event payload for `channel.poll.progress` version 1. Undocumented fields are dropped when decoding.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct ChannelPollProgress1Event {
+    /// ID of the poll.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub id: String,
+    /// The requested broadcaster ID.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_id: String,
+    /// The requested broadcaster login.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_login: String,
+    /// The requested broadcaster display name.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub broadcaster_user_name: String,
+    /// Question displayed for the poll.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub title: String,
+    /// An array of choices for the poll.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub choices: Vec<SharedChoice>,
+    /// Not supported.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub bits_voting: SharedBitsVoting,
+    /// The Channel Points voting settings for the poll.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub channel_points_voting: SharedChannelPointsVoting,
+    /// The time the poll started.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub started_at: String,
+    /// The time the poll will end.
+    #[serde(default, deserialize_with = "super::null_default")]
+    pub ends_at: String,
+    /// Timestamp from the delivery envelope; not part of the payload itself.
+    #[serde(skip)]
+    pub source_timestamp: Option<OffsetDateTime>,
+}
+
+impl super::HasSourceTimestamp for ChannelPollProgress1Event {
+    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
+        self.source_timestamp = source_timestamp;
+    }
+}
+
 /// Event payload for `channel.prediction.begin` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelPredictionBegin1Event {
@@ -4102,82 +5388,6 @@ pub struct ChannelPredictionBegin1Event {
 }
 
 impl super::HasSourceTimestamp for ChannelPredictionBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.prediction.progress` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelPredictionProgress1Event {
-    /// Channel Points Prediction ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The requested broadcaster ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The requested broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The requested broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Title for the Channel Points Prediction.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub title: String,
-    /// An array of outcomes for the Channel Points Prediction.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub outcomes: Vec<SharedOutcome>,
-    /// The time the Channel Points Prediction started.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The time the Channel Points Prediction will automatically lock.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub locks_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelPredictionProgress1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.prediction.lock` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelPredictionLock1Event {
-    /// Channel Points Prediction ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The requested broadcaster ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The requested broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The requested broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Title for the Channel Points Prediction.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub title: String,
-    /// An array of outcomes for the Channel Points Prediction.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub outcomes: Vec<SharedOutcome>,
-    /// The time the Channel Points Prediction started.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The time the Channel Points Prediction was locked.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub locked_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelPredictionLock1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -4227,832 +5437,10 @@ impl super::HasSourceTimestamp for ChannelPredictionEnd1Event {
     }
 }
 
-/// Event payload for `channel.suspicious_user.message` version 1. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.prediction.lock` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSuspiciousUserMessage1Event {
-    /// The ID of the channel where the treatment for a suspicious user was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The display name of the channel where the treatment for a suspicious user was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The login of the channel where the treatment for a suspicious user was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The user ID of the user that sent the message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user name of the user that sent the message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The user login of the user that sent the message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The status set for the suspicious user.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub low_trust_status: String,
-    /// A list of channel IDs where the suspicious user is also banned.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_ban_channel_ids: Vec<String>,
-    /// User types (if any) that apply to the suspicious user, can be “manually_added”, “ban_evader”, or “banned_in_shared_channel”.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub types: Vec<String>,
-    /// A ban evasion likelihood value (if any) that as been applied to the user automatically by Twitch, can be “unknown”, “possible”, or “likely”.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub ban_evasion_evaluation: String,
-    /// The structured chat message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub message: ChannelSuspiciousUserMessage1EventMessage,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-/// The structured chat message.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSuspiciousUserMessage1EventMessage {
-    /// The UUID that identifies the message.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub message_id: String,
-    /// The chat message in plain text.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: String,
-    /// Ordered list of chat message fragments.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub fragments: Vec<ChannelSuspiciousUserMessage1EventMessageFragments>,
-}
-
-/// Ordered list of chat message fragments.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSuspiciousUserMessage1EventMessageFragments {
-    /// The type of message fragment.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// Message text in fragment.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub text: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cheermote: ChannelSuspiciousUserMessage1EventMessageFragmentsCheermote,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emote: ChannelSuspiciousUserMessage1EventMessageFragmentsEmote,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSuspiciousUserMessage1EventMessageFragmentsCheermote {
-    /// The name portion of the Cheermote string that you use in chat to cheer Bits.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub prefix: String,
-    /// The amount of Bits cheered.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub bits: String,
-    /// The tier level of the cheermote.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub tier: String,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSuspiciousUserMessage1EventMessageFragmentsEmote {
-    /// An ID that uniquely identifies this emote.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that identifies the emote set that the emote belongs to.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub emote_set_id: String,
-}
-
-impl super::HasSourceTimestamp for ChannelSuspiciousUserMessage1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.suspicious_user.update` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelSuspiciousUserUpdate1Event {
-    /// The ID of the channel where the treatment for a suspicious user was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The display name of the channel where the treatment for a suspicious user was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The Login of the channel where the treatment for a suspicious user was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The ID of the moderator that updated the treatment for a suspicious user.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_id: String,
-    /// The display name of the moderator that updated the treatment for a suspicious user.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_name: String,
-    /// The login of the moderator that updated the treatment for a suspicious user.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_login: String,
-    /// The ID of the suspicious user whose treatment was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The display name of the suspicious user whose treatment was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The login of the suspicious user whose treatment was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The status set for the suspicious user.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub low_trust_status: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelSuspiciousUserUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.vip.add` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelVipAdd1Event {
-    /// The ID of the user who was added as a VIP.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The login of the user who was added as a VIP.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The display name of the user who was added as a VIP.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The ID of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The login of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The display name of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelVipAdd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.vip.remove` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelVipRemove1Event {
-    /// The ID of the user who was removed as a VIP.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The login of the user who was removed as a VIP.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The display name of the user who was removed as a VIP.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The ID of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The login of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The display name of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelVipRemove1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.warning.acknowledge` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelWarningAcknowledge1Event {
-    /// The user ID of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The login of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The user name of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The ID of the user that has acknowledged their warning.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The login of the user that has acknowledged their warning.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user name of the user that has acknowledged their warning.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelWarningAcknowledge1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.warning.send` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelWarningSend1Event {
-    /// The user ID of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The login of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The user name of the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The user ID of the moderator who sent the warning.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_id: String,
-    /// The login of the moderator.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_login: String,
-    /// The user name of the moderator.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_name: String,
-    /// The ID of the user being warned.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The login of the user being warned.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user name of the user being.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub reason: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub chat_rules_cited: Vec<String>,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelWarningSend1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.charity_campaign.donate` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignDonate1Event {
-    /// An ID that identifies the donation.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that identifies the charity campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub campaign_id: String,
-    /// An ID that identifies the broadcaster that’s running the campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// An ID that identifies the user that donated to the campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The charity’s name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_name: String,
-    /// A description of the charity.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_description: String,
-    /// A URL to an image of the charity’s logo.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_logo: String,
-    /// A URL to the charity’s website.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_website: String,
-    /// An object that contains the amount of money that the user donated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub amount: ChannelCharityCampaignDonate1EventAmount,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-/// An object that contains the amount of money that the user donated.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignDonate1EventAmount {
-    /// The monetary amount.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub value: i64,
-    /// The number of decimal places used by the currency.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub decimal_places: i64,
-    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub currency: String,
-}
-
-impl super::HasSourceTimestamp for ChannelCharityCampaignDonate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.charity_campaign.start` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignStart1Event {
-    /// An ID that identifies the charity campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that identifies the broadcaster that’s running the campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_name: String,
-    /// The charity’s name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_name: String,
-    /// A description of the charity.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_description: String,
-    /// A URL to an image of the charity’s logo.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_logo: String,
-    /// A URL to the charity’s website.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_website: String,
-    /// An object that contains the current amount of donations that the campaign has received.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub current_amount: ChannelCharityCampaignStart1EventCurrentAmount,
-    /// An object that contains the campaign’s target fundraising goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub target_amount: ChannelCharityCampaignStart1EventTargetAmount,
-    /// The UTC timestamp (in RFC3339 format) of when the broadcaster started the campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-/// An object that contains the current amount of donations that the campaign has received.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignStart1EventCurrentAmount {
-    /// The monetary amount.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub value: i64,
-    /// The number of decimal places used by the currency.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub decimal_places: i64,
-    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub currency: String,
-}
-
-/// An object that contains the campaign’s target fundraising goal.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignStart1EventTargetAmount {
-    /// The monetary amount.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub value: i64,
-    /// The number of decimal places used by the currency.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub decimal_places: i64,
-    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub currency: String,
-}
-
-impl super::HasSourceTimestamp for ChannelCharityCampaignStart1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.charity_campaign.progress` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignProgress1Event {
-    /// An ID that identifies the charity campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that identifies the broadcaster that’s running the campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_name: String,
-    /// The charity’s name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_name: String,
-    /// A description of the charity.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_description: String,
-    /// A URL to an image of the charity’s logo.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_logo: String,
-    /// A URL to the charity’s website.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_website: String,
-    /// An object that contains the current amount of donations that the campaign has received.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub current_amount: ChannelCharityCampaignProgress1EventCurrentAmount,
-    /// An object that contains the campaign’s target fundraising goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub target_amount: ChannelCharityCampaignProgress1EventTargetAmount,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-/// An object that contains the current amount of donations that the campaign has received.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignProgress1EventCurrentAmount {
-    /// The monetary amount.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub value: i64,
-    /// The number of decimal places used by the currency.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub decimal_places: i64,
-    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub currency: String,
-}
-
-/// An object that contains the campaign’s target fundraising goal.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignProgress1EventTargetAmount {
-    /// The monetary amount.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub value: i64,
-    /// The number of decimal places used by the currency.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub decimal_places: i64,
-    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub currency: String,
-}
-
-impl super::HasSourceTimestamp for ChannelCharityCampaignProgress1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.charity_campaign.stop` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignStop1Event {
-    /// An ID that identifies the charity campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that identifies the broadcaster that ran the campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_name: String,
-    /// The charity’s name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_name: String,
-    /// A description of the charity.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_description: String,
-    /// A URL to an image of the charity’s logo.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_logo: String,
-    /// A URL to the charity’s website.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub charity_website: String,
-    /// An object that contains the final amount of donations that the campaign received.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub current_amount: ChannelCharityCampaignStop1EventCurrentAmount,
-    /// An object that contains the campaign’s target fundraising goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub target_amount: ChannelCharityCampaignStop1EventTargetAmount,
-    /// The UTC timestamp (in RFC3339 format) of when the broadcaster stopped the campaign.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub stopped_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-/// An object that contains the final amount of donations that the campaign received.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignStop1EventCurrentAmount {
-    /// The monetary amount.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub value: i64,
-    /// The number of decimal places used by the currency.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub decimal_places: i64,
-    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub currency: String,
-}
-
-/// An object that contains the campaign’s target fundraising goal.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelCharityCampaignStop1EventTargetAmount {
-    /// The monetary amount.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub value: i64,
-    /// The number of decimal places used by the currency.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub decimal_places: i64,
-    /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub currency: String,
-}
-
-impl super::HasSourceTimestamp for ChannelCharityCampaignStop1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `conduit.shard.disabled` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ConduitShardDisabled1Event {
-    /// The ID of the conduit.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub conduit_id: String,
-    /// The ID of the disabled shard.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shard_id: String,
-    /// The new status of the transport.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub status: String,
-    /// The disabled transport.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub transport: serde_json::Value,
-    /// websocket or webhook.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub method: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub callback: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub session_id: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub connected_at: String,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub disconnected_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ConduitShardDisabled1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `drop.entitlement.grant` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct DropEntitlementGrant1Event {
-    /// Individual event ID, as assigned by EventSub.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// Entitlement object.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub data: Vec<serde_json::Value>,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for DropEntitlementGrant1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `extension.bits_transaction.create` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ExtensionBitsTransactionCreate1Event {
-    /// Client ID of the extension.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub extension_client_id: String,
-    /// Transaction ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The transaction’s broadcaster ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The transaction’s broadcaster login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The transaction’s broadcaster display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The transaction’s user ID.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The transaction’s user login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The transaction’s user display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// Additional extension product information.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub product: SharedProduct,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ExtensionBitsTransactionCreate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.goal.begin` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelGoalBegin1Event {
-    /// An ID that identifies this event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that uniquely identifies the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The broadcaster’s user handle.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The type of goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// A description of the goal, if specified.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub description: String,
-    /// A Boolean value that indicates whether the broadcaster achieved their goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_achieved: bool,
-    /// The goal’s current value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub current_amount: i64,
-    /// The goal’s target value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub target_amount: i64,
-    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster created the goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster ended the goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub ended_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelGoalBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.goal.progress` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelGoalProgress1Event {
-    /// An ID that identifies this event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that uniquely identifies the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The broadcaster’s user handle.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The type of goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// A description of the goal, if specified.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub description: String,
-    /// A Boolean value that indicates whether the broadcaster achieved their goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_achieved: bool,
-    /// The goal’s current value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub current_amount: i64,
-    /// The goal’s target value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub target_amount: i64,
-    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster created the goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster ended the goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub ended_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelGoalProgress1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.goal.end` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelGoalEnd1Event {
-    /// An ID that identifies this event.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// An ID that uniquely identifies the broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// The broadcaster’s user handle.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The type of goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// A description of the goal, if specified.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub description: String,
-    /// A Boolean value that indicates whether the broadcaster achieved their goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_achieved: bool,
-    /// The goal’s current value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub current_amount: i64,
-    /// The goal’s target value.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub target_amount: i64,
-    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster created the goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The UTC timestamp in RFC 3339 format, which indicates when the broadcaster ended the goal.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub ended_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelGoalEnd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.hype_train.begin` version 2. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelHypeTrainBegin2Event {
-    /// The Hype Train ID.
+pub struct ChannelPredictionLock1Event {
+    /// Channel Points Prediction ID.
     #[serde(default, deserialize_with = "super::null_default")]
     pub id: String,
     /// The requested broadcaster ID.
@@ -5064,91 +5452,33 @@ pub struct ChannelHypeTrainBegin2Event {
     /// The requested broadcaster display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// Total points contributed to the Hype Train.
+    /// Title for the Channel Points Prediction.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub total: i64,
-    /// The number of points contributed to the Hype Train at the current level.
+    pub title: String,
+    /// An array of outcomes for the Channel Points Prediction.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub progress: i64,
-    /// The number of points required to reach the next level.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub goal: i64,
-    /// The contributors with the most points contributed.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub top_contributions: Vec<ChannelHypeTrainBegin2EventTopContributions>,
-    /// The current level of the Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub level: i64,
-    /// The all-time high level this type of Hype Train has reached for this broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub all_time_high_level: i64,
-    /// The all-time high total this type of Hype Train has reached for this broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub all_time_high_total: i64,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_train_participants: Vec<ChannelHypeTrainBegin2EventSharedTrainParticipants>,
-    /// The time when the Hype Train started.
+    pub outcomes: Vec<SharedOutcome>,
+    /// The time the Channel Points Prediction started.
     #[serde(default, deserialize_with = "super::null_default")]
     pub started_at: String,
-    /// The time when the Hype Train expires.
+    /// The time the Channel Points Prediction was locked.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub expires_at: String,
-    /// The type of the Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// Indicates if the Hype Train is shared.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_shared_train: bool,
+    pub locked_at: String,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-/// The contributors with the most points contributed.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelHypeTrainBegin2EventTopContributions {
-    /// The ID of the user that made the contribution.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The contribution method used.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// The total amount contributed.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub total: i64,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelHypeTrainBegin2EventSharedTrainParticipants {
-    /// The ID of the broadcaster participating in the shared Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The login of the broadcaster participating in the shared Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The display name of the broadcaster participating in the shared Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-}
-
-impl super::HasSourceTimestamp for ChannelHypeTrainBegin2Event {
+impl super::HasSourceTimestamp for ChannelPredictionLock1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
 }
 
-/// Event payload for `channel.hype_train.progress` version 2. Undocumented fields are dropped when decoding.
+/// Event payload for `channel.prediction.progress` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelHypeTrainProgress2Event {
-    /// The Hype Train ID.
+pub struct ChannelPredictionProgress1Event {
+    /// Channel Points Prediction ID.
     #[serde(default, deserialize_with = "super::null_default")]
     pub id: String,
     /// The requested broadcaster ID.
@@ -5160,330 +5490,50 @@ pub struct ChannelHypeTrainProgress2Event {
     /// The requested broadcaster display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// Total points contributed to the Hype Train.
+    /// Title for the Channel Points Prediction.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub total: i64,
-    /// The number of points contributed to the Hype Train at the current level.
+    pub title: String,
+    /// An array of outcomes for the Channel Points Prediction.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub progress: i64,
-    /// The number of points required to reach the next level.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub goal: i64,
-    /// The contributors with the most points contributed.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub top_contributions: Vec<ChannelHypeTrainProgress2EventTopContributions>,
-    /// The current level of the Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub level: i64,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_train_participants: Vec<ChannelHypeTrainProgress2EventSharedTrainParticipants>,
-    /// The time when the Hype Train started.
+    pub outcomes: Vec<SharedOutcome>,
+    /// The time the Channel Points Prediction started.
     #[serde(default, deserialize_with = "super::null_default")]
     pub started_at: String,
-    /// The time when the Hype Train expires.
+    /// The time the Channel Points Prediction will automatically lock.
     #[serde(default, deserialize_with = "super::null_default")]
-    pub expires_at: String,
-    /// The type of the Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// Indicates if the Hype Train is shared.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_shared_train: bool,
+    pub locks_at: String,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-/// The contributors with the most points contributed.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelHypeTrainProgress2EventTopContributions {
-    /// The ID of the user that made the contribution.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The contribution method used.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// The total amount contributed.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub total: i64,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelHypeTrainProgress2EventSharedTrainParticipants {
-    /// The ID of the broadcaster participating in the shared Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The login of the broadcaster participating in the shared Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The display name of the broadcaster participating in the shared Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-}
-
-impl super::HasSourceTimestamp for ChannelHypeTrainProgress2Event {
+impl super::HasSourceTimestamp for ChannelPredictionProgress1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
 }
 
-/// Event payload for `channel.hype_train.end` version 2. Undocumented fields are dropped when decoding.
+/// Event payload for `stream.offline` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelHypeTrainEnd2Event {
-    /// The Hype Train ID.
+pub struct StreamOffline1Event {
+    /// The id of the stream.
     #[serde(default, deserialize_with = "super::null_default")]
     pub id: String,
-    /// The requested broadcaster ID.
+    /// The broadcaster's user id.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_id: String,
-    /// The requested broadcaster login.
+    /// The broadcaster's user login.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_login: String,
-    /// The requested broadcaster display name.
+    /// The broadcaster's user display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-    /// Total points contributed to the Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub total: i64,
-    /// The contributors with the most points contributed.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub top_contributions: Vec<ChannelHypeTrainEnd2EventTopContributions>,
-    /// The current level of the Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub level: i64,
-    /// Optional.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub shared_train_participants: Vec<ChannelHypeTrainEnd2EventSharedTrainParticipants>,
-    /// The time when the Hype Train started.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The time when the Hype Train cooldown ends so that the next Hype Train can start.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cooldown_ends_at: String,
-    /// The time when the Hype Train ended.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub ended_at: String,
-    /// The type of the Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// Indicates if the Hype Train is shared.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub is_shared_train: bool,
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-/// The contributors with the most points contributed.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelHypeTrainEnd2EventTopContributions {
-    /// The ID of the user that made the contribution.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_id: String,
-    /// The user’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_login: String,
-    /// The user’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub user_name: String,
-    /// The contribution method used.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub r#type: String,
-    /// The total amount contributed.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub total: i64,
-}
-
-/// Optional.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelHypeTrainEnd2EventSharedTrainParticipants {
-    /// The ID of the broadcaster participating in the shared Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The login of the broadcaster participating in the shared Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The display name of the broadcaster participating in the shared Hype Train.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-}
-
-impl super::HasSourceTimestamp for ChannelHypeTrainEnd2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.shield_mode.begin` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelShieldModeBegin1Event {
-    /// An ID that identifies the broadcaster whose Shield Mode status was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// An ID that identifies the moderator that updated the Shield Mode’s status.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_id: String,
-    /// The moderator’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_login: String,
-    /// The moderator’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_name: String,
-    /// The UTC timestamp (in RFC3339 format) of when the moderator activated Shield Mode.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The UTC timestamp (in RFC3339 format) of when the moderator deactivated Shield Mode.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub ended_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelShieldModeBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.shield_mode.end` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelShieldModeEnd1Event {
-    /// An ID that identifies the broadcaster whose Shield Mode status was updated.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// An ID that identifies the moderator that updated the Shield Mode’s status.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_id: String,
-    /// The moderator’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_login: String,
-    /// The moderator’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_name: String,
-    /// The UTC timestamp (in RFC3339 format) of when the moderator activated Shield Mode.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The UTC timestamp (in RFC3339 format) of when the moderator deactivated Shield Mode.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub ended_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelShieldModeEnd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.shoutout.create` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelShoutoutCreate1Event {
-    /// An ID that identifies the broadcaster that sent the Shoutout.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// An ID that identifies the broadcaster that received the Shoutout.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub to_broadcaster_user_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub to_broadcaster_user_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub to_broadcaster_user_name: String,
-    /// An ID that identifies the moderator that sent the Shoutout.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_id: String,
-    /// The moderator’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_login: String,
-    /// The moderator’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub moderator_user_name: String,
-    /// The number of users that were watching the broadcaster’s stream at the time of the Shoutout.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub viewer_count: i64,
-    /// The UTC timestamp (in RFC3339 format) of when the moderator sent the Shoutout.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// The UTC timestamp (in RFC3339 format) of when the broadcaster may send a Shoutout to a different broadcaster.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub cooldown_ends_at: String,
-    /// The UTC timestamp (in RFC3339 format) of when the broadcaster may send another Shoutout to the broadcaster in to_broadcaster_user_id.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub target_cooldown_ends_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelShoutoutCreate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `channel.shoutout.receive` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ChannelShoutoutReceive1Event {
-    /// An ID that identifies the broadcaster that received the Shoutout.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// An ID that identifies the broadcaster that sent the Shoutout.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub from_broadcaster_user_id: String,
-    /// The broadcaster’s login name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub from_broadcaster_user_login: String,
-    /// The broadcaster’s display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub from_broadcaster_user_name: String,
-    /// The number of users that were watching the from-broadcaster’s stream at the time of the Shoutout.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub viewer_count: i64,
-    /// The UTC timestamp (in RFC3339 format) of when the moderator sent the Shoutout.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub started_at: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelShoutoutReceive1Event {
+impl super::HasSourceTimestamp for StreamOffline1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -5495,13 +5545,13 @@ pub struct StreamOnline1Event {
     /// The id of the stream.
     #[serde(default, deserialize_with = "super::null_default")]
     pub id: String,
-    /// The broadcaster’s user id.
+    /// The broadcaster's user id.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_id: String,
-    /// The broadcaster’s user login.
+    /// The broadcaster's user login.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_login: String,
-    /// The broadcaster’s user display name.
+    /// The broadcaster's user display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
     /// The stream type.
@@ -5516,32 +5566,6 @@ pub struct StreamOnline1Event {
 }
 
 impl super::HasSourceTimestamp for StreamOnline1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
-/// Event payload for `stream.offline` version 1. Undocumented fields are dropped when decoding.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct StreamOffline1Event {
-    /// The id of the stream.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub id: String,
-    /// The broadcaster’s user id.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_id: String,
-    /// The broadcaster’s user login.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_login: String,
-    /// The broadcaster’s user display name.
-    #[serde(default, deserialize_with = "super::null_default")]
-    pub broadcaster_user_name: String,
-    /// Timestamp from the delivery envelope; not part of the payload itself.
-    #[serde(skip)]
-    pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for StreamOffline1Event {
     fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
         self.source_timestamp = source_timestamp;
     }
@@ -5602,22 +5626,22 @@ impl super::HasSourceTimestamp for UserAuthorizationRevoke1Event {
 /// Event payload for `user.update` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct UserUpdate1Event {
-    /// The user’s user id.
+    /// The user's user id.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_id: String,
-    /// The user’s user login.
+    /// The user's user login.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_login: String,
-    /// The user’s user display name.
+    /// The user's user display name.
     #[serde(default, deserialize_with = "super::null_default")]
     pub user_name: String,
-    /// The user’s email address.
+    /// The user's email address.
     #[serde(default, deserialize_with = "super::null_default")]
     pub email: String,
-    /// A Boolean value that determines whether Twitch has verified the user’s email address.
+    /// A Boolean value that determines whether Twitch has verified the user's email address.
     #[serde(default, deserialize_with = "super::null_default")]
     pub email_verified: bool,
-    /// The user’s description.
+    /// The user's description.
     #[serde(default, deserialize_with = "super::null_default")]
     pub description: String,
     /// Timestamp from the delivery envelope; not part of the payload itself.
@@ -5680,7 +5704,7 @@ impl super::HasSourceTimestamp for UserWhisperMessage1Event {
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum KnownEventSubPayload {
-    /// A user is notified if a message is caught by automod for review.
+    /// Notifies a user if their chat message was caught by AutoMod for review.
     AutomodMessageHold1(AutomodMessageHold1Event),
     /// A user is notified if a message is caught by automod for review. Only public blocked terms trigger notifications, not private ones.
     AutomodMessageHold2(AutomodMessageHold2Event),
@@ -5688,18 +5712,100 @@ pub enum KnownEventSubPayload {
     AutomodMessageUpdate1(AutomodMessageUpdate1Event),
     /// A message in the automod queue had its status changed. Only public blocked terms trigger notifications, not private ones.
     AutomodMessageUpdate2(AutomodMessageUpdate2Event),
-    /// A notification is sent when a broadcaster’s automod settings are updated.
+    /// A notification is sent when a broadcaster's automod settings are updated.
     AutomodSettingsUpdate1(AutomodSettingsUpdate1Event),
-    /// A notification is sent when a broadcaster’s automod terms are updated. Changes to private terms are not sent.
+    /// A notification is sent when a broadcaster's automod terms are updated. Changes to private terms are not sent.
     AutomodTermsUpdate1(AutomodTermsUpdate1Event),
-    /// A notification is sent whenever Bits are used on a channel.
-    ChannelBitsUse1(ChannelBitsUse1Event),
-    /// A broadcaster updates their channel properties e.g., category, title, content classification labels, broadcast, or language.
-    ChannelUpdate2(ChannelUpdate2Event),
-    /// A specified channel receives a follow.
-    ChannelFollow2(ChannelFollow2Event),
     /// A midroll commercial break has started running.
     ChannelAdBreakBegin1(ChannelAdBreakBegin1Event),
+    /// A notification is sent whenever Bits are used on a channel.
+    ChannelBitsUse1(ChannelBitsUse1Event),
+    /// A user cheers on the specified channel.
+    ChannelCheer1(ChannelCheer1Event),
+    /// A viewer has redeemed a custom Power-up on the specified channel.
+    ChannelCustomPowerUpRedemptionAdd1(ChannelCustomPowerUpRedemptionAdd1Event),
+    /// A specified channel receives a follow.
+    ChannelFollow2(ChannelFollow2Event),
+    /// A broadcaster raids another broadcaster's channel.
+    ChannelRaid1(ChannelRaid1Event),
+    /// Sends a notification when the specified broadcaster sends a Shoutout.
+    ChannelShoutoutCreate1(ChannelShoutoutCreate1Event),
+    /// Sends a notification when the specified broadcaster receives a Shoutout.
+    ChannelShoutoutReceive1(ChannelShoutoutReceive1Event),
+    /// A notification is sent when a specified channel receives a subscriber. This does not include resubscribes.
+    ChannelSubscribe1(ChannelSubscribe1Event),
+    /// A notification when a subscription to the specified channel ends.
+    ChannelSubscriptionEnd1(ChannelSubscriptionEnd1Event),
+    /// A notification when a viewer gives a gift subscription to one or more users in the specified channel.
+    ChannelSubscriptionGift1(ChannelSubscriptionGift1Event),
+    /// A notification when a user sends a resubscription chat message in a specific channel.
+    ChannelSubscriptionMessage1(ChannelSubscriptionMessage1Event),
+    /// A broadcaster updates their channel properties e.g., category, title, content classification labels, broadcast, or language.
+    ChannelUpdate2(ChannelUpdate2Event),
+    /// A VIP is added to the channel.
+    ChannelVipAdd1(ChannelVipAdd1Event),
+    /// A VIP is removed from the channel.
+    ChannelVipRemove1(ChannelVipRemove1Event),
+    /// A viewer is banned from the specified channel.
+    ChannelBan1(ChannelBan1Event),
+    /// A moderator performs a moderation action in a channel.
+    ChannelModerate1(ChannelModerate1Event),
+    /// A moderator performs a moderation action in a channel. Includes warnings.
+    ChannelModerate2(ChannelModerate2Event),
+    /// Moderator privileges were added to a user on a specified channel.
+    ChannelModeratorAdd1(ChannelModeratorAdd1Event),
+    /// Moderator privileges were removed from a user on a specified channel.
+    ChannelModeratorRemove1(ChannelModeratorRemove1Event),
+    /// Sends a notification when the broadcaster activates Shield Mode.
+    ChannelShieldModeBegin1(ChannelShieldModeBegin1Event),
+    /// Sends a notification when the broadcaster deactivates Shield Mode.
+    ChannelShieldModeEnd1(ChannelShieldModeEnd1Event),
+    /// A chat message has been sent by a suspicious user.
+    ChannelSuspiciousUserMessage1(ChannelSuspiciousUserMessage1Event),
+    /// A suspicious user has been updated.
+    ChannelSuspiciousUserUpdate1(ChannelSuspiciousUserUpdate1Event),
+    /// A viewer is unbanned from the specified channel.
+    ChannelUnban1(ChannelUnban1Event),
+    /// A user creates an unban request.
+    ChannelUnbanRequestCreate1(ChannelUnbanRequestCreate1Event),
+    /// An unban request has been resolved.
+    ChannelUnbanRequestResolve1(ChannelUnbanRequestResolve1Event),
+    /// A user acknowledges a warning. Broadcasters and moderators can see the warning's details.
+    ChannelWarningAcknowledge1(ChannelWarningAcknowledge1Event),
+    /// A user is sent a warning. Broadcasters and moderators can see the warning's details.
+    ChannelWarningSend1(ChannelWarningSend1Event),
+    /// A viewer has redeemed an automatic channel points reward on the specified channel.
+    ChannelChannelPointsAutomaticRewardRedemptionAdd1(
+        ChannelChannelPointsAutomaticRewardRedemptionAdd1Event,
+    ),
+    /// A viewer has redeemed an automatic channel points reward on the specified channel.
+    ChannelChannelPointsAutomaticRewardRedemptionAdd2(
+        ChannelChannelPointsAutomaticRewardRedemptionAdd2Event,
+    ),
+    /// A viewer has redeemed a custom channel points reward on the specified channel.
+    ChannelChannelPointsCustomRewardRedemptionAdd1(
+        ChannelChannelPointsCustomRewardRedemptionAdd1Event,
+    ),
+    /// A redemption of a channel points custom reward has been updated for the specified channel.
+    ChannelChannelPointsCustomRewardRedemptionUpdate1(
+        ChannelChannelPointsCustomRewardRedemptionUpdate1Event,
+    ),
+    /// A custom channel points reward has been created for the specified channel.
+    ChannelChannelPointsCustomRewardAdd1(ChannelChannelPointsCustomRewardAdd1Event),
+    /// A custom channel points reward has been removed from the specified channel.
+    ChannelChannelPointsCustomRewardRemove1(ChannelChannelPointsCustomRewardRemove1Event),
+    /// A custom channel points reward has been updated for the specified channel.
+    ChannelChannelPointsCustomRewardUpdate1(ChannelChannelPointsCustomRewardUpdate1Event),
+    /// Sends an event notification when a user donates to the broadcaster's charity campaign.
+    ChannelCharityCampaignDonate1(ChannelCharityCampaignDonate1Event),
+    /// Sends an event notification when progress is made towards the campaign's goal or when the broadcaster changes the fundraising goal.
+    ChannelCharityCampaignProgress1(ChannelCharityCampaignProgress1Event),
+    /// Sends an event notification when the broadcaster starts a charity campaign.
+    ChannelCharityCampaignStart1(ChannelCharityCampaignStart1Event),
+    /// Sends an event notification when the broadcaster stops a charity campaign.
+    ChannelCharityCampaignStop1(ChannelCharityCampaignStop1Event),
+    /// A notification for when a broadcaster's chat settings are updated.
+    ChannelChatSettingsUpdate1(ChannelChatSettingsUpdate1Event),
     /// A moderator or bot has cleared all messages from the chat room.
     ChannelChatClear1(ChannelChatClear1Event),
     /// A moderator or bot has cleared all messages from a specific user.
@@ -5710,112 +5816,16 @@ pub enum KnownEventSubPayload {
     ChannelChatMessageDelete1(EventSubChatMessageDeleted),
     /// A notification for when an event that appears in chat has occurred.
     ChannelChatNotification1(ChannelChatNotification1Event),
-    /// A notification for when a broadcaster’s chat settings are updated.
-    ChannelChatSettingsUpdate1(ChannelChatSettingsUpdate1Event),
     /// A user is notified if their message is caught by automod.
     ChannelChatUserMessageHold1(ChannelChatUserMessageHold1Event),
-    /// A user is notified if their message’s automod status is updated.
+    /// A user is notified if their message's automod status is updated.
     ChannelChatUserMessageUpdate1(ChannelChatUserMessageUpdate1Event),
     /// A notification when a channel becomes active in an active shared chat session.
     ChannelSharedChatBegin1(ChannelSharedChatBegin1Event),
-    /// A notification when the active shared chat session the channel is in changes.
-    ChannelSharedChatUpdate1(ChannelSharedChatUpdate1Event),
     /// A notification when a channel leaves a shared chat session or the session ends.
     ChannelSharedChatEnd1(ChannelSharedChatEnd1Event),
-    /// A notification is sent when a specified channel receives a subscriber. This does not include resubscribes.
-    ChannelSubscribe1(ChannelSubscribe1Event),
-    /// A notification when a subscription to the specified channel ends.
-    ChannelSubscriptionEnd1(ChannelSubscriptionEnd1Event),
-    /// A notification when a viewer gives a gift subscription to one or more users in the specified channel.
-    ChannelSubscriptionGift1(ChannelSubscriptionGift1Event),
-    /// A notification when a user sends a resubscription chat message in a specific channel.
-    ChannelSubscriptionMessage1(ChannelSubscriptionMessage1Event),
-    /// A user cheers on the specified channel.
-    ChannelCheer1(ChannelCheer1Event),
-    /// A broadcaster raids another broadcaster’s channel.
-    ChannelRaid1(ChannelRaid1Event),
-    /// A viewer is banned from the specified channel.
-    ChannelBan1(ChannelBan1Event),
-    /// A viewer is unbanned from the specified channel.
-    ChannelUnban1(ChannelUnban1Event),
-    /// A user creates an unban request.
-    ChannelUnbanRequestCreate1(ChannelUnbanRequestCreate1Event),
-    /// An unban request has been resolved.
-    ChannelUnbanRequestResolve1(ChannelUnbanRequestResolve1Event),
-    /// A moderator performs a moderation action in a channel.
-    ChannelModerate1(ChannelModerate1Event),
-    /// A moderator performs a moderation action in a channel. Includes warnings.
-    ChannelModerate2(ChannelModerate2Event),
-    /// Moderator privileges were added to a user on a specified channel.
-    ChannelModeratorAdd1(ChannelModeratorAdd1Event),
-    /// Moderator privileges were removed from a user on a specified channel.
-    ChannelModeratorRemove1(ChannelModeratorRemove1Event),
-    /// The host began a new Guest Star session.
-    ChannelGuestStarSessionBeginBeta(ChannelGuestStarSessionBeginBetaEvent),
-    /// A running Guest Star session has ended.
-    ChannelGuestStarSessionEndBeta(ChannelGuestStarSessionEndBetaEvent),
-    /// A guest or a slot is updated in an active Guest Star session.
-    ChannelGuestStarGuestUpdateBeta(ChannelGuestStarGuestUpdateBetaEvent),
-    /// The host preferences for Guest Star have been updated.
-    ChannelGuestStarSettingsUpdateBeta(ChannelGuestStarSettingsUpdateBetaEvent),
-    /// A viewer has redeemed an automatic channel points reward on the specified channel.
-    ChannelChannelPointsAutomaticRewardRedemptionAdd1(
-        ChannelChannelPointsAutomaticRewardRedemptionAdd1Event,
-    ),
-    /// A viewer has redeemed an automatic channel points reward on the specified channel.
-    ChannelChannelPointsAutomaticRewardRedemptionAdd2(
-        ChannelChannelPointsAutomaticRewardRedemptionAdd2Event,
-    ),
-    /// A custom channel points reward has been created for the specified channel.
-    ChannelChannelPointsCustomRewardAdd1(ChannelChannelPointsCustomRewardAdd1Event),
-    /// A custom channel points reward has been updated for the specified channel.
-    ChannelChannelPointsCustomRewardUpdate1(ChannelChannelPointsCustomRewardUpdate1Event),
-    /// A custom channel points reward has been removed from the specified channel.
-    ChannelChannelPointsCustomRewardRemove1(ChannelChannelPointsCustomRewardRemove1Event),
-    /// A viewer has redeemed a custom channel points reward on the specified channel.
-    ChannelChannelPointsCustomRewardRedemptionAdd1(
-        ChannelChannelPointsCustomRewardRedemptionAdd1Event,
-    ),
-    /// A redemption of a channel points custom reward has been updated for the specified channel.
-    ChannelChannelPointsCustomRewardRedemptionUpdate1(
-        ChannelChannelPointsCustomRewardRedemptionUpdate1Event,
-    ),
-    /// A viewer has redeemed a custom Power-up on the specified channel.
-    ChannelCustomPowerUpRedemptionAdd1(ChannelCustomPowerUpRedemptionAdd1Event),
-    /// A poll started on a specified channel.
-    ChannelPollBegin1(ChannelPollBegin1Event),
-    /// Users respond to a poll on a specified channel.
-    ChannelPollProgress1(ChannelPollProgress1Event),
-    /// A poll ended on a specified channel.
-    ChannelPollEnd1(ChannelPollEnd1Event),
-    /// A Prediction started on a specified channel.
-    ChannelPredictionBegin1(ChannelPredictionBegin1Event),
-    /// Users participated in a Prediction on a specified channel.
-    ChannelPredictionProgress1(ChannelPredictionProgress1Event),
-    /// A Prediction was locked on a specified channel.
-    ChannelPredictionLock1(ChannelPredictionLock1Event),
-    /// A Prediction ended on a specified channel.
-    ChannelPredictionEnd1(ChannelPredictionEnd1Event),
-    /// A chat message has been sent by a suspicious user.
-    ChannelSuspiciousUserMessage1(ChannelSuspiciousUserMessage1Event),
-    /// A suspicious user has been updated.
-    ChannelSuspiciousUserUpdate1(ChannelSuspiciousUserUpdate1Event),
-    /// A VIP is added to the channel.
-    ChannelVipAdd1(ChannelVipAdd1Event),
-    /// A VIP is removed from the channel.
-    ChannelVipRemove1(ChannelVipRemove1Event),
-    /// A user acknowledges a warning. Broadcasters and moderators can see the warning’s details.
-    ChannelWarningAcknowledge1(ChannelWarningAcknowledge1Event),
-    /// A user is sent a warning. Broadcasters and moderators can see the warning’s details.
-    ChannelWarningSend1(ChannelWarningSend1Event),
-    /// Sends an event notification when a user donates to the broadcaster’s charity campaign.
-    ChannelCharityCampaignDonate1(ChannelCharityCampaignDonate1Event),
-    /// Sends an event notification when the broadcaster starts a charity campaign.
-    ChannelCharityCampaignStart1(ChannelCharityCampaignStart1Event),
-    /// Sends an event notification when progress is made towards the campaign’s goal or when the broadcaster changes the fundraising goal.
-    ChannelCharityCampaignProgress1(ChannelCharityCampaignProgress1Event),
-    /// Sends an event notification when the broadcaster stops a charity campaign.
-    ChannelCharityCampaignStop1(ChannelCharityCampaignStop1Event),
+    /// A notification when the active shared chat session the channel is in changes.
+    ChannelSharedChatUpdate1(ChannelSharedChatUpdate1Event),
     /// Sends a notification when EventSub disables a shard due to the status of the underlying transport changing.
     ConduitShardDisabled1(ConduitShardDisabled1Event),
     /// An entitlement for a Drop is granted to a user.
@@ -5824,31 +5834,45 @@ pub enum KnownEventSubPayload {
     ExtensionBitsTransactionCreate1(ExtensionBitsTransactionCreate1Event),
     /// Get notified when a broadcaster begins a goal.
     ChannelGoalBegin1(ChannelGoalBegin1Event),
-    /// Get notified when progress (either positive or negative) is made towards a broadcaster’s goal.
-    ChannelGoalProgress1(ChannelGoalProgress1Event),
     /// Get notified when a broadcaster ends a goal.
     ChannelGoalEnd1(ChannelGoalEnd1Event),
+    /// Get notified when progress (either positive or negative) is made towards a broadcaster's goal.
+    ChannelGoalProgress1(ChannelGoalProgress1Event),
+    /// A guest or a slot is updated in an active Guest Star session.
+    ChannelGuestStarGuestUpdateBeta(ChannelGuestStarGuestUpdateBetaEvent),
+    /// The host began a new Guest Star session.
+    ChannelGuestStarSessionBeginBeta(ChannelGuestStarSessionBeginBetaEvent),
+    /// A running Guest Star session has ended.
+    ChannelGuestStarSessionEndBeta(ChannelGuestStarSessionEndBetaEvent),
+    /// The host preferences for Guest Star have been updated.
+    ChannelGuestStarSettingsUpdateBeta(ChannelGuestStarSettingsUpdateBetaEvent),
     /// A Hype Train begins on the specified channel.
     ChannelHypeTrainBegin2(ChannelHypeTrainBegin2Event),
-    /// A Hype Train makes progress on the specified channel.
-    ChannelHypeTrainProgress2(ChannelHypeTrainProgress2Event),
     /// A Hype Train ends on the specified channel.
     ChannelHypeTrainEnd2(ChannelHypeTrainEnd2Event),
-    /// Sends a notification when the broadcaster activates Shield Mode.
-    ChannelShieldModeBegin1(ChannelShieldModeBegin1Event),
-    /// Sends a notification when the broadcaster deactivates Shield Mode.
-    ChannelShieldModeEnd1(ChannelShieldModeEnd1Event),
-    /// Sends a notification when the specified broadcaster sends a Shoutout.
-    ChannelShoutoutCreate1(ChannelShoutoutCreate1Event),
-    /// Sends a notification when the specified broadcaster receives a Shoutout.
-    ChannelShoutoutReceive1(ChannelShoutoutReceive1Event),
-    /// The specified broadcaster starts a stream.
-    StreamOnline1(StreamOnline1Event),
+    /// A Hype Train makes progress on the specified channel.
+    ChannelHypeTrainProgress2(ChannelHypeTrainProgress2Event),
+    /// A poll started on a specified channel.
+    ChannelPollBegin1(ChannelPollBegin1Event),
+    /// A poll ended on a specified channel.
+    ChannelPollEnd1(ChannelPollEnd1Event),
+    /// Users respond to a poll on a specified channel.
+    ChannelPollProgress1(ChannelPollProgress1Event),
+    /// A Prediction started on a specified channel.
+    ChannelPredictionBegin1(ChannelPredictionBegin1Event),
+    /// A Prediction ended on a specified channel.
+    ChannelPredictionEnd1(ChannelPredictionEnd1Event),
+    /// A Prediction was locked on a specified channel.
+    ChannelPredictionLock1(ChannelPredictionLock1Event),
+    /// Users participated in a Prediction on a specified channel.
+    ChannelPredictionProgress1(ChannelPredictionProgress1Event),
     /// The specified broadcaster stops a stream.
     StreamOffline1(StreamOffline1Event),
-    /// A user’s authorization has been granted to your client id.
+    /// The specified broadcaster starts a stream.
+    StreamOnline1(StreamOnline1Event),
+    /// A user's authorization has been granted to your client id.
     UserAuthorizationGrant1(UserAuthorizationGrant1Event),
-    /// A user’s authorization has been revoked for your client id.
+    /// A user's authorization has been revoked for your client id.
     UserAuthorizationRevoke1(UserAuthorizationRevoke1Event),
     /// A user has updated their account.
     UserUpdate1(UserUpdate1Event),
@@ -5859,15 +5883,15 @@ pub enum KnownEventSubPayload {
 pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
     EventSubSubscriptionDefinition {
         id: "automod_message_hold_1",
-        name: "Automod Message Hold",
+        name: "AutoMod Message Hold",
         subscription_type: "automod.message.hold",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "A user is notified if a message is caught by automod for review.",
+        description: "Notifies a user if their chat message was caught by AutoMod for review.",
     },
     EventSubSubscriptionDefinition {
         id: "automod_message_hold_2",
-        name: "Automod Message Hold V2",
+        name: "AutoMod Message Hold V2",
         subscription_type: "automod.message.hold",
         version: "2",
         stability: EndpointStability::Ga,
@@ -5875,7 +5899,7 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
     },
     EventSubSubscriptionDefinition {
         id: "automod_message_update_1",
-        name: "Automod Message Update",
+        name: "AutoMod Message Update",
         subscription_type: "automod.message.update",
         version: "1",
         stability: EndpointStability::Ga,
@@ -5883,7 +5907,7 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
     },
     EventSubSubscriptionDefinition {
         id: "automod_message_update_2",
-        name: "Automod Message Update V2",
+        name: "AutoMod Message Update V2",
         subscription_type: "automod.message.update",
         version: "2",
         stability: EndpointStability::Ga,
@@ -5891,35 +5915,51 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
     },
     EventSubSubscriptionDefinition {
         id: "automod_settings_update_1",
-        name: "Automod Settings Update",
+        name: "AutoMod Settings Update",
         subscription_type: "automod.settings.update",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "A notification is sent when a broadcaster’s automod settings are updated.",
+        description: "A notification is sent when a broadcaster's automod settings are updated.",
     },
     EventSubSubscriptionDefinition {
         id: "automod_terms_update_1",
-        name: "Automod Terms Update",
+        name: "AutoMod Terms Update",
         subscription_type: "automod.terms.update",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "A notification is sent when a broadcaster’s automod terms are updated. Changes to private terms are not sent.",
+        description: "A notification is sent when a broadcaster's automod terms are updated. Changes to private terms are not sent.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_ad_break_begin_1",
+        name: "Channel Ad Break Begin",
+        subscription_type: "channel.ad_break.begin",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A midroll commercial break has started running.",
     },
     EventSubSubscriptionDefinition {
         id: "channel_bits_use_1",
-        name: "Channel Bits Use\nNEW",
+        name: "Channel Bits Use",
         subscription_type: "channel.bits.use",
         version: "1",
-        stability: EndpointStability::New,
+        stability: EndpointStability::Ga,
         description: "A notification is sent whenever Bits are used on a channel.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_update_2",
-        name: "Channel Update",
-        subscription_type: "channel.update",
-        version: "2",
+        id: "channel_cheer_1",
+        name: "Channel Cheer",
+        subscription_type: "channel.cheer",
+        version: "1",
         stability: EndpointStability::Ga,
-        description: "A broadcaster updates their channel properties e.g., category, title, content classification labels, broadcast, or language.",
+        description: "A user cheers on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_custom_power_up_redemption_add_1",
+        name: "Channel Custom Power-ups Redemption Add",
+        subscription_type: "channel.custom_power_up_redemption.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A viewer has redeemed a custom Power-up on the specified channel.",
     },
     EventSubSubscriptionDefinition {
         id: "channel_follow_2",
@@ -5930,12 +5970,292 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         description: "A specified channel receives a follow.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_ad_break_begin_1",
-        name: "Channel Ad Break Begin",
-        subscription_type: "channel.ad_break.begin",
+        id: "channel_raid_1",
+        name: "Channel Raid",
+        subscription_type: "channel.raid",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "A midroll commercial break has started running.",
+        description: "A broadcaster raids another broadcaster's channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shoutout_create_1",
+        name: "Shoutout Create",
+        subscription_type: "channel.shoutout.create",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends a notification when the specified broadcaster sends a Shoutout.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shoutout_receive_1",
+        name: "Shoutout Received",
+        subscription_type: "channel.shoutout.receive",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends a notification when the specified broadcaster receives a Shoutout.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_subscribe_1",
+        name: "Channel Subscribe",
+        subscription_type: "channel.subscribe",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification is sent when a specified channel receives a subscriber. This does not include resubscribes.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_subscription_end_1",
+        name: "Channel Subscription End",
+        subscription_type: "channel.subscription.end",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification when a subscription to the specified channel ends.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_subscription_gift_1",
+        name: "Channel Subscription Gift",
+        subscription_type: "channel.subscription.gift",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification when a viewer gives a gift subscription to one or more users in the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_subscription_message_1",
+        name: "Channel Subscription Message",
+        subscription_type: "channel.subscription.message",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification when a user sends a resubscription chat message in a specific channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_update_2",
+        name: "Channel Update",
+        subscription_type: "channel.update",
+        version: "2",
+        stability: EndpointStability::Ga,
+        description: "A broadcaster updates their channel properties e.g., category, title, content classification labels, broadcast, or language.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_vip_add_1",
+        name: "Channel VIP Add",
+        subscription_type: "channel.vip.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A VIP is added to the channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_vip_remove_1",
+        name: "Channel VIP Remove",
+        subscription_type: "channel.vip.remove",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A VIP is removed from the channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_ban_1",
+        name: "Channel Ban",
+        subscription_type: "channel.ban",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A viewer is banned from the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_moderate_1",
+        name: "Channel Moderate",
+        subscription_type: "channel.moderate",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A moderator performs a moderation action in a channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_moderate_2",
+        name: "Channel Moderate V2",
+        subscription_type: "channel.moderate",
+        version: "2",
+        stability: EndpointStability::Ga,
+        description: "A moderator performs a moderation action in a channel. Includes warnings.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_moderator_add_1",
+        name: "Channel Moderator Add",
+        subscription_type: "channel.moderator.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Moderator privileges were added to a user on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_moderator_remove_1",
+        name: "Channel Moderator Remove",
+        subscription_type: "channel.moderator.remove",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Moderator privileges were removed from a user on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shield_mode_begin_1",
+        name: "Shield Mode Begin",
+        subscription_type: "channel.shield_mode.begin",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends a notification when the broadcaster activates Shield Mode.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_shield_mode_end_1",
+        name: "Shield Mode End",
+        subscription_type: "channel.shield_mode.end",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends a notification when the broadcaster deactivates Shield Mode.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_suspicious_user_message_1",
+        name: "Channel Suspicious User Message",
+        subscription_type: "channel.suspicious_user.message",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A chat message has been sent by a suspicious user.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_suspicious_user_update_1",
+        name: "Channel Suspicious User Update",
+        subscription_type: "channel.suspicious_user.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A suspicious user has been updated.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_unban_1",
+        name: "Channel Unban",
+        subscription_type: "channel.unban",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A viewer is unbanned from the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_unban_request_create_1",
+        name: "Channel Unban Request Create",
+        subscription_type: "channel.unban_request.create",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A user creates an unban request.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_unban_request_resolve_1",
+        name: "Channel Unban Request Resolve",
+        subscription_type: "channel.unban_request.resolve",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "An unban request has been resolved.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_warning_acknowledge_1",
+        name: "Channel Warning Acknowledgement",
+        subscription_type: "channel.warning.acknowledge",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A user acknowledges a warning. Broadcasters and moderators can see the warning's details.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_warning_send_1",
+        name: "Channel Warning Send",
+        subscription_type: "channel.warning.send",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A user is sent a warning. Broadcasters and moderators can see the warning's details.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_automatic_reward_redemption_add_1",
+        name: "Channel Points Automatic Reward Redemption Add",
+        subscription_type: "channel.channel_points_automatic_reward_redemption.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A viewer has redeemed an automatic channel points reward on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_automatic_reward_redemption_add_2",
+        name: "Channel Points Automatic Reward Redemption Add V2",
+        subscription_type: "channel.channel_points_automatic_reward_redemption.add",
+        version: "2",
+        stability: EndpointStability::Ga,
+        description: "A viewer has redeemed an automatic channel points reward on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_redemption_add_1",
+        name: "Channel Points Custom Reward Redemption Add",
+        subscription_type: "channel.channel_points_custom_reward_redemption.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A viewer has redeemed a custom channel points reward on the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_redemption_update_1",
+        name: "Channel Points Custom Reward Redemption Update",
+        subscription_type: "channel.channel_points_custom_reward_redemption.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A redemption of a channel points custom reward has been updated for the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_add_1",
+        name: "Channel Points Custom Reward Add",
+        subscription_type: "channel.channel_points_custom_reward.add",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A custom channel points reward has been created for the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_remove_1",
+        name: "Channel Points Custom Reward Remove",
+        subscription_type: "channel.channel_points_custom_reward.remove",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A custom channel points reward has been removed from the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_channel_points_custom_reward_update_1",
+        name: "Channel Points Custom Reward Update",
+        subscription_type: "channel.channel_points_custom_reward.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A custom channel points reward has been updated for the specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_charity_campaign_donate_1",
+        name: "Charity Donation",
+        subscription_type: "channel.charity_campaign.donate",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends an event notification when a user donates to the broadcaster's charity campaign.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_charity_campaign_progress_1",
+        name: "Charity Campaign Progress",
+        subscription_type: "channel.charity_campaign.progress",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends an event notification when progress is made towards the campaign's goal or when the broadcaster changes the fundraising goal.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_charity_campaign_start_1",
+        name: "Charity Campaign Start",
+        subscription_type: "channel.charity_campaign.start",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends an event notification when the broadcaster starts a charity campaign.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_charity_campaign_stop_1",
+        name: "Charity Campaign Stop",
+        subscription_type: "channel.charity_campaign.stop",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Sends an event notification when the broadcaster stops a charity campaign.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_chat_settings_update_1",
+        name: "Channel Chat Settings Update",
+        subscription_type: "channel.chat_settings.update",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A notification for when a broadcaster's chat settings are updated.",
     },
     EventSubSubscriptionDefinition {
         id: "channel_chat_clear_1",
@@ -5978,14 +6298,6 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         description: "A notification for when an event that appears in chat has occurred.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_chat_settings_update_1",
-        name: "Channel Chat Settings Update",
-        subscription_type: "channel.chat_settings.update",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A notification for when a broadcaster’s chat settings are updated.",
-    },
-    EventSubSubscriptionDefinition {
         id: "channel_chat_user_message_hold_1",
         name: "Channel Chat User Message Hold",
         subscription_type: "channel.chat.user_message_hold",
@@ -5999,7 +6311,7 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         subscription_type: "channel.chat.user_message_update",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "A user is notified if their message’s automod status is updated.",
+        description: "A user is notified if their message's automod status is updated.",
     },
     EventSubSubscriptionDefinition {
         id: "channel_shared_chat_begin_1",
@@ -6010,14 +6322,6 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         description: "A notification when a channel becomes active in an active shared chat session.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_shared_chat_update_1",
-        name: "Channel Shared Chat Session Update",
-        subscription_type: "channel.shared_chat.update",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A notification when the active shared chat session the channel is in changes.",
-    },
-    EventSubSubscriptionDefinition {
         id: "channel_shared_chat_end_1",
         name: "Channel Shared Chat Session End",
         subscription_type: "channel.shared_chat.end",
@@ -6026,355 +6330,19 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         description: "A notification when a channel leaves a shared chat session or the session ends.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_subscribe_1",
-        name: "Channel Subscribe",
-        subscription_type: "channel.subscribe",
+        id: "channel_shared_chat_update_1",
+        name: "Channel Shared Chat Session Update",
+        subscription_type: "channel.shared_chat.update",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "A notification is sent when a specified channel receives a subscriber. This does not include resubscribes.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_subscription_end_1",
-        name: "Channel Subscription End",
-        subscription_type: "channel.subscription.end",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A notification when a subscription to the specified channel ends.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_subscription_gift_1",
-        name: "Channel Subscription Gift",
-        subscription_type: "channel.subscription.gift",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A notification when a viewer gives a gift subscription to one or more users in the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_subscription_message_1",
-        name: "Channel Subscription Message",
-        subscription_type: "channel.subscription.message",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A notification when a user sends a resubscription chat message in a specific channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_cheer_1",
-        name: "Channel Cheer",
-        subscription_type: "channel.cheer",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A user cheers on the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_raid_1",
-        name: "Channel Raid",
-        subscription_type: "channel.raid",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A broadcaster raids another broadcaster’s channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_ban_1",
-        name: "Channel Ban",
-        subscription_type: "channel.ban",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A viewer is banned from the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_unban_1",
-        name: "Channel Unban",
-        subscription_type: "channel.unban",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A viewer is unbanned from the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_unban_request_create_1",
-        name: "Channel Unban Request Create",
-        subscription_type: "channel.unban_request.create",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A user creates an unban request.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_unban_request_resolve_1",
-        name: "Channel Unban Request Resolve",
-        subscription_type: "channel.unban_request.resolve",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "An unban request has been resolved.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_moderate_1",
-        name: "Channel Moderate",
-        subscription_type: "channel.moderate",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A moderator performs a moderation action in a channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_moderate_2",
-        name: "Channel Moderate V2",
-        subscription_type: "channel.moderate",
-        version: "2",
-        stability: EndpointStability::Ga,
-        description: "A moderator performs a moderation action in a channel. Includes warnings.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_moderator_add_1",
-        name: "Channel Moderator Add",
-        subscription_type: "channel.moderator.add",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "Moderator privileges were added to a user on a specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_moderator_remove_1",
-        name: "Channel Moderator Remove",
-        subscription_type: "channel.moderator.remove",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "Moderator privileges were removed from a user on a specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_guest_star_session_begin_beta",
-        name: "Channel Guest Star Session Begin\nBETA",
-        subscription_type: "channel.guest_star_session.begin",
-        version: "beta",
-        stability: EndpointStability::Beta,
-        description: "The host began a new Guest Star session.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_guest_star_session_end_beta",
-        name: "Channel Guest Star Session End\nBETA",
-        subscription_type: "channel.guest_star_session.end",
-        version: "beta",
-        stability: EndpointStability::Beta,
-        description: "A running Guest Star session has ended.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_guest_star_guest_update_beta",
-        name: "Channel Guest Star Guest Update\nBETA",
-        subscription_type: "channel.guest_star_guest.update",
-        version: "beta",
-        stability: EndpointStability::Beta,
-        description: "A guest or a slot is updated in an active Guest Star session.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_guest_star_settings_update_beta",
-        name: "Channel Guest Star Settings Update\nBETA",
-        subscription_type: "channel.guest_star_settings.update",
-        version: "beta",
-        stability: EndpointStability::Beta,
-        description: "The host preferences for Guest Star have been updated.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_channel_points_automatic_reward_redemption_add_1",
-        name: "Channel Points Automatic Reward Redemption Add",
-        subscription_type: "channel.channel_points_automatic_reward_redemption.add",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A viewer has redeemed an automatic channel points reward on the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_channel_points_automatic_reward_redemption_add_2",
-        name: "Channel Points Automatic Reward Redemption Add V2",
-        subscription_type: "channel.channel_points_automatic_reward_redemption.add",
-        version: "2",
-        stability: EndpointStability::Ga,
-        description: "A viewer has redeemed an automatic channel points reward on the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_channel_points_custom_reward_add_1",
-        name: "Channel Points Custom Reward Add",
-        subscription_type: "channel.channel_points_custom_reward.add",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A custom channel points reward has been created for the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_channel_points_custom_reward_update_1",
-        name: "Channel Points Custom Reward Update",
-        subscription_type: "channel.channel_points_custom_reward.update",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A custom channel points reward has been updated for the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_channel_points_custom_reward_remove_1",
-        name: "Channel Points Custom Reward Remove",
-        subscription_type: "channel.channel_points_custom_reward.remove",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A custom channel points reward has been removed from the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_channel_points_custom_reward_redemption_add_1",
-        name: "Channel Points Custom Reward Redemption Add",
-        subscription_type: "channel.channel_points_custom_reward_redemption.add",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A viewer has redeemed a custom channel points reward on the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_channel_points_custom_reward_redemption_update_1",
-        name: "Channel Points Custom Reward Redemption Update",
-        subscription_type: "channel.channel_points_custom_reward_redemption.update",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A redemption of a channel points custom reward has been updated for the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_custom_power_up_redemption_add_1",
-        name: "Channel Custom Power-ups Redemption Add\nNEW",
-        subscription_type: "channel.custom_power_up_redemption.add",
-        version: "1",
-        stability: EndpointStability::New,
-        description: "A viewer has redeemed a custom Power-up on the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_poll_begin_1",
-        name: "Channel Poll Begin",
-        subscription_type: "channel.poll.begin",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A poll started on a specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_poll_progress_1",
-        name: "Channel Poll Progress",
-        subscription_type: "channel.poll.progress",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "Users respond to a poll on a specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_poll_end_1",
-        name: "Channel Poll End",
-        subscription_type: "channel.poll.end",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A poll ended on a specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_prediction_begin_1",
-        name: "Channel Prediction Begin",
-        subscription_type: "channel.prediction.begin",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A Prediction started on a specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_prediction_progress_1",
-        name: "Channel Prediction Progress",
-        subscription_type: "channel.prediction.progress",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "Users participated in a Prediction on a specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_prediction_lock_1",
-        name: "Channel Prediction Lock",
-        subscription_type: "channel.prediction.lock",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A Prediction was locked on a specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_prediction_end_1",
-        name: "Channel Prediction End",
-        subscription_type: "channel.prediction.end",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A Prediction ended on a specified channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_suspicious_user_message_1",
-        name: "Channel Suspicious User Message\nNEW",
-        subscription_type: "channel.suspicious_user.message",
-        version: "1",
-        stability: EndpointStability::New,
-        description: "A chat message has been sent by a suspicious user.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_suspicious_user_update_1",
-        name: "Channel Suspicious User Update\nNEW",
-        subscription_type: "channel.suspicious_user.update",
-        version: "1",
-        stability: EndpointStability::New,
-        description: "A suspicious user has been updated.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_vip_add_1",
-        name: "Channel VIP Add",
-        subscription_type: "channel.vip.add",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A VIP is added to the channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_vip_remove_1",
-        name: "Channel VIP Remove",
-        subscription_type: "channel.vip.remove",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A VIP is removed from the channel.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_warning_acknowledge_1",
-        name: "Channel Warning Acknowledgement",
-        subscription_type: "channel.warning.acknowledge",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "A user acknowledges a warning. Broadcasters and moderators can see the warning’s details.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_warning_send_1",
-        name: "Channel Warning Send\nNEW",
-        subscription_type: "channel.warning.send",
-        version: "1",
-        stability: EndpointStability::New,
-        description: "A user is sent a warning. Broadcasters and moderators can see the warning’s details.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_charity_campaign_donate_1",
-        name: "Charity Donation",
-        subscription_type: "channel.charity_campaign.donate",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "Sends an event notification when a user donates to the broadcaster’s charity campaign.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_charity_campaign_start_1",
-        name: "Charity Campaign Start",
-        subscription_type: "channel.charity_campaign.start",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "Sends an event notification when the broadcaster starts a charity campaign.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_charity_campaign_progress_1",
-        name: "Charity Campaign Progress",
-        subscription_type: "channel.charity_campaign.progress",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "Sends an event notification when progress is made towards the campaign’s goal or when the broadcaster changes the fundraising goal.",
-    },
-    EventSubSubscriptionDefinition {
-        id: "channel_charity_campaign_stop_1",
-        name: "Charity Campaign Stop",
-        subscription_type: "channel.charity_campaign.stop",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "Sends an event notification when the broadcaster stops a charity campaign.",
+        description: "A notification when the active shared chat session the channel is in changes.",
     },
     EventSubSubscriptionDefinition {
         id: "conduit_shard_disabled_1",
-        name: "Conduit Shard Disabled\nNEW",
+        name: "Conduit Shard Disabled",
         subscription_type: "conduit.shard.disabled",
         version: "1",
-        stability: EndpointStability::New,
+        stability: EndpointStability::Ga,
         description: "Sends a notification when EventSub disables a shard due to the status of the underlying transport changing.",
     },
     EventSubSubscriptionDefinition {
@@ -6402,20 +6370,52 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         description: "Get notified when a broadcaster begins a goal.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_goal_progress_1",
-        name: "Goal Progress",
-        subscription_type: "channel.goal.progress",
-        version: "1",
-        stability: EndpointStability::Ga,
-        description: "Get notified when progress (either positive or negative) is made towards a broadcaster’s goal.",
-    },
-    EventSubSubscriptionDefinition {
         id: "channel_goal_end_1",
         name: "Goal End",
         subscription_type: "channel.goal.end",
         version: "1",
         stability: EndpointStability::Ga,
         description: "Get notified when a broadcaster ends a goal.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_goal_progress_1",
+        name: "Goal Progress",
+        subscription_type: "channel.goal.progress",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Get notified when progress (either positive or negative) is made towards a broadcaster's goal.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_guest_star_guest_update_beta",
+        name: "Channel Guest Star Guest Update",
+        subscription_type: "channel.guest_star_guest.update",
+        version: "beta",
+        stability: EndpointStability::Beta,
+        description: "A guest or a slot is updated in an active Guest Star session.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_guest_star_session_begin_beta",
+        name: "Channel Guest Star Session Begin",
+        subscription_type: "channel.guest_star_session.begin",
+        version: "beta",
+        stability: EndpointStability::Beta,
+        description: "The host began a new Guest Star session.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_guest_star_session_end_beta",
+        name: "Channel Guest Star Session End",
+        subscription_type: "channel.guest_star_session.end",
+        version: "beta",
+        stability: EndpointStability::Beta,
+        description: "A running Guest Star session has ended.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_guest_star_settings_update_beta",
+        name: "Channel Guest Star Settings Update",
+        subscription_type: "channel.guest_star_settings.update",
+        version: "beta",
+        stability: EndpointStability::Beta,
+        description: "The host preferences for Guest Star have been updated.",
     },
     EventSubSubscriptionDefinition {
         id: "channel_hype_train_begin_2",
@@ -6426,14 +6426,6 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         description: "A Hype Train begins on the specified channel.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_hype_train_progress_2",
-        name: "Hype Train Progress",
-        subscription_type: "channel.hype_train.progress",
-        version: "2",
-        stability: EndpointStability::Ga,
-        description: "A Hype Train makes progress on the specified channel.",
-    },
-    EventSubSubscriptionDefinition {
         id: "channel_hype_train_end_2",
         name: "Hype Train End",
         subscription_type: "channel.hype_train.end",
@@ -6442,44 +6434,68 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         description: "A Hype Train ends on the specified channel.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_shield_mode_begin_1",
-        name: "Shield Mode Begin",
-        subscription_type: "channel.shield_mode.begin",
-        version: "1",
+        id: "channel_hype_train_progress_2",
+        name: "Hype Train Progress",
+        subscription_type: "channel.hype_train.progress",
+        version: "2",
         stability: EndpointStability::Ga,
-        description: "Sends a notification when the broadcaster activates Shield Mode.",
+        description: "A Hype Train makes progress on the specified channel.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_shield_mode_end_1",
-        name: "Shield Mode End",
-        subscription_type: "channel.shield_mode.end",
+        id: "channel_poll_begin_1",
+        name: "Channel Poll Begin",
+        subscription_type: "channel.poll.begin",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "Sends a notification when the broadcaster deactivates Shield Mode.",
+        description: "A poll started on a specified channel.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_shoutout_create_1",
-        name: "Shoutout Create",
-        subscription_type: "channel.shoutout.create",
+        id: "channel_poll_end_1",
+        name: "Channel Poll End",
+        subscription_type: "channel.poll.end",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "Sends a notification when the specified broadcaster sends a Shoutout.",
+        description: "A poll ended on a specified channel.",
     },
     EventSubSubscriptionDefinition {
-        id: "channel_shoutout_receive_1",
-        name: "Shoutout Received",
-        subscription_type: "channel.shoutout.receive",
+        id: "channel_poll_progress_1",
+        name: "Channel Poll Progress",
+        subscription_type: "channel.poll.progress",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "Sends a notification when the specified broadcaster receives a Shoutout.",
+        description: "Users respond to a poll on a specified channel.",
     },
     EventSubSubscriptionDefinition {
-        id: "stream_online_1",
-        name: "Stream Online",
-        subscription_type: "stream.online",
+        id: "channel_prediction_begin_1",
+        name: "Channel Prediction Begin",
+        subscription_type: "channel.prediction.begin",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "The specified broadcaster starts a stream.",
+        description: "A Prediction started on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_prediction_end_1",
+        name: "Channel Prediction End",
+        subscription_type: "channel.prediction.end",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A Prediction ended on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_prediction_lock_1",
+        name: "Channel Prediction Lock",
+        subscription_type: "channel.prediction.lock",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "A Prediction was locked on a specified channel.",
+    },
+    EventSubSubscriptionDefinition {
+        id: "channel_prediction_progress_1",
+        name: "Channel Prediction Progress",
+        subscription_type: "channel.prediction.progress",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "Users participated in a Prediction on a specified channel.",
     },
     EventSubSubscriptionDefinition {
         id: "stream_offline_1",
@@ -6490,12 +6506,20 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         description: "The specified broadcaster stops a stream.",
     },
     EventSubSubscriptionDefinition {
+        id: "stream_online_1",
+        name: "Stream Online",
+        subscription_type: "stream.online",
+        version: "1",
+        stability: EndpointStability::Ga,
+        description: "The specified broadcaster starts a stream.",
+    },
+    EventSubSubscriptionDefinition {
         id: "user_authorization_grant_1",
         name: "User Authorization Grant",
         subscription_type: "user.authorization.grant",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "A user’s authorization has been granted to your client id.",
+        description: "A user's authorization has been granted to your client id.",
     },
     EventSubSubscriptionDefinition {
         id: "user_authorization_revoke_1",
@@ -6503,7 +6527,7 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
         subscription_type: "user.authorization.revoke",
         version: "1",
         stability: EndpointStability::Ga,
-        description: "A user’s authorization has been revoked for your client id.",
+        description: "A user's authorization has been revoked for your client id.",
     },
     EventSubSubscriptionDefinition {
         id: "user_update_1",
@@ -6515,10 +6539,10 @@ pub static ALL_SUBSCRIPTIONS: &[EventSubSubscriptionDefinition] = &[
     },
     EventSubSubscriptionDefinition {
         id: "user_whisper_message_1",
-        name: "Whisper Received\nNEW",
+        name: "Whisper Received",
         subscription_type: "user.whisper.message",
         version: "1",
-        stability: EndpointStability::New,
+        stability: EndpointStability::Ga,
         description: "A user receives a whisper.",
     },
 ];
@@ -6554,21 +6578,185 @@ pub(crate) fn decode_known_payload(
             decode_typed_event::<AutomodTermsUpdate1Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::AutomodTermsUpdate1)
         }
+        ("channel.ad_break.begin", Some("1")) => {
+            decode_typed_event::<ChannelAdBreakBegin1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelAdBreakBegin1)
+        }
         ("channel.bits.use", Some("1")) => {
             decode_typed_event::<ChannelBitsUse1Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelBitsUse1)
         }
-        ("channel.update", Some("2")) => {
-            decode_typed_event::<ChannelUpdate2Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelUpdate2)
+        ("channel.cheer", Some("1")) => {
+            decode_typed_event::<ChannelCheer1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCheer1)
+        }
+        ("channel.custom_power_up_redemption.add", Some("1")) => {
+            decode_typed_event::<ChannelCustomPowerUpRedemptionAdd1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCustomPowerUpRedemptionAdd1)
         }
         ("channel.follow", Some("2")) => {
             decode_typed_event::<ChannelFollow2Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelFollow2)
         }
-        ("channel.ad_break.begin", Some("1")) => {
-            decode_typed_event::<ChannelAdBreakBegin1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelAdBreakBegin1)
+        ("channel.raid", Some("1")) => {
+            decode_typed_event::<ChannelRaid1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelRaid1)
+        }
+        ("channel.shoutout.create", Some("1")) => {
+            decode_typed_event::<ChannelShoutoutCreate1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelShoutoutCreate1)
+        }
+        ("channel.shoutout.receive", Some("1")) => {
+            decode_typed_event::<ChannelShoutoutReceive1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelShoutoutReceive1)
+        }
+        ("channel.subscribe", Some("1")) => {
+            decode_typed_event::<ChannelSubscribe1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSubscribe1)
+        }
+        ("channel.subscription.end", Some("1")) => {
+            decode_typed_event::<ChannelSubscriptionEnd1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSubscriptionEnd1)
+        }
+        ("channel.subscription.gift", Some("1")) => {
+            decode_typed_event::<ChannelSubscriptionGift1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSubscriptionGift1)
+        }
+        ("channel.subscription.message", Some("1")) => {
+            decode_typed_event::<ChannelSubscriptionMessage1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSubscriptionMessage1)
+        }
+        ("channel.update", Some("2")) => {
+            decode_typed_event::<ChannelUpdate2Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelUpdate2)
+        }
+        ("channel.vip.add", Some("1")) => {
+            decode_typed_event::<ChannelVipAdd1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelVipAdd1)
+        }
+        ("channel.vip.remove", Some("1")) => {
+            decode_typed_event::<ChannelVipRemove1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelVipRemove1)
+        }
+        ("channel.ban", Some("1")) => {
+            decode_typed_event::<ChannelBan1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelBan1)
+        }
+        ("channel.moderate", Some("1")) => {
+            decode_typed_event::<ChannelModerate1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelModerate1)
+        }
+        ("channel.moderate", Some("2")) => {
+            decode_typed_event::<ChannelModerate2Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelModerate2)
+        }
+        ("channel.moderator.add", Some("1")) => {
+            decode_typed_event::<ChannelModeratorAdd1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelModeratorAdd1)
+        }
+        ("channel.moderator.remove", Some("1")) => {
+            decode_typed_event::<ChannelModeratorRemove1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelModeratorRemove1)
+        }
+        ("channel.shield_mode.begin", Some("1")) => {
+            decode_typed_event::<ChannelShieldModeBegin1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelShieldModeBegin1)
+        }
+        ("channel.shield_mode.end", Some("1")) => {
+            decode_typed_event::<ChannelShieldModeEnd1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelShieldModeEnd1)
+        }
+        ("channel.suspicious_user.message", Some("1")) => {
+            decode_typed_event::<ChannelSuspiciousUserMessage1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSuspiciousUserMessage1)
+        }
+        ("channel.suspicious_user.update", Some("1")) => {
+            decode_typed_event::<ChannelSuspiciousUserUpdate1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSuspiciousUserUpdate1)
+        }
+        ("channel.unban", Some("1")) => {
+            decode_typed_event::<ChannelUnban1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelUnban1)
+        }
+        ("channel.unban_request.create", Some("1")) => {
+            decode_typed_event::<ChannelUnbanRequestCreate1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelUnbanRequestCreate1)
+        }
+        ("channel.unban_request.resolve", Some("1")) => {
+            decode_typed_event::<ChannelUnbanRequestResolve1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelUnbanRequestResolve1)
+        }
+        ("channel.warning.acknowledge", Some("1")) => {
+            decode_typed_event::<ChannelWarningAcknowledge1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelWarningAcknowledge1)
+        }
+        ("channel.warning.send", Some("1")) => {
+            decode_typed_event::<ChannelWarningSend1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelWarningSend1)
+        }
+        ("channel.channel_points_automatic_reward_redemption.add", Some("1")) => {
+            decode_typed_event::<ChannelChannelPointsAutomaticRewardRedemptionAdd1Event>(
+                event,
+                source_timestamp,
+            )
+            .map(KnownEventSubPayload::ChannelChannelPointsAutomaticRewardRedemptionAdd1)
+        }
+        ("channel.channel_points_automatic_reward_redemption.add", Some("2")) => {
+            decode_typed_event::<ChannelChannelPointsAutomaticRewardRedemptionAdd2Event>(
+                event,
+                source_timestamp,
+            )
+            .map(KnownEventSubPayload::ChannelChannelPointsAutomaticRewardRedemptionAdd2)
+        }
+        ("channel.channel_points_custom_reward_redemption.add", Some("1")) => {
+            decode_typed_event::<ChannelChannelPointsCustomRewardRedemptionAdd1Event>(
+                event,
+                source_timestamp,
+            )
+            .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRedemptionAdd1)
+        }
+        ("channel.channel_points_custom_reward_redemption.update", Some("1")) => {
+            decode_typed_event::<ChannelChannelPointsCustomRewardRedemptionUpdate1Event>(
+                event,
+                source_timestamp,
+            )
+            .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRedemptionUpdate1)
+        }
+        ("channel.channel_points_custom_reward.add", Some("1")) => {
+            decode_typed_event::<ChannelChannelPointsCustomRewardAdd1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardAdd1)
+        }
+        ("channel.channel_points_custom_reward.remove", Some("1")) => decode_typed_event::<
+            ChannelChannelPointsCustomRewardRemove1Event,
+        >(
+            event, source_timestamp
+        )
+        .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRemove1),
+        ("channel.channel_points_custom_reward.update", Some("1")) => decode_typed_event::<
+            ChannelChannelPointsCustomRewardUpdate1Event,
+        >(
+            event, source_timestamp
+        )
+        .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardUpdate1),
+        ("channel.charity_campaign.donate", Some("1")) => {
+            decode_typed_event::<ChannelCharityCampaignDonate1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCharityCampaignDonate1)
+        }
+        ("channel.charity_campaign.progress", Some("1")) => {
+            decode_typed_event::<ChannelCharityCampaignProgress1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCharityCampaignProgress1)
+        }
+        ("channel.charity_campaign.start", Some("1")) => {
+            decode_typed_event::<ChannelCharityCampaignStart1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCharityCampaignStart1)
+        }
+        ("channel.charity_campaign.stop", Some("1")) => {
+            decode_typed_event::<ChannelCharityCampaignStop1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelCharityCampaignStop1)
+        }
+        ("channel.chat_settings.update", Some("1")) => {
+            decode_typed_event::<ChannelChatSettingsUpdate1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelChatSettingsUpdate1)
         }
         ("channel.chat.clear", Some("1")) => {
             decode_typed_event::<ChannelChatClear1Event>(event, source_timestamp)
@@ -6590,10 +6778,6 @@ pub(crate) fn decode_known_payload(
             decode_typed_event::<ChannelChatNotification1Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelChatNotification1)
         }
-        ("channel.chat_settings.update", Some("1")) => {
-            decode_typed_event::<ChannelChatSettingsUpdate1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelChatSettingsUpdate1)
-        }
         ("channel.chat.user_message_hold", Some("1")) => {
             decode_typed_event::<ChannelChatUserMessageHold1Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelChatUserMessageHold1)
@@ -6606,201 +6790,13 @@ pub(crate) fn decode_known_payload(
             decode_typed_event::<ChannelSharedChatBegin1Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelSharedChatBegin1)
         }
-        ("channel.shared_chat.update", Some("1")) => {
-            decode_typed_event::<ChannelSharedChatUpdate1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelSharedChatUpdate1)
-        }
         ("channel.shared_chat.end", Some("1")) => {
             decode_typed_event::<ChannelSharedChatEnd1Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelSharedChatEnd1)
         }
-        ("channel.subscribe", Some("1")) => {
-            decode_typed_event::<ChannelSubscribe1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelSubscribe1)
-        }
-        ("channel.subscription.end", Some("1")) => {
-            decode_typed_event::<ChannelSubscriptionEnd1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelSubscriptionEnd1)
-        }
-        ("channel.subscription.gift", Some("1")) => {
-            decode_typed_event::<ChannelSubscriptionGift1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelSubscriptionGift1)
-        }
-        ("channel.subscription.message", Some("1")) => {
-            decode_typed_event::<ChannelSubscriptionMessage1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelSubscriptionMessage1)
-        }
-        ("channel.cheer", Some("1")) => {
-            decode_typed_event::<ChannelCheer1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelCheer1)
-        }
-        ("channel.raid", Some("1")) => {
-            decode_typed_event::<ChannelRaid1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelRaid1)
-        }
-        ("channel.ban", Some("1")) => {
-            decode_typed_event::<ChannelBan1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelBan1)
-        }
-        ("channel.unban", Some("1")) => {
-            decode_typed_event::<ChannelUnban1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelUnban1)
-        }
-        ("channel.unban_request.create", Some("1")) => {
-            decode_typed_event::<ChannelUnbanRequestCreate1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelUnbanRequestCreate1)
-        }
-        ("channel.unban_request.resolve", Some("1")) => {
-            decode_typed_event::<ChannelUnbanRequestResolve1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelUnbanRequestResolve1)
-        }
-        ("channel.moderate", Some("1")) => {
-            decode_typed_event::<ChannelModerate1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelModerate1)
-        }
-        ("channel.moderate", Some("2")) => {
-            decode_typed_event::<ChannelModerate2Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelModerate2)
-        }
-        ("channel.moderator.add", Some("1")) => {
-            decode_typed_event::<ChannelModeratorAdd1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelModeratorAdd1)
-        }
-        ("channel.moderator.remove", Some("1")) => {
-            decode_typed_event::<ChannelModeratorRemove1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelModeratorRemove1)
-        }
-        ("channel.guest_star_session.begin", Some("beta")) => {
-            decode_typed_event::<ChannelGuestStarSessionBeginBetaEvent>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelGuestStarSessionBeginBeta)
-        }
-        ("channel.guest_star_session.end", Some("beta")) => {
-            decode_typed_event::<ChannelGuestStarSessionEndBetaEvent>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelGuestStarSessionEndBeta)
-        }
-        ("channel.guest_star_guest.update", Some("beta")) => {
-            decode_typed_event::<ChannelGuestStarGuestUpdateBetaEvent>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelGuestStarGuestUpdateBeta)
-        }
-        ("channel.guest_star_settings.update", Some("beta")) => {
-            decode_typed_event::<ChannelGuestStarSettingsUpdateBetaEvent>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelGuestStarSettingsUpdateBeta)
-        }
-        ("channel.channel_points_automatic_reward_redemption.add", Some("1")) => {
-            decode_typed_event::<ChannelChannelPointsAutomaticRewardRedemptionAdd1Event>(
-                event,
-                source_timestamp,
-            )
-            .map(KnownEventSubPayload::ChannelChannelPointsAutomaticRewardRedemptionAdd1)
-        }
-        ("channel.channel_points_automatic_reward_redemption.add", Some("2")) => {
-            decode_typed_event::<ChannelChannelPointsAutomaticRewardRedemptionAdd2Event>(
-                event,
-                source_timestamp,
-            )
-            .map(KnownEventSubPayload::ChannelChannelPointsAutomaticRewardRedemptionAdd2)
-        }
-        ("channel.channel_points_custom_reward.add", Some("1")) => {
-            decode_typed_event::<ChannelChannelPointsCustomRewardAdd1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardAdd1)
-        }
-        ("channel.channel_points_custom_reward.update", Some("1")) => decode_typed_event::<
-            ChannelChannelPointsCustomRewardUpdate1Event,
-        >(
-            event, source_timestamp
-        )
-        .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardUpdate1),
-        ("channel.channel_points_custom_reward.remove", Some("1")) => decode_typed_event::<
-            ChannelChannelPointsCustomRewardRemove1Event,
-        >(
-            event, source_timestamp
-        )
-        .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRemove1),
-        ("channel.channel_points_custom_reward_redemption.add", Some("1")) => {
-            decode_typed_event::<ChannelChannelPointsCustomRewardRedemptionAdd1Event>(
-                event,
-                source_timestamp,
-            )
-            .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRedemptionAdd1)
-        }
-        ("channel.channel_points_custom_reward_redemption.update", Some("1")) => {
-            decode_typed_event::<ChannelChannelPointsCustomRewardRedemptionUpdate1Event>(
-                event,
-                source_timestamp,
-            )
-            .map(KnownEventSubPayload::ChannelChannelPointsCustomRewardRedemptionUpdate1)
-        }
-        ("channel.custom_power_up_redemption.add", Some("1")) => {
-            decode_typed_event::<ChannelCustomPowerUpRedemptionAdd1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelCustomPowerUpRedemptionAdd1)
-        }
-        ("channel.poll.begin", Some("1")) => {
-            decode_typed_event::<ChannelPollBegin1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelPollBegin1)
-        }
-        ("channel.poll.progress", Some("1")) => {
-            decode_typed_event::<ChannelPollProgress1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelPollProgress1)
-        }
-        ("channel.poll.end", Some("1")) => {
-            decode_typed_event::<ChannelPollEnd1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelPollEnd1)
-        }
-        ("channel.prediction.begin", Some("1")) => {
-            decode_typed_event::<ChannelPredictionBegin1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelPredictionBegin1)
-        }
-        ("channel.prediction.progress", Some("1")) => {
-            decode_typed_event::<ChannelPredictionProgress1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelPredictionProgress1)
-        }
-        ("channel.prediction.lock", Some("1")) => {
-            decode_typed_event::<ChannelPredictionLock1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelPredictionLock1)
-        }
-        ("channel.prediction.end", Some("1")) => {
-            decode_typed_event::<ChannelPredictionEnd1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelPredictionEnd1)
-        }
-        ("channel.suspicious_user.message", Some("1")) => {
-            decode_typed_event::<ChannelSuspiciousUserMessage1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelSuspiciousUserMessage1)
-        }
-        ("channel.suspicious_user.update", Some("1")) => {
-            decode_typed_event::<ChannelSuspiciousUserUpdate1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelSuspiciousUserUpdate1)
-        }
-        ("channel.vip.add", Some("1")) => {
-            decode_typed_event::<ChannelVipAdd1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelVipAdd1)
-        }
-        ("channel.vip.remove", Some("1")) => {
-            decode_typed_event::<ChannelVipRemove1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelVipRemove1)
-        }
-        ("channel.warning.acknowledge", Some("1")) => {
-            decode_typed_event::<ChannelWarningAcknowledge1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelWarningAcknowledge1)
-        }
-        ("channel.warning.send", Some("1")) => {
-            decode_typed_event::<ChannelWarningSend1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelWarningSend1)
-        }
-        ("channel.charity_campaign.donate", Some("1")) => {
-            decode_typed_event::<ChannelCharityCampaignDonate1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelCharityCampaignDonate1)
-        }
-        ("channel.charity_campaign.start", Some("1")) => {
-            decode_typed_event::<ChannelCharityCampaignStart1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelCharityCampaignStart1)
-        }
-        ("channel.charity_campaign.progress", Some("1")) => {
-            decode_typed_event::<ChannelCharityCampaignProgress1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelCharityCampaignProgress1)
-        }
-        ("channel.charity_campaign.stop", Some("1")) => {
-            decode_typed_event::<ChannelCharityCampaignStop1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelCharityCampaignStop1)
+        ("channel.shared_chat.update", Some("1")) => {
+            decode_typed_event::<ChannelSharedChatUpdate1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelSharedChatUpdate1)
         }
         ("conduit.shard.disabled", Some("1")) => {
             decode_typed_event::<ConduitShardDisabled1Event>(event, source_timestamp)
@@ -6818,49 +6814,77 @@ pub(crate) fn decode_known_payload(
             decode_typed_event::<ChannelGoalBegin1Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelGoalBegin1)
         }
+        ("channel.goal.end", Some("1")) => {
+            decode_typed_event::<ChannelGoalEnd1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelGoalEnd1)
+        }
         ("channel.goal.progress", Some("1")) => {
             decode_typed_event::<ChannelGoalProgress1Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelGoalProgress1)
         }
-        ("channel.goal.end", Some("1")) => {
-            decode_typed_event::<ChannelGoalEnd1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelGoalEnd1)
+        ("channel.guest_star_guest.update", Some("beta")) => {
+            decode_typed_event::<ChannelGuestStarGuestUpdateBetaEvent>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelGuestStarGuestUpdateBeta)
+        }
+        ("channel.guest_star_session.begin", Some("beta")) => {
+            decode_typed_event::<ChannelGuestStarSessionBeginBetaEvent>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelGuestStarSessionBeginBeta)
+        }
+        ("channel.guest_star_session.end", Some("beta")) => {
+            decode_typed_event::<ChannelGuestStarSessionEndBetaEvent>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelGuestStarSessionEndBeta)
+        }
+        ("channel.guest_star_settings.update", Some("beta")) => {
+            decode_typed_event::<ChannelGuestStarSettingsUpdateBetaEvent>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelGuestStarSettingsUpdateBeta)
         }
         ("channel.hype_train.begin", Some("2")) => {
             decode_typed_event::<ChannelHypeTrainBegin2Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelHypeTrainBegin2)
         }
-        ("channel.hype_train.progress", Some("2")) => {
-            decode_typed_event::<ChannelHypeTrainProgress2Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelHypeTrainProgress2)
-        }
         ("channel.hype_train.end", Some("2")) => {
             decode_typed_event::<ChannelHypeTrainEnd2Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::ChannelHypeTrainEnd2)
         }
-        ("channel.shield_mode.begin", Some("1")) => {
-            decode_typed_event::<ChannelShieldModeBegin1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelShieldModeBegin1)
+        ("channel.hype_train.progress", Some("2")) => {
+            decode_typed_event::<ChannelHypeTrainProgress2Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelHypeTrainProgress2)
         }
-        ("channel.shield_mode.end", Some("1")) => {
-            decode_typed_event::<ChannelShieldModeEnd1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelShieldModeEnd1)
+        ("channel.poll.begin", Some("1")) => {
+            decode_typed_event::<ChannelPollBegin1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelPollBegin1)
         }
-        ("channel.shoutout.create", Some("1")) => {
-            decode_typed_event::<ChannelShoutoutCreate1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelShoutoutCreate1)
+        ("channel.poll.end", Some("1")) => {
+            decode_typed_event::<ChannelPollEnd1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelPollEnd1)
         }
-        ("channel.shoutout.receive", Some("1")) => {
-            decode_typed_event::<ChannelShoutoutReceive1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::ChannelShoutoutReceive1)
+        ("channel.poll.progress", Some("1")) => {
+            decode_typed_event::<ChannelPollProgress1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelPollProgress1)
         }
-        ("stream.online", Some("1")) => {
-            decode_typed_event::<StreamOnline1Event>(event, source_timestamp)
-                .map(KnownEventSubPayload::StreamOnline1)
+        ("channel.prediction.begin", Some("1")) => {
+            decode_typed_event::<ChannelPredictionBegin1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelPredictionBegin1)
+        }
+        ("channel.prediction.end", Some("1")) => {
+            decode_typed_event::<ChannelPredictionEnd1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelPredictionEnd1)
+        }
+        ("channel.prediction.lock", Some("1")) => {
+            decode_typed_event::<ChannelPredictionLock1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelPredictionLock1)
+        }
+        ("channel.prediction.progress", Some("1")) => {
+            decode_typed_event::<ChannelPredictionProgress1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::ChannelPredictionProgress1)
         }
         ("stream.offline", Some("1")) => {
             decode_typed_event::<StreamOffline1Event>(event, source_timestamp)
                 .map(KnownEventSubPayload::StreamOffline1)
+        }
+        ("stream.online", Some("1")) => {
+            decode_typed_event::<StreamOnline1Event>(event, source_timestamp)
+                .map(KnownEventSubPayload::StreamOnline1)
         }
         ("user.authorization.grant", Some("1")) => {
             decode_typed_event::<UserAuthorizationGrant1Event>(event, source_timestamp)

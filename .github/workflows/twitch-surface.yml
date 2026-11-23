@@ -26,17 +26,12 @@ jobs:
           python-version: "3.x"
 
       - name: Download current Twitch docs
-        run: |
-          curl -sSL --fail https://dev.twitch.tv/docs/api/reference -o /tmp/twitch_reference.html
-          curl -sSL --fail https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/ -o /tmp/twitch_eventsub_types.html
-          curl -sSL --fail https://dev.twitch.tv/docs/eventsub/eventsub-reference/ -o /tmp/twitch_eventsub_reference.html
+        run: python3 tools/twitch_surface.py fetch --docs-dir /tmp/twitch_docs
 
       - name: Generate candidate catalog
         run: |
           python3 tools/twitch_surface.py build \
-            --reference-html /tmp/twitch_reference.html \
-            --eventsub-html /tmp/twitch_eventsub_types.html \
-            --eventsub-reference-html /tmp/twitch_eventsub_reference.html \
+            --docs-dir /tmp/twitch_docs \
             --catalog-dir /tmp/twitch_catalog_candidate \
             --helix-rust /tmp/helix_generated.rs \
             --eventsub-rust /tmp/eventsub_generated.rs

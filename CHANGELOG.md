@@ -4,6 +4,90 @@ This file is append-only and records `barbed` changesO. Each entry lists the pub
 
 ## 0.0.6 - 2026-11-23
 
+### Twitch surface refreshed against the relaunched docs (2026-11-10)
+
+- Public API added/changed:
+  - Twitch relaunched its documentation on 2026-11-10: the single-page Helix
+    reference and the two EventSub pages became one page per resource, which
+    the scraper could not read. `tools/twitch_surface.py` gains a `fetch`
+    subcommand that downloads both reference indexes and the markdown copy of
+    every resource page, and `build --docs-dir` replaces the three `--*-html`
+    options. Names, groups, and beta flags come from the index HTML, the
+    rest from the markdown field lists, whose nesting is explicit (dotted
+    paths), so the indentation-repair heuristics are gone
+  - catalog refresh: 147 Helix endpoints (was 149) and 83 EventSub
+    subscriptions. Entries gain `page`; EventSub entries swap `event_section`
+    for `slug`; fields gain `nullable` where the docs flag it;
+    `eventsub.json` drops `event_source`. Registry order (`ALL_ENDPOINTS`,
+    `ALL_EVENTSUB_SUBSCRIPTIONS`, `KnownEventSubPayload` variants) follows the
+    new index
+  - breaking: `helix::tags` (Get All Stream Tags, Get Stream Tags) is gone;
+    Twitch dropped the deprecated endpoints from the reference
+  - breaking: generated Helix responses follow the corrections Twitch made
+    while migrating:
+    - Get Ad Schedule / Snooze Next Ad timestamps are `i64` Unix seconds
+      (were `String`)
+    - Create/Get/End Guest Star Session nest guests under
+      `guests: Vec<...Guests>` with `audio`/`video` (were flattened next to
+      the session with `audio_settings`/`video_settings`);
+      `GetChannelGuestStarSettingsResponse` wraps its settings in `data`;
+      Update Channel Guest Star Settings is `PATCH` (was `PUT`)
+    - the three poll responses lose `bits_voting_enabled`, `bits_per_vote`,
+      and `choices.bits_votes`
+    - `GetStreamMarkersItem` nests `videos: Vec<GetStreamMarkersVideos>`
+      holding `video_id` and `markers`; a marker's `url` is read from `URL`
+    - `GetChannelStreamScheduleResponse::pagination` moved to the top level
+    - `GetCheermotesTiers::images` is a struct tree (`dark`/`light`,
+      `animated`/`static`, `n1` ... `n4`) instead of a map
+    - `types` on the suspicious-status responses is `Vec<String>`
+  - Helix additions: `GetHypeTrainStatusResponse` is typed (was the untyped
+    alias); `is_batching_enabled` and `transport.conduit_id` on the EventSub
+    subscription responses; `views.live_config` and the component sizing
+    fields on the extension responses
+  - breaking: generated EventSub payloads:
+    - `channel.unban_request.resolve`: `moderator_user_{id,login,name}`
+      (were `moderator_{id,login,name}`)
+    - `conduit.shard.disabled`: the transport fields live under
+      `transport: ConduitShardDisabled1EventTransport` (were flattened)
+    - `drop.entitlement.grant`: `data` is a typed
+      `DropEntitlementGrant1EventData` (was `Vec<serde_json::Value>`)
+    - `channel.shared_chat.{begin,update}`: `participants` is a `Vec`
+    - `channel.chat.notification`: `source_badges` is a `Vec`,
+      `message.text` is a `String`, and `chatter_user_login` is new
+    - `channel.suspicious_user.message`: cheermote `bits`/`tier` are `i64`
+    - `channel.chat.user_message_{hold,update}`: fragments gain `type`
+    - `channel.channel_points_automatic_reward_redemption.add` v1: `message`
+      is `SharedMessage` (was a structurally identical per-event struct)
+  - shared EventSub objects: the docs now repeat them inline in every
+    payload instead of linking a section, so `SHARED_SECTIONS` in the tool
+    lists each `Shared*` struct's field names and a payload field joins it
+    when its name, array-ness, and child names match; the two unused
+    hype-train entries were dropped
+  - `HelixEndpoint::supports_pagination` is derived from an `after`/`before`
+    query parameter or a top-level `pagination` response field; the old
+    text search had flagged 25 endpoints that do not paginate
+  - auth metadata: the Guest Star endpoints report `HelixAuthKind::User`
+    (were `None`), Get Shared Chat Session `User` (was `Either`), Check User
+    Subscription `Either` (was `User`), Get Channel iCalendar `None` (was
+    `Custom`); five endpoints list an additional accepted scope
+  - stability: the docs no longer mark anything "new", so the ten Helix
+    endpoints and seven subscriptions that were `New` are `Ga`; the beta
+    counts are unchanged (12 Helix, 4 EventSub)
+  - fixed: generated Helix response fields decode `null` as the default
+    value, as the EventSub payloads already did. Before, any `null` failed
+    the whole typed parse, including Twitch's own Get Predictions example
+    (`winning_outcome_id`, `ended_at`, `locked_at`)
+  - `.github/workflows/twitch-surface.yml` uses `fetch` and `build
+    --docs-dir`
+- Root feature flags:
+  - none
+- Known remaining gaps:
+  - the docs flag only some of the fields they describe as null, so
+    `nullable` in the catalog is incomplete and nothing is typed `Option`
+  - request parameters and bodies sit in the same markdown lists but are
+    still not captured in the catalog
+  - Get Channel iCalendar stays untyped (the response is not JSON)
+
 ### Dependency updates
 
 - Public API added/changed:

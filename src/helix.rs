@@ -242,7 +242,7 @@ pub use generated::{
     ads, analytics, bits, ccls as content_classification_labels, channel_points, channels, charity,
     chat, clips, conduits, entitlements, eventsub as eventsub_endpoints, extensions, games, goals,
     guest_star, hype_train, moderation, polls, predictions, raids, schedule, search, streams,
-    subscriptions, tags, teams, users, videos, whispers,
+    subscriptions, teams, users, videos, whispers,
 };
 
 pub static ALL_ENDPOINTS: &[&HelixEndpoint] = generated::ALL_ENDPOINTS;

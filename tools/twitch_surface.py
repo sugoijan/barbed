@@ -3,28 +3,36 @@ from __future__ import annotations
 
 import argparse
 import collections
-import copy
-import dataclasses
 import datetime as dt
 import html
 import json
 import pathlib
 import re
 import sys
+import urllib.request
 from typing import Any
 
 
+DOCS_ORIGIN = "https://dev.twitch.tv"
+# Reference name (also the directory under `--docs-dir`) -> docs path of its
+# index page. Each index links the resource pages, which are fetched as their
+# markdown copies (`<page>.md`).
+REFERENCE_PATHS = {
+    "helix": "/docs/api/reference",
+    "eventsub": "/docs/eventsub/reference",
+}
+FETCH_USER_AGENT = "Mozilla/5.0 (compatible; docs-catalog-sync)"
+
 SOURCE_URLS = {
-    "helix_reference": "https://dev.twitch.tv/docs/api/reference",
-    "eventsub_types": "https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/",
-    "eventsub_reference": "https://dev.twitch.tv/docs/eventsub/eventsub-reference/",
+    "helix_reference": DOCS_ORIGIN + REFERENCE_PATHS["helix"],
+    "eventsub_reference": DOCS_ORIGIN + REFERENCE_PATHS["eventsub"],
     "oauth_tokens": "https://dev.twitch.tv/docs/authentication/getting-tokens-oauth",
     "oauth_oidc": "https://dev.twitch.tv/docs/authentication/getting-tokens-oidc",
     "oauth_validate": "https://dev.twitch.tv/docs/authentication/validate-tokens",
     "oauth_revoke": "https://dev.twitch.tv/docs/authentication/revoke-tokens",
     "eventsub_webhooks": "https://dev.twitch.tv/docs/eventsub/handling-webhook-events/",
     "changelog": "https://dev.twitch.tv/docs/change-log",
-    "product_lifecycle": "https://dev.twitch.tv/docs/product-lifecycle",
+    "product_lifecycle": "https://dev.twitch.tv/docs/change-log/product-lifecycle",
 }
 
 
@@ -173,9 +181,9 @@ def rust_string(value: str) -> str:
 
 def classify_stability(raw: str) -> str:
     lowered = raw.lower()
-    if "pill-beta" in lowered or ">beta<" in lowered:
+    if "beta-pill" in lowered or ">beta<" in lowered:
         return "beta"
-    if "pill-new" in lowered or ">new<" in lowered:
+    if "new-pill" in lowered or ">new<" in lowered:
         return "new"
     return "ga"
 
@@ -210,31 +218,126 @@ def classify_auth(auth_text: str) -> dict[str, Any]:
     }
 
 
-def parse_section_raw(section_html: str, heading: str) -> str:
-    pattern = re.compile(
-        rf"<h3[^>]*>\s*{re.escape(heading)}\s*</h3>(?P<body>.*?)(?=<h[23][^>]*>|$)",
-        re.I | re.S,
-    )
-    match = pattern.search(section_html)
-    return match.group("body") if match else ""
-
-
-def parse_section(section_html: str, heading: str) -> str:
-    body = parse_section_raw(section_html, heading)
-    return clean_html(body) if body else ""
-
-
-RESPONSE_TABLE_RE = re.compile(r"<table[^>]*>.*?</table>", re.S)
-# Fragment of the first link in a cell; the docs link names to section ids.
-TYPE_LINK_RE = re.compile(r'href="[^"]*#(?P<slug>[^"]+)"')
-EVENT_LINK_RE = re.compile(r'href="[^"]*eventsub-reference/?#(?P<slug>[^"]+)"')
-RESPONSE_ROW_RE = re.compile(
-    r"<tr>\s*<td[^>]*>(?P<field>.*?)</td>\s*<td[^>]*>(?P<type>.*?)</td>\s*<td[^>]*>(?P<description>.*?)</td>\s*</tr>",
+# Reference index pages: one <section> per resource, one <dt>/<dd> pair per
+# entry. The entry link carries the resource page and the entry's anchor on it;
+# stability pills only exist here, not in the markdown copies.
+INDEX_SECTION_RE = re.compile(
+    r'<section class="ref-index-section">\s*<h2[^>]*>(?P<group>.*?)</h2>(?P<body>.*?)</section>',
     re.S,
 )
-INDENT_CHARS = {" ", "\xa0", "\t"}
-# Documented types that cannot have nested child rows; used to repair rows the
-# docs over-indent under a scalar sibling.
+INDEX_ENTRY_RE = re.compile(
+    r'<dt class="ref-index-endpoint-name">\s*'
+    r'<a href="[^"#]*/(?P<page>[a-z0-9-]+)#(?P<slug>[^"]+)">(?P<name>.*?)</a>\s*</dt>'
+    r"\s*<dd[^>]*>(?P<summary>.*?)</dd>",
+    re.S,
+)
+INDEX_PILL_RE = re.compile(r'<span class="ref-[a-z]+-pill">.*?</span>', re.S)
+
+
+def parse_reference_index(index_html: str, kind: str) -> list[dict[str, str]]:
+    entries = []
+    for section in INDEX_SECTION_RE.finditer(index_html):
+        group = clean_html(section.group("group"))
+        for entry in INDEX_ENTRY_RE.finditer(section.group("body")):
+            summary_html = entry.group("summary")
+            entries.append(
+                {
+                    "group": group,
+                    "page": entry.group("page"),
+                    "slug": html.unescape(entry.group("slug")),
+                    "name": clean_html(entry.group("name")),
+                    "description": clean_html(INDEX_PILL_RE.sub("", summary_html)),
+                    "stability": classify_stability(summary_html),
+                }
+            )
+    if not entries:
+        raise RuntimeError(f"failed to locate the {kind} reference index entries")
+    return entries
+
+
+MD_HEADING_RE = re.compile(r"^#+ (?P<title>.*?)(?: \{#(?P<slug>[^}]+)\})?\s*$")
+MD_ESCAPE_RE = re.compile(r"\\([\\`*_{}\[\]()#+\-.!<>|~])")
+MD_HIDDEN_RE = re.compile(r"\x00([0-9a-f]{2})")
+MD_LINK_RE = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
+MD_STRONG_RE = re.compile(r"\*\*(.+?)\*\*")
+MD_EMPHASIS_RES = (
+    re.compile(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])"),
+    re.compile(r"(?<!\w)_(?!\s)(.+?)(?<!\s)_(?!\w)"),
+)
+MD_LIST_MARKER_RE = re.compile(r"^[-*>] +")
+
+
+def markdown_sections(
+    lines: list[str], level: int
+) -> list[tuple[str, str | None, list[str]]]:
+    """Splits lines at the headings of one level into (title, anchor, body),
+    ignoring anything inside fenced code."""
+    prefix = "#" * level + " "
+    sections: list[tuple[str, str | None, list[str]]] = []
+    body: list[str] | None = None
+    fenced = False
+    for line in lines:
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+        elif not fenced and line.startswith(prefix):
+            heading = MD_HEADING_RE.match(line)
+            assert heading is not None
+            body = []
+            sections.append((heading.group("title"), heading.group("slug"), body))
+            continue
+        if body is not None:
+            body.append(line)
+    return sections
+
+
+def markdown_text(raw: str) -> str:
+    """Reduces inline markdown to the plain text the docs render."""
+    text = MD_ESCAPE_RE.sub(lambda match: f"\x00{ord(match.group(1)):02x}", raw)
+    text = MD_LINK_RE.sub(r"\1", text)
+    text = MD_STRONG_RE.sub(r"\1", text)
+    for emphasis_re in MD_EMPHASIS_RES:
+        text = emphasis_re.sub(r"\1", text)
+    text = text.replace("`", "")
+    text = MD_HIDDEN_RE.sub(lambda match: chr(int(match.group(1), 16)), text)
+    return html.unescape(text)
+
+
+def markdown_lines_text(lines: list[str], separator: str) -> str:
+    """Plain text of a prose block: one entry per non-empty line, list and
+    quote markers dropped."""
+    cleaned = (
+        re.sub(r"\s+", " ", markdown_text(MD_LIST_MARKER_RE.sub("", line.strip()))).strip()
+        for line in lines
+    )
+    return separator.join(line for line in cleaned if line)
+
+
+class ReferencePages:
+    """The markdown resource pages of one reference, split lazily into
+    entry anchor -> {subsection title -> lines}."""
+
+    def __init__(self, directory: pathlib.Path) -> None:
+        self.directory = directory
+        self.pages: dict[str, dict[str, dict[str, list[str]]]] = {}
+
+    def entry(self, page: str, slug: str) -> dict[str, list[str]]:
+        if page not in self.pages:
+            path = self.directory / f"{page}.md"
+            lines = path.read_text(encoding="utf-8").splitlines()
+            self.pages[page] = {
+                anchor: {title: body for title, _, body in markdown_sections(entry, 3)}
+                for _, anchor, entry in markdown_sections(lines, 2)
+                if anchor is not None
+            }
+        try:
+            return self.pages[page][slug]
+        except KeyError:
+            raise RuntimeError(
+                f"{self.directory.name}/{page}.md has no `{slug}` entry"
+            ) from None
+
+
+# Documented types that cannot have nested child fields.
 SCALAR_RESPONSE_TYPES = {
     "string",
     "integer",
@@ -269,39 +372,36 @@ HANDWRITTEN_EVENTS = {
     ("channel.chat.message_delete", "1"): "EventSubChatMessageDeleted",
 }
 
-# Shared doc object sections emitted once as `Shared*` structs, keyed by the
-# reference-page section id: (struct name, documented as an array). Whether a
-# section is an array is not derivable from its Type cell, so it is asserted
-# here (a description-based tripwire warns on drift); array sections name the
-# element struct in the singular.
+# Objects the EventSub reference repeats inline in several payloads, emitted
+# once as `Shared*` structs. Keyed by section name (the field name, hyphenated):
+# (struct name, documented as an array, field names). A payload field joins a
+# section when its name, array-ness, and child names all match; when the docs
+# change one of these shapes the section stops matching (with a warning) until
+# the names here are updated. Array sections name the element struct in the
+# singular.
 SHARED_SECTIONS = {
-    "choices": ("SharedChoice", True),
-    "outcomes": ("SharedOutcome", True),
-    "top-predictors": ("SharedTopPredictor", True),
-    "emotes": ("SharedEmote", True),
-    "reward": ("SharedReward", False),
-    "image": ("SharedImage", False),
-    "message": ("SharedMessage", False),
-    "max-per-stream": ("SharedMaxPerStream", False),
-    "max-per-user-per-stream": ("SharedMaxPerUserPerStream", False),
-    "global-cooldown": ("SharedGlobalCooldown", False),
-    "bits-voting": ("SharedBitsVoting", False),
-    "channel-points-voting": ("SharedChannelPointsVoting", False),
-    "custom-power-up": ("SharedCustomPowerUp", False),
-    "product": ("SharedProduct", False),
-    "last-contribution": ("SharedLastContribution", False),
-    "top-contributions": ("SharedTopContribution", True),
+    "choices": ("SharedChoice", True, ("id", "title", "bits_votes", "channel_points_votes", "votes")),
+    "outcomes": ("SharedOutcome", True, ("id", "title", "color", "users", "channel_points", "top_predictors")),
+    "top-predictors": ("SharedTopPredictor", True, ("user_id", "user_login", "user_name", "channel_points_won", "channel_points_used")),
+    "emotes": ("SharedEmote", True, ("begin", "end", "id")),
+    "reward": ("SharedReward", False, ("id", "title", "cost", "prompt")),
+    "image": ("SharedImage", False, ("url_1x", "url_2x", "url_4x")),
+    "message": ("SharedMessage", False, ("text", "emotes")),
+    "max-per-stream": ("SharedMaxPerStream", False, ("is_enabled", "value")),
+    "max-per-user-per-stream": ("SharedMaxPerUserPerStream", False, ("is_enabled", "value")),
+    "global-cooldown": ("SharedGlobalCooldown", False, ("is_enabled", "seconds")),
+    "bits-voting": ("SharedBitsVoting", False, ("is_enabled", "amount_per_vote")),
+    "channel-points-voting": ("SharedChannelPointsVoting", False, ("is_enabled", "amount_per_vote")),
+    "custom-power-up": ("SharedCustomPowerUp", False, ("id", "title", "bits", "prompt")),
+    "product": ("SharedProduct", False, ("name", "bits", "sku", "in_development")),
 }
+# Fields that use a shared section under another name.
+SHARED_FIELD_ALIASES = {"default_image": "image"}
 
 
-def shared_section_slug(type_str: str) -> str:
-    """Kebab-cases a named type's display text (`custom_power_up`, `Custom Power
-    Up`) into the reference-page section id; used when the cell has no link."""
-    return re.sub(r"[^a-z0-9]+", "-", type_str.lower()).strip("-")
-
-
-def shared_section_is_array(slug: str) -> bool:
-    return SHARED_SECTIONS.get(slug, ("", False))[1]
+def shared_field_slug(name: str) -> str:
+    """The `SHARED_SECTIONS` key a payload field of this name would use."""
+    return SHARED_FIELD_ALIASES.get(name, name).replace("_", "-")
 
 
 def normalize_eventsub_type(raw: str) -> str:
@@ -314,158 +414,143 @@ def normalize_eventsub_type(raw: str) -> str:
     return stripped
 
 
-def response_field_indent_and_name(raw_field: str) -> tuple[int, str]:
-    text = strip_tags(raw_field)
-    unindented = text.lstrip("".join(INDENT_CHARS))
-    return len(text) - len(unindented), unindented.strip()
+# A documented field is one list item: the dotted path from the top of the
+# body, an em dash, the type, optional flags, then the description.
+FIELD_LINE_RE = re.compile(r"^(?P<indent> *)- `(?P<path>[^`]+)` — (?P<rest>.*)$")
+FIELD_REST_RE = re.compile(
+    r"^(?P<type>[A-Za-z0-9_\[\]]+)(?P<flags>(?:, [A-Za-z*]+)*)"
+    r"(?:\.(?: (?P<description>.*))?)?$"
+)
 
 
-def parse_fields_table(
-    table_html: str,
+def parse_field_list(
+    lines: list[str],
     context_id: str,
     warnings: list[str],
     *,
-    scalar_parent: str = "lift",
     normalize: Any = None,
-    capture_refs: bool = False,
 ) -> list[dict[str, Any]] | None:
-    rows = RESPONSE_ROW_RE.findall(table_html)
-    if not rows:
-        warnings.append(f"{context_id}: response table has no parseable rows")
-        return None
+    """Parses a markdown field list into the nested catalog field shape.
 
+    Children sit two spaces deeper than their parent and repeat its path as a
+    prefix; a list item that fails either test (value lists, error tables) is
+    part of the enclosing field's description.
+    """
     fields: list[dict[str, Any]] = []
-    # Stack of (indent, field) along the current ancestor path. Indent widths
-    # in the docs are irregular (2/3/5/7/9 characters), so depth is inferred
-    # relatively: an indent wider than the stack top nests one level deeper,
-    # except that a scalar-typed field cannot be a parent. Helix tables repair
-    # that case by lifting the row to a sibling ("lift"); EventSub tables
-    # instead document real nesting under a mistyped scalar, so the parent is
-    # retyped to an object ("retype").
-    stack: list[tuple[int, dict[str, Any]]] = []
-    for raw_field, raw_type, raw_description in rows:
-        indent, name = response_field_indent_and_name(raw_field)
-        if not name:
-            warnings.append(f"{context_id}: empty field name in response table")
-            return None
-        type_str = strip_tags(raw_type).strip()
+    # (path, field, description parts) along the current ancestor chain.
+    stack: list[tuple[str, dict[str, Any], list[str]]] = []
+    described: list[tuple[dict[str, Any], list[str]]] = []
+    for line in lines:
+        match = FIELD_LINE_RE.match(line)
+        indent = len(match.group("indent")) if match else 0
+        depth = indent // 2
+        is_field = (
+            match is not None
+            and indent % 2 == 0
+            and depth <= len(stack)
+            and (depth == 0 or match.group("path").startswith(stack[depth - 1][0] + "."))
+        )
+        if not is_field:
+            if stack:
+                stack[-1][2].append(line)
+            continue
+        path = match.group("path")
+        rest = FIELD_REST_RE.match(match.group("rest"))
+        if rest is None:
+            warnings.append(f"{context_id}: unparsed field line for `{path}`")
+            continue
+        del stack[depth:]
+        type_str = rest.group("type")
         if normalize is not None:
             type_str = normalize(type_str)
         field: dict[str, Any] = {
-            "name": name,
+            "name": path[len(stack[-1][0]) + 1 :] if stack else path,
             "type": type_str,
-            "description": clean_html(raw_description).replace("\n", " ").strip(),
+            "description": "",
         }
-        # EventSub type cells link named types to their reference section; the
-        # fragment is the section id, which `resolve()` prefers over the text.
-        link = TYPE_LINK_RE.search(raw_type) if capture_refs else None
-        if link:
-            field["ref"] = link.group("slug")
-        while stack and stack[-1][0] >= indent:
-            stack.pop()
-        if scalar_parent == "lift":
-            while stack and not response_type_can_nest(stack[-1][1]["type"]):
-                stack.pop()
-        elif stack:
+        if "Nullable" in rest.group("flags"):
+            field["nullable"] = True
+        if stack:
             parent = stack[-1][1]
             parent_type = parent["type"]
-            if not response_type_can_nest(parent_type) or parent_type == "array":
-                retyped = (
-                    "object[]"
-                    if parent_type.endswith("[]") or parent_type == "array"
-                    else "object"
-                )
+            # The docs occasionally type a parent as a scalar; the nesting is
+            # explicit, so the parent is what gets corrected.
+            if not response_type_can_nest(parent_type) or parent_type.lower() == "array":
+                is_array = parent_type.endswith("[]") or parent_type.lower() == "array"
+                retyped = "Object[]" if is_array else "Object"
+                if normalize is not None:
+                    retyped = normalize(retyped)
                 warnings.append(
                     f"{context_id}: retyped scalar parent `{parent['name']}` "
                     f"({parent_type}) to {retyped}"
                 )
                 parent["type"] = retyped
-        if stack:
-            stack[-1][1].setdefault("children", []).append(field)
+            parent.setdefault("children", []).append(field)
         else:
             fields.append(field)
-        stack.append((indent, field))
-    return fields
+        parts = [rest.group("description") or ""]
+        stack.append((path, field, parts))
+        described.append((field, parts))
+    for field, parts in described:
+        field["description"] = markdown_lines_text(parts, " ")
+    return fields or None
 
 
-def parse_response_body(
-    section_html: str, endpoint_id: str, warnings: list[str]
-) -> list[dict[str, Any]] | None:
-    body = parse_section_raw(section_html, "Response Body")
-    if not body:
-        return None
-    table_match = RESPONSE_TABLE_RE.search(body)
-    if not table_match:
-        return None
-    return parse_fields_table(table_match.group(0), endpoint_id, warnings)
-
-
-def parse_expected_status(section_html: str) -> int:
-    body = parse_section(section_html, "Response Codes")
-    if not body:
-        return 200
-    match = re.search(r"\b([1-5]\d{2})\b", body)
+def parse_expected_status(lines: list[str]) -> int:
+    match = re.search(r"\b([1-5]\d{2})\b", markdown_lines_text(lines, "\n"))
     return int(match.group(1)) if match else 200
 
 
-def parse_helix(
-    reference_html: str, warnings: list[str], *, generated_at: str
-) -> dict[str, Any]:
-    summary_start = reference_html.find('<h1 id="twitch-api-reference">')
-    if summary_start == -1:
-        raise RuntimeError("failed to locate helix summary table")
-    summary_html = reference_html[summary_start:]
+HELIX_ENDPOINT_RE = re.compile(
+    r"`(?P<method>GET|POST|PUT|PATCH|DELETE) https://api\.twitch\.tv/helix(?P<path>/[^`\s]*)`"
+)
+PAGINATION_PARAMETERS = {"after", "before"}
 
-    row_re = re.compile(
-        r"<tr>\s*<td>(?P<group>.*?)</td>\s*<td><a href=\"#(?P<slug>[^\"]+)\">(?P<name>.*?)</a></td>\s*<td><p>(?P<description>.*?)</p>\s*</td>\s*</tr>",
-        re.S,
-    )
-    section_re = re.compile(r"<h2 id=\"(?P<slug>[^\"]+)\">(?P<name>.*?)</h2>(?P<body>.*?)(?=<h2 id=\"|$)", re.S)
-    sections = {
-        match.group("slug"): match.group("body")
-        for match in section_re.finditer(reference_html)
-    }
+
+def parse_helix(
+    docs_dir: pathlib.Path, warnings: list[str], *, generated_at: str
+) -> dict[str, Any]:
+    directory = docs_dir / "helix"
+    index_html = (directory / "index.html").read_text(encoding="utf-8")
+    pages = ReferencePages(directory)
 
     endpoints = []
     groups: dict[str, int] = collections.Counter()
-    for match in row_re.finditer(summary_html):
-        group = clean_html(match.group("group"))
-        slug = match.group("slug").strip()
-        name = clean_html(match.group("name"))
-        description_html = match.group("description")
-        description = clean_html(description_html)
-        stability = classify_stability(description_html)
-        body = sections.get(slug, "")
-        method_match = re.search(
-            r"<code class=\"highlighter-rouge\">(GET|POST|PUT|PATCH|DELETE)\s+https://api\.twitch\.tv/helix(?P<path>[^<]+)</code>",
-            body,
-            re.I,
+    for entry in parse_reference_index(index_html, "helix"):
+        group = entry["group"]
+        endpoint_id = snake_case(f"{group}_{entry['name']}")
+        sections = pages.entry(entry["page"], entry["slug"])
+        method_match = HELIX_ENDPOINT_RE.search("\n".join(sections.get("Endpoint", [])))
+        if method_match is None:
+            raise RuntimeError(f"{endpoint_id}: no method and URL under `Endpoint`")
+        path = method_match.group("path")
+        auth_text = markdown_lines_text(sections.get("Authorization", []), "\n")
+        query = parse_field_list(sections.get("Query Parameters", []), endpoint_id, warnings)
+        expected_status = parse_expected_status(sections.get("Response Codes", []))
+        response_fields = parse_field_list(
+            sections.get("Response Body", []), endpoint_id, warnings
         )
-        method = method_match.group(1).upper() if method_match else "GET"
-        path = method_match.group("path").strip() if method_match else f"/{slug}"
-        auth_text = parse_section(body, "Authorization")
-        lowered_body = body.lower()
-        supports_pagination = any(
-            needle in lowered_body for needle in ("pagination", " after ", " before ", "cursor")
-        )
-        endpoint_id = snake_case(f"{group}_{name}")
-        expected_status = parse_expected_status(body)
-        response_fields = parse_response_body(body, endpoint_id, warnings)
         if response_fields is not None:
             response = {"fields": response_fields}
         elif expected_status == 204:
             response = {"fields": []}
         else:
             response = None
+        # Cursor pagination shows up as an `after`/`before` query parameter or
+        # as a top-level `pagination` object in the response.
+        supports_pagination = any(
+            field["name"] in PAGINATION_PARAMETERS for field in query or []
+        ) or any(field["name"] == "pagination" for field in response_fields or [])
         endpoints.append(
             {
                 "id": endpoint_id,
                 "group": group,
-                "name": name,
-                "slug": slug,
-                "description": description,
-                "stability": stability,
-                "method": method,
+                "name": entry["name"],
+                "page": entry["page"],
+                "slug": entry["slug"],
+                "description": entry["description"],
+                "stability": entry["stability"],
+                "method": method_match.group("method"),
                 "path": path,
                 "url": f"https://api.twitch.tv/helix{path}",
                 "auth": classify_auth(auth_text),
@@ -484,171 +569,150 @@ def parse_helix(
     }
 
 
-def event_section_slugs(eventsub_html: str, anchors: list[str]) -> dict[str, str | None]:
-    """Maps each subscription's anchor on the types page to the reference-page
-    section its payload table links the `event` row to."""
-    starts = {anchor: eventsub_html.find(f'<h3 id="{anchor}"') for anchor in anchors}
-    ordered = sorted(start for start in starts.values() if start != -1)
-    slugs: dict[str, str | None] = {}
-    for anchor, start in starts.items():
-        if start == -1:
-            slugs[anchor] = None
-            continue
-        end = next((position for position in ordered if position > start), len(eventsub_html))
-        # The payload row is `event`, or `events` for batched subscriptions;
-        # either way its Type cell links to the reference section.
-        rows = RESPONSE_ROW_RE.findall(eventsub_html[start:end])
-        slugs[anchor] = next(
+SUBSCRIPTION_TYPE_RE = re.compile(r"^- Type: `(?P<value>[^`]+)`", re.M)
+SUBSCRIPTION_VERSION_RE = re.compile(r"^- Version: `(?P<value>[^`]+)`", re.M)
+# The payload's top-level `event` row; batched subscriptions call it `events`.
+EVENT_PAYLOAD_FIELDS = {"event", "events"}
+
+
+def parse_eventsub(
+    docs_dir: pathlib.Path, warnings: list[str], *, generated_at: str
+) -> dict[str, Any]:
+    directory = docs_dir / "eventsub"
+    index_html = (directory / "index.html").read_text(encoding="utf-8")
+    pages = ReferencePages(directory)
+
+    subscriptions = []
+    for entry in parse_reference_index(index_html, "eventsub"):
+        sections = pages.entry(entry["page"], entry["slug"])
+        subscription = "\n".join(sections.get("Subscription", []))
+        type_match = SUBSCRIPTION_TYPE_RE.search(subscription)
+        version_match = SUBSCRIPTION_VERSION_RE.search(subscription)
+        if type_match is None or version_match is None:
+            raise RuntimeError(
+                f"{entry['page']}#{entry['slug']}: no type and version under `Subscription`"
+            )
+        subscription_type = type_match.group("value")
+        version = version_match.group("value")
+        item_id = snake_case(f"{subscription_type}_{version}")
+        payload = parse_field_list(
+            sections.get("Event Payload", []),
+            item_id,
+            warnings,
+            normalize=normalize_eventsub_type,
+        )
+        event_fields = next(
             (
-                link.group("slug")
-                for raw_field, raw_type, _ in rows
-                if strip_tags(raw_field).strip() in {"event", "events"}
-                and (link := EVENT_LINK_RE.search(raw_type))
+                field.get("children")
+                for field in payload or []
+                if field["name"] in EVENT_PAYLOAD_FIELDS
             ),
             None,
         )
-    return slugs
-
-
-def parse_eventsub(eventsub_html: str, *, generated_at: str) -> dict[str, Any]:
-    start = eventsub_html.find('<h1 id="subscription-types">')
-    if start == -1:
-        raise RuntimeError("failed to locate EventSub subscription table")
-    end = eventsub_html.find("## Public Beta Program")
-    summary_html = eventsub_html[start:end if end != -1 else None]
-
-    row_re = re.compile(
-        r"<tr>\s*<td>(?P<name>.*?)</td>\s*<td><code[^>]*>(?P<subscription_type>[^<]+)</code>\s*</td>\s*<td><code[^>]*>(?P<version>[^<]+)</code>\s*</td>\s*<td>(?P<description>.*?)</td>\s*</tr>",
-        re.S,
-    )
-
-    rows = list(row_re.finditer(summary_html))
-    anchors = [
-        link.group("slug") if (link := TYPE_LINK_RE.search(match.group("name"))) else None
-        for match in rows
-    ]
-    event_sections = event_section_slugs(eventsub_html, [a for a in anchors if a])
-
-    subscriptions = []
-    for match, anchor in zip(rows, anchors):
-        name_html = match.group("name")
-        subscription_type = clean_html(match.group("subscription_type"))
-        version = clean_html(match.group("version"))
+        if not event_fields:
+            warnings.append(f"{item_id}: no event fields documented")
         subscriptions.append(
             {
-                "id": snake_case(f"{subscription_type}_{version}"),
-                "name": clean_html(name_html),
+                "id": item_id,
+                "name": entry["name"],
+                "page": entry["page"],
+                "slug": entry["slug"],
                 "subscription_type": subscription_type,
                 "version": version,
-                "description": clean_html(match.group("description")),
-                "stability": classify_stability(name_html),
-                "event_section": event_sections.get(anchor) if anchor else None,
+                "description": entry["description"],
+                "stability": entry["stability"],
+                "event": {"fields": event_fields} if event_fields else None,
             }
         )
 
-    return {
+    eventsub = {
         "generated_at": generated_at,
-        "source": SOURCE_URLS["eventsub_types"],
+        "source": SOURCE_URLS["eventsub_reference"],
         "subscriptions": subscriptions,
     }
+    eventsub["shared_objects"] = share_event_objects(subscriptions, warnings)
+    return eventsub
 
 
-def attach_eventsub_events(
-    eventsub: dict[str, Any], reference_html: str, warnings: list[str]
-) -> dict[str, Any]:
-    """Attaches `event` field shapes from the EventSub reference page to each
-    subscription and returns the shared object sections referenced by name."""
-    heading_re = re.compile(r"<h[23] id=\"(?P<slug>[^\"]+)\"[^>]*>")
-    matches = list(heading_re.finditer(reference_html))
-    sections: dict[str, str] = {}
-    for index, match in enumerate(matches):
-        end = matches[index + 1].start() if index + 1 < len(matches) else len(reference_html)
-        sections[match.group("slug")] = reference_html[match.start() : end]
-
-    parsed: dict[str, list[dict[str, Any]] | None] = {}
-    resolving: set[str] = set()
-    shared_used: dict[str, list[dict[str, Any]]] = {}
-
-    def section_fields(slug: str) -> list[dict[str, Any]] | None:
-        if slug in parsed:
-            return parsed[slug]
-        body = sections.get(slug)
-        table_match = RESPONSE_TABLE_RE.search(body) if body else None
-        fields = (
-            parse_fields_table(
-                table_match.group(0),
-                slug,
-                warnings,
-                scalar_parent="retype",
-                normalize=normalize_eventsub_type,
-                capture_refs=True,
-            )
-            if table_match
-            else None
+def shape_signature(fields: list[dict[str, Any]]) -> tuple[Any, ...]:
+    return tuple(
+        (
+            field["name"],
+            field["type"],
+            field.get("ref"),
+            shape_signature(field.get("children", [])),
         )
-        parsed[slug] = fields
-        return fields
+        for field in fields
+    )
 
-    def resolve(fields: list[dict[str, Any]], origin: str) -> None:
+
+def shared_slug_order() -> list[str]:
+    """Shared sections ordered so that nested ones come first."""
+    ordered: list[str] = []
+
+    def visit(slug: str) -> None:
+        if slug in ordered:
+            return
+        for name in SHARED_SECTIONS[slug][2]:
+            inner = shared_field_slug(name)
+            if inner in SHARED_SECTIONS and inner != slug:
+                visit(inner)
+        ordered.append(slug)
+
+    for slug in sorted(SHARED_SECTIONS):
+        visit(slug)
+    return ordered
+
+
+def share_event_objects(
+    subscriptions: list[dict[str, Any]], warnings: list[str]
+) -> dict[str, Any]:
+    """Replaces the inline copies of each `SHARED_SECTIONS` object with a
+    `ref` and returns the shared definitions, keyed by section."""
+    shared: dict[str, Any] = {}
+
+    def walk(fields: list[dict[str, Any]]) -> Any:
         for field in fields:
-            type_str = field["type"]
-            lowered = type_str.lower()
-            is_named = (
-                lowered not in EVENTSUB_PRIMITIVE_TYPES
-                and lowered not in {"object", "object[]"}
+            yield field
+            yield from walk(field.get("children", []))
+
+    def documented_fields() -> Any:
+        for item in subscriptions:
+            if item["event"] is not None:
+                yield from walk(item["event"]["fields"])
+
+    for slug in shared_slug_order():
+        _, is_array, names = SHARED_SECTIONS[slug]
+        expected_type = "object[]" if is_array else "object"
+        matches = [
+            field
+            for field in documented_fields()
+            if shared_field_slug(field["name"]) == slug
+            and field["type"] == expected_type
+            and sorted(child["name"] for child in field.get("children", [])) == sorted(names)
+        ]
+        if not matches:
+            warnings.append(
+                f"shared object `{slug}` matches no documented field; "
+                "update SHARED_SECTIONS"
             )
-            # Only a named type that resolves to a shared section keeps `ref`.
-            slug = field.pop("ref", None) or shared_section_slug(type_str)
-            if field.get("children"):
-                if is_named:
-                    field["type"] = "object[]" if shared_section_is_array(slug) else "object"
-                resolve(field["children"], origin)
-                continue
-            if not is_named:
-                continue
-            if slug in resolving:
-                warnings.append(f"{origin}: cyclic named type `{type_str}`")
-                continue
-            resolving.add(slug)
-            shared_fields = section_fields(slug)
-            if shared_fields is not None and slug not in shared_used:
-                resolve(shared_fields, slug)
-                shared_used[slug] = shared_fields
-            resolving.discard(slug)
-            if shared_fields is None:
-                warnings.append(f"{origin}: unresolved named type `{type_str}` (section `{slug}`)")
-                continue
-            field["ref"] = slug
-            is_array = shared_section_is_array(slug)
-            field["type"] = "object[]" if is_array else "object"
-            if not is_array and "array of" in field["description"].lower():
-                warnings.append(
-                    f"{origin}: field `{field['name']}` described as an array but "
-                    f"section `{slug}` is not marked as an array in SHARED_SECTIONS"
-                )
-
-    consumed: set[str] = set()
-    for item in eventsub["subscriptions"]:
-        slug = item.get("event_section")
-        fields = section_fields(slug) if slug else None
-        if fields is None:
-            where = f"`{slug}` has no table" if slug else "types page has no `event` link"
-            warnings.append(f"{item['id']}: no event section found ({where})")
-            item["event"] = None
             continue
-        consumed.add(slug)
-        resolve(fields, slug)
-        item["event"] = {"fields": copy.deepcopy(fields)}
-
-    for slug in sections:
-        if (slug.endswith("-event") or slug.endswith("-event-v2")) and slug not in consumed:
-            warnings.append(f"event section `{slug}` is not consumed by any subscription")
-
-    eventsub["event_source"] = SOURCE_URLS["eventsub_reference"]
-    eventsub["shared_objects"] = {
-        slug: {"fields": fields} for slug, fields in sorted(shared_used.items())
-    }
-    return shared_used
+        signatures = collections.Counter(
+            shape_signature(field["children"]) for field in matches
+        )
+        signature = signatures.most_common(1)[0][0]
+        for field in matches:
+            if shape_signature(field["children"]) != signature:
+                continue
+            children = field.pop("children")
+            field["ref"] = slug
+            shared.setdefault(slug, {"fields": children})
+        if len(signatures) > 1:
+            warnings.append(
+                f"shared object `{slug}`: {len(matches) - signatures[signature]} "
+                "field(s) with the same names differ in shape and stay inline"
+            )
+    return dict(sorted(shared.items()))
 
 
 def build_summary(
@@ -821,7 +885,7 @@ def render_struct_tree(
         description = doc_sentence(field["description"])
         if description:
             lines.append(f"{indent}    /// {description}")
-        for attr in field_attr(rename):
+        for attr in field_attr(field, rename):
             lines.append(f"{indent}    {attr}")
         lines.append(f"{indent}    pub {ident}: {rust_type},")
     if is_root:
@@ -868,10 +932,14 @@ def render_parse_impl(response_name: str, expected_status: int, body: list[str])
     ]
 
 
-def helix_field_attr(rename: str | None) -> list[str]:
+def helix_field_attr(field: dict[str, Any], rename: str | None) -> list[str]:
+    # `null` decodes as the default value, as for EventSub payloads. The docs
+    # flag only some of the fields they describe as null (`nullable` in the
+    # catalog), so every field tolerates it rather than failing the response.
+    args = ["default", 'deserialize_with = "crate::eventsub::null_default"']
     if rename is not None:
-        return [f"#[serde(default, rename = {rust_string(rename)})]"]
-    return ["#[serde(default)]"]
+        args.append(f"rename = {rust_string(rename)}")
+    return [f"#[serde({', '.join(args)})]"]
 
 
 def render_response_types(endpoint: dict[str, Any]) -> list[str]:
@@ -1040,7 +1108,7 @@ EVENT_SOURCE_TIMESTAMP_LINES = (
 )
 
 
-def eventsub_field_attr(rename: str | None) -> list[str]:
+def eventsub_field_attr(field: dict[str, Any], rename: str | None) -> list[str]:
     if rename is not None:
         return [
             "#[serde(default, deserialize_with = \"super::null_default\", "
@@ -1056,7 +1124,7 @@ def eventsub_ref_struct(field: dict[str, Any]) -> str | None:
     section = SHARED_SECTIONS.get(ref)
     if section is None:
         raise ResponseRenderError(f"no shared struct name for section `{ref}`")
-    struct_name, is_array = section
+    struct_name, is_array, _ = section
     return f"Vec<{struct_name}>" if is_array else struct_name
 
 
@@ -1262,16 +1330,36 @@ def write_json(path: pathlib.Path, value: dict[str, Any]) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
 
 
+def fetch_text(url: str) -> str:
+    request = urllib.request.Request(url, headers={"User-Agent": FETCH_USER_AGENT})
+    with urllib.request.urlopen(request, timeout=60) as response:
+        return response.read().decode("utf-8")
+
+
+def fetch_command(args: argparse.Namespace) -> int:
+    """Downloads each reference index and the markdown copy of every resource
+    page it links into `<docs-dir>/<reference>/`."""
+    docs_dir = pathlib.Path(args.docs_dir)
+    for kind, docs_path in REFERENCE_PATHS.items():
+        directory = docs_dir / kind
+        directory.mkdir(parents=True, exist_ok=True)
+        index_html = fetch_text(DOCS_ORIGIN + docs_path)
+        (directory / "index.html").write_text(index_html, encoding="utf-8")
+        pages = sorted({entry["page"] for entry in parse_reference_index(index_html, kind)})
+        for page in pages:
+            markdown = fetch_text(f"{DOCS_ORIGIN}{docs_path}/{page}.md")
+            (directory / f"{page}.md").write_text(markdown, encoding="utf-8")
+        print(f"{kind}: index and {len(pages)} resource pages -> {directory}")
+    return 0
+
+
 def build_command(args: argparse.Namespace) -> int:
-    reference_html = pathlib.Path(args.reference_html).read_text()
-    eventsub_html = pathlib.Path(args.eventsub_html).read_text()
-    eventsub_reference_html = pathlib.Path(args.eventsub_reference_html).read_text()
+    docs_dir = pathlib.Path(args.docs_dir)
     warnings: list[str] = []
     generated_at = now_iso()
-    helix = parse_helix(reference_html, warnings, generated_at=generated_at)
+    helix = parse_helix(docs_dir, warnings, generated_at=generated_at)
     validate_responses(helix, warnings)
-    eventsub = parse_eventsub(eventsub_html, generated_at=generated_at)
-    attach_eventsub_events(eventsub, eventsub_reference_html, warnings)
+    eventsub = parse_eventsub(docs_dir, warnings, generated_at=generated_at)
     validate_events(eventsub, warnings)
     auth = {
         "generated_at": generated_at,
@@ -1456,10 +1544,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate Twitch surface catalogs and Rust registries.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    fetch = subparsers.add_parser("fetch", help="Download the Twitch reference docs.")
+    fetch.add_argument("--docs-dir", required=True)
+    fetch.set_defaults(func=fetch_command)
+
     build = subparsers.add_parser("build", help="Build catalog JSON and generated Rust registries.")
-    build.add_argument("--reference-html", required=True)
-    build.add_argument("--eventsub-html", required=True)
-    build.add_argument("--eventsub-reference-html", required=True)
+    build.add_argument("--docs-dir", required=True, help="Directory written by `fetch`.")
     build.add_argument("--catalog-dir", required=True)
     build.add_argument("--helix-rust", required=True)
     build.add_argument("--eventsub-rust", required=True)
