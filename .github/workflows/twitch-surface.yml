@@ -18,10 +18,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 
@@ -64,14 +64,14 @@ jobs:
 
       - name: Upload drift report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: twitch-surface-drift-report
           path: /tmp/twitch-surface-report.md
 
       - name: Create or update drift issue
         if: always() && steps.diff.outputs.severity != '0' && steps.diff.outputs.severity != '3'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require("fs");
@@ -125,7 +125,7 @@ jobs:
 
       - name: Checkout
         if: steps.credentials.outputs.available == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install stable toolchain
         if: steps.credentials.outputs.available == 'true'
