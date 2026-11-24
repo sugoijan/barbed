@@ -140,7 +140,7 @@ fn a_message_becomes_text_and_images() {
     );
 
     // `PogBTTV!` is not the code `PogBTTV`.
-    assert_eq!(pieces.last(), Some(&Piece::Text(" PogBTTV!".to_string())));
+    assert_eq!(pieces.last().and_then(Piece::as_text), Some(" PogBTTV!"));
 
     // An image that failed directly is asked through the proxy, and the
     // server finds the same address behind the route.
@@ -168,7 +168,7 @@ fn a_display_that_draws_no_modifiers_keeps_their_words_as_text() {
     let shown: Vec<String> = pieces
         .iter()
         .map(|piece| match piece {
-            Piece::Text(text) => format!("{text:?}"),
+            Piece::Text { text, .. } => format!("{text:?}"),
             Piece::Emote(emote) => emote.emote.code.clone(),
         })
         .collect();

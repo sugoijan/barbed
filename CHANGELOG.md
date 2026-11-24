@@ -2,6 +2,32 @@
 
 This file is append-only and records `barbed` changesO. Each entry lists the public API involved, the root feature flags needed, and any known gaps that still remain.
 
+## 0.0.7 - 2026-11-24
+
+### Emotes: what porting LUPO to `barbed-emotes` showed was missing
+
+- Public API added/changed:
+  - breaking: every piece of a tokenized message says where it is.
+    `Piece::Text` is now `Piece::Text { text, range }`, `EmoteUse` gains
+    `range`, and `Piece::range()` returns either: the bytes of the piece's
+    source, counted over everything the `Tokenizer` was given. The ranges
+    follow one another without a gap. `Piece::as_text()` reads a text piece
+  - `Tokenizer::starting_at(byte)` counts those ranges from the place of a
+    part in a longer text, for a caller that tokenizes a message in parts
+  - `EmoteClient::new()` gives each request `DEFAULT_TIMEOUT` (15 seconds);
+    before, a provider that never answered kept `EmoteClient::load` waiting
+    forever. `EmoteClient::with_http` still takes the client as it is
+  - the opt-in `recorded_sets` test accepts a channel whose set is empty or
+    whose 7TV account has no active set; only a global set must have emotes
+- Root feature flags:
+  - none; `reqwest-client` for the `EmoteClient` change
+- Known remaining gaps:
+  - an emote's modifiers have no ranges of their own: the emote's range
+    covers its word, theirs and the spaces between
+  - the channel endpoints' gap of 0.0.6 is closed: on 2026-11-24 the parsers
+    read the real answers of two large channels (969 7TV, 274 BetterTTV and
+    4 FrankerFaceZ emotes) with nothing left out
+
 ## 0.0.6 - 2026-11-24
 
 ### Twitch surface refreshed against the relaunched docs (2026-11-10)

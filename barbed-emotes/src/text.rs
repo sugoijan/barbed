@@ -1,5 +1,6 @@
 //! A message cut into text and emotes.
 
+use std::ops::Range;
 use std::sync::Arc;
 
 use crate::index::EmoteIndex;
@@ -16,6 +17,9 @@ pub struct EmoteUse {
     /// The text this stands for: the emote's word, its modifiers' and the
     /// spaces between them.
     pub source: String,
+    /// Where [`source`](Self::source) is in the message, in bytes
+    /// ([`Piece::range`]).
+    pub range: Range<usize>,
 }
 
 impl EmoteUse {
@@ -24,6 +28,7 @@ impl EmoteUse {
             emote,
             modifiers: Vec::new(),
             source: source.to_string(),
+            range: 0..0,
         }
     }
 
@@ -56,7 +61,11 @@ impl EmoteUse {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Piece {
     /// Text between emotes, spaces and all.
-    Text(String),
+    Text {
+        text: String,
+        /// Where the text is in the message, in bytes ([`Piece::range`]).
+        range: Range<usize>,
+    },
     Emote(EmoteUse),
 }
 
@@ -65,21 +74,41 @@ impl Piece {
     /// as it was given.
     pub fn source(&self) -> &str {
         match self {
-            Self::Text(text) => text,
+            Self::Text { text, .. } => text,
             Self::Emote(emote) => &emote.source,
+        }
+    }
+
+    /// Where the piece is in the message: the bytes of its
+    /// [`source`](Self::source), counted over everything the tokenizer was
+    /// given, in the order it was given, from
+    /// [`Tokenizer::starting_at`] (zero unless set). The pieces' ranges
+    /// follow one another without a gap.
+    pub fn range(&self) -> Range<usize> {
+        match self {
+            Self::Text { range, .. } => range.clone(),
+            Self::Emote(emote) => emote.range.clone(),
+        }
+    }
+
+    /// The text of a text piece.
+    pub fn as_text(&self) -> Option<&str> {
+        match self {
+            Self::Text { text, .. } => Some(text),
+            Self::Emote(_) => None,
         }
     }
 
     pub fn as_emote(&self) -> Option<&EmoteUse> {
         match self {
             Self::Emote(emote) => Some(emote),
-            Self::Text(_) => None,
+            Self::Text { .. } => None,
         }
     }
 
     /// Whether it is text of spaces alone.
     pub fn is_blank(&self) -> bool {
-        matches!(self, Self::Text(text) if text.trim().is_empty())
+        matches!(self, Self::Text { text, .. } if text.trim().is_empty())
     }
 }
 
@@ -121,16 +150,18 @@ enum Raw {
 ///
 /// let pieces = index.tokenize("so catJAM RainTime today");
 /// assert_eq!(pieces.len(), 3);
-/// assert_eq!(pieces[0], Piece::Text("so ".into()));
+/// assert_eq!(pieces[0].as_text(), Some("so "));
 /// let cat = pieces[1].as_emote().unwrap();
 /// assert_eq!(cat.emote.code, "catJAM");
 /// assert_eq!(cat.modifiers[0].code, "RainTime");
 /// assert_eq!(cat.source, "catJAM RainTime");
-/// assert_eq!(pieces[2], Piece::Text(" today".into()));
+/// assert_eq!(cat.range, 3..18);
+/// assert_eq!(pieces[2].as_text(), Some(" today"));
 /// ```
 pub struct Tokenizer<'a> {
     index: &'a EmoteIndex,
     raw: Vec<Raw>,
+    start: usize,
 }
 
 impl<'a> Tokenizer<'a> {
@@ -138,7 +169,15 @@ impl<'a> Tokenizer<'a> {
         Self {
             index,
             raw: Vec::new(),
+            start: 0,
         }
+    }
+
+    /// Counts the pieces' ranges ([`Piece::range`]) from byte `start`: for a
+    /// tokenizer given only a part of a longer text, the part's place in it.
+    pub fn starting_at(mut self, start: usize) -> Self {
+        self.start = start;
+        self
     }
 
     /// Text whose words are looked up in the index.
@@ -178,12 +217,15 @@ impl<'a> Tokenizer<'a> {
     /// The message's pieces: neighboring text joined, modifiers attached.
     pub fn finish(self) -> Vec<Piece> {
         let raw = self.raw;
-        let mut out: Vec<Piece> = Vec::new();
+        let mut out = Pieces {
+            pieces: Vec::new(),
+            end: self.start,
+        };
         let mut at = 0;
         while let Some(item) = raw.get(at) {
             let (emote, source) = match item {
                 Raw::Space(text) | Raw::Text(text) => {
-                    push_text(&mut out, text);
+                    out.push_text(text);
                     at += 1;
                     continue;
                 }
@@ -194,7 +236,7 @@ impl<'a> Tokenizer<'a> {
                 // none: a piece of its own, with what follows it attached.
                 let mut piece = EmoteUse::alone(Arc::clone(emote), source);
                 at = attach_followers(&raw, at + 1, &mut piece);
-                out.push(Piece::Emote(piece));
+                out.push_emote(piece);
                 continue;
             }
             // Modifiers of the emote after them: all of them up to that
@@ -217,15 +259,47 @@ impl<'a> Tokenizer<'a> {
                         attach(&mut piece, prefix);
                     }
                     at = attach_followers(&raw, end + 1, &mut piece);
-                    out.push(Piece::Emote(piece));
+                    out.push_emote(piece);
                 }
                 _ => {
-                    push_text(&mut out, source);
+                    out.push_text(source);
                     at += 1;
                 }
             }
         }
-        out
+        out.pieces
+    }
+}
+
+/// The pieces made so far, and the byte of the message they reach: every
+/// piece starts where the one before it ended.
+struct Pieces {
+    pieces: Vec<Piece>,
+    end: usize,
+}
+
+impl Pieces {
+    /// Adds `text`, joined to the text piece before it if there is one.
+    fn push_text(&mut self, text: &str) {
+        let start = self.end;
+        self.end += text.len();
+        match self.pieces.last_mut() {
+            Some(Piece::Text { text: had, range }) => {
+                had.push_str(text);
+                range.end = self.end;
+            }
+            _ => self.pieces.push(Piece::Text {
+                text: text.to_string(),
+                range: start..self.end,
+            }),
+        }
+    }
+
+    fn push_emote(&mut self, mut emote: EmoteUse) {
+        let start = self.end;
+        self.end += emote.source.len();
+        emote.range = start..self.end;
+        self.pieces.push(Piece::Emote(emote));
     }
 }
 
@@ -273,13 +347,6 @@ fn attach_followers(raw: &[Raw], mut at: usize, piece: &mut EmoteUse) -> usize {
             }
             _ => return at,
         }
-    }
-}
-
-fn push_text(out: &mut Vec<Piece>, text: &str) {
-    match out.last_mut() {
-        Some(Piece::Text(had)) => had.push_str(text),
-        _ => out.push(Piece::Text(text.to_string())),
     }
 }
 
@@ -339,7 +406,7 @@ mod tests {
         pieces
             .iter()
             .map(|piece| match piece {
-                Piece::Text(text) => format!("{text:?}"),
+                Piece::Text { text, .. } => format!("{text:?}"),
                 Piece::Emote(emote) => std::iter::once(emote.emote.code.as_str())
                     .chain(emote.modifiers.iter().map(|m| m.code.as_str()))
                     .collect::<Vec<_>>()
@@ -348,8 +415,18 @@ mod tests {
             .collect()
     }
 
+    /// The pieces' sources joined, after checking that each piece's range
+    /// is where its source is.
     fn rejoined(pieces: &[Piece]) -> String {
-        pieces.iter().map(Piece::source).collect()
+        let joined: String = pieces.iter().map(Piece::source).collect();
+        let mut at = 0;
+        for piece in pieces {
+            assert_eq!(piece.range().start, at, "{piece:?}");
+            assert_eq!(&joined[piece.range()], piece.source(), "{piece:?}");
+            at = piece.range().end;
+        }
+        assert_eq!(at, joined.len());
+        joined
     }
 
     #[test]
@@ -453,9 +530,29 @@ mod tests {
         );
         assert_eq!(rejoined(&pieces), "hi Kappa RainTime and @catJAM catJAM");
         assert!(!pieces[0].is_blank());
+        let ranges: Vec<Range<usize>> = pieces.iter().map(Piece::range).collect();
+        assert_eq!(ranges, [0..3, 3..17, 17..30, 30..36]);
         // A code given verbatim is never an emote.
         let mut tokenizer = index.tokenizer();
         tokenizer.verbatim("catJAM").verbatim("");
         assert_eq!(short(&tokenizer.finish()), ["\"catJAM\""]);
+    }
+
+    #[test]
+    fn ranges_count_bytes_from_where_the_text_starts() {
+        let index = index();
+        // Bytes, not characters: `世` is three.
+        let pieces = index.tokenize("世 catJAM RainTime ok");
+        assert_eq!(rejoined(&pieces), "世 catJAM RainTime ok");
+        let ranges: Vec<Range<usize>> = pieces.iter().map(Piece::range).collect();
+        assert_eq!(ranges, [0..4, 4..19, 19..22]);
+        assert_eq!(pieces[1].as_emote().expect("an emote").range, 4..19);
+
+        // A part of a longer text, from byte 100 of it.
+        let mut tokenizer = index.tokenizer().starting_at(100);
+        tokenizer.text("w! catJAM").text(" x");
+        let ranges: Vec<Range<usize>> = tokenizer.finish().iter().map(Piece::range).collect();
+        assert_eq!(ranges, [100..109, 109..111]);
+        assert!(index.tokenizer().starting_at(7).finish().is_empty());
     }
 }

@@ -25,7 +25,7 @@
 //!   fetch on a client's behalf, shared by both sides.
 //!
 //! ```
-//! use barbed_emotes::{ImageFormat, ImageRequest, Piece, SetLoader};
+//! use barbed_emotes::{ImageFormat, ImageRequest, SetLoader};
 //!
 //! // Ask for the channel's sets with any HTTP client.
 //! let mut loader = SetLoader::for_channel("1971641");
@@ -43,7 +43,7 @@
 //! // Cut a message into text and emotes.
 //! let index = loader.index();
 //! let pieces = index.tokenize("nice :tf:");
-//! assert_eq!(pieces[0], Piece::Text("nice ".into()));
+//! assert_eq!(pieces[0].as_text(), Some("nice "));
 //!
 //! // Pick the image to draw.
 //! let emote = &pieces[1].as_emote().unwrap().emote;
@@ -76,7 +76,7 @@ mod text;
 pub mod twitch;
 
 #[cfg(feature = "reqwest-client")]
-pub use client::{EmoteClient, USER_AGENT};
+pub use client::{DEFAULT_TIMEOUT, EmoteClient, USER_AGENT};
 pub use index::{DEFAULT_PROVIDER_ORDER, EmoteIndex, EmoteScope};
 pub use load::{LoadError, SetLoader, SetReport, SetRequest, SetStatus, Via};
 pub use model::{

@@ -1,11 +1,17 @@
 //! A `reqwest` client that makes a [`SetLoader`]'s requests.
 
+use std::time::Duration;
+
 use futures_util::future::join_all;
 
 use crate::load::{LoadError, SetLoader};
 
 /// `User-Agent` this client sends; tracks the crate version.
 pub const USER_AGENT: &str = concat!("barbed-emotes/", env!("CARGO_PKG_VERSION"));
+
+/// How long [`EmoteClient::new`] waits for one answer. A provider that hangs
+/// then counts as failed, and the chat goes on with the other sets.
+pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(15);
 
 /// Reads emote sets over HTTP for programs that have `reqwest` and an async
 /// runtime. Everything it does is [`SetLoader`]'s: this only carries the
@@ -16,13 +22,20 @@ pub struct EmoteClient {
 }
 
 impl EmoteClient {
+    /// A client that sends [`USER_AGENT`] and gives each request
+    /// [`DEFAULT_TIMEOUT`].
     pub fn new() -> Result<Self, reqwest::Error> {
         Ok(Self {
-            http: reqwest::Client::builder().user_agent(USER_AGENT).build()?,
+            http: reqwest::Client::builder()
+                .user_agent(USER_AGENT)
+                .timeout(DEFAULT_TIMEOUT)
+                .build()?,
         })
     }
 
     /// Uses `http` for its requests: its timeouts, its proxy, its headers.
+    /// A client without a timeout can keep [`load`](Self::load) waiting for
+    /// as long as a provider does not answer.
     pub fn with_http(http: reqwest::Client) -> Self {
         Self { http }
     }

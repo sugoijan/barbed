@@ -6,7 +6,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.0.6"
+version = "0.0.7"
 edition = "2024"
 rust-version = "1.98"
 license = "MIT OR Apache-2.0"
@@ -17,7 +17,7 @@ documentation = "https://docs.rs/barbed"
 [workspace.dependencies]
 # Internal crates: bumping a release edits `workspace.package.version` plus
 # this requirement, both in this file.
-barbed-emotes = { path = "barbed-emotes", version = "0.0.6" }
+barbed-emotes = { path = "barbed-emotes", version = "0.0.7" }
 
 async-trait = "0.1"
 base64 = "0.23"

@@ -1067,14 +1067,15 @@ mod tests {
         let source: String = pieces.iter().map(Piece::source).collect();
         assert_eq!(source, message.text);
         assert_eq!(pieces.len(), 5);
-        assert_eq!(pieces[0], Piece::Text("hi ".to_string()));
+        assert_eq!(pieces[0].as_text(), Some("hi "));
         // Twitch's own emote, with the 7TV overlay written after it.
         let kappa = pieces[1].as_emote().expect("an emote");
         assert_eq!(kappa.emote.id, EmoteId::new(EmoteProvider::Twitch, "25"));
         assert_eq!(kappa.modifiers[0].code, "RainTime");
         assert_eq!(pieces[3].as_emote().expect("an emote").emote.code, "catJAM");
         // A mention and a cheermote are never emotes.
-        assert_eq!(pieces[4], Piece::Text(" @catJAM Cheer100".to_string()));
+        assert_eq!(pieces[4].as_text(), Some(" @catJAM Cheer100"));
+        assert_eq!(pieces[4].range(), 24..message.text.len());
 
         // A message without fragments: its text.
         let bare = EventSubChatMessageText {

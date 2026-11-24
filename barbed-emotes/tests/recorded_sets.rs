@@ -17,7 +17,8 @@
 //! Whichever of the files are there are read. Nothing may be skipped (an
 //! entry left out means a provider's answer has a shape the parser does not
 //! know), every image must be one the proxy carries, and every emote must
-//! have an image a display can ask for.
+//! have an image a display can ask for. A global set must have emotes; a
+//! channel's may be empty.
 
 use barbed_emotes::{Emote, ImageFormat, ImageRequest, bttv, ffz, proxy, seventv, twitch};
 
@@ -27,6 +28,7 @@ fn recorded(name: &str) -> Option<String> {
 }
 
 fn check(what: &str, emotes: &[Emote], skipped: usize) {
+    let global = what.ends_with("global");
     let animated = emotes.iter().filter(|emote| emote.animated).count();
     let modifiers = emotes
         .iter()
@@ -38,7 +40,7 @@ fn check(what: &str, emotes: &[Emote], skipped: usize) {
         emotes.len()
     );
     assert_eq!(skipped, 0, "{what}: entries the parser does not know");
-    assert!(!emotes.is_empty(), "{what}: no emote");
+    assert!(!global || !emotes.is_empty(), "{what}: no emote");
     let decodable = [ImageFormat::WebP, ImageFormat::Gif, ImageFormat::Png];
     let request = ImageRequest {
         formats: &decodable,
@@ -79,7 +81,8 @@ fn the_recorded_sets_are_read() {
     }
     if let Some(body) = recorded("7tv-user.json") {
         let user = seventv::parse_user(&body).expect("a 7TV user");
-        let set = user.emote_set.expect("the user's set");
+        // A 7TV account may have no active set.
+        let set = user.emote_set.unwrap_or_default();
         check("7tv channel", &set.emotes, set.skipped);
         read += 1;
     }
