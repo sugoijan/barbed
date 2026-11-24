@@ -185,12 +185,42 @@ pub fn upstream(route: &str) -> Option<Upstream> {
 /// carry it: the client's side of [`upstream`]. For every route this
 /// returns, `upstream(route)` gives `url` back.
 pub fn route(url: &str) -> Option<String> {
-    let rest = url.strip_prefix("https://")?;
-    CARRIED.iter().find_map(|carried| {
-        let path = rest.strip_prefix(carried.host)?.strip_prefix('/')?;
-        let segments: Vec<&str> = path.split('/').collect();
-        (carried.admits)(&segments).then(|| format!("{}/{path}", carried.name))
+    route_among(url, |_| true)
+}
+
+/// The route that stands for `url` where it is an image of `provider`'s, on
+/// that provider's image host: [`route`] for an address that is to be drawn
+/// as that provider's emote. `None` for another provider's image, for a set
+/// endpoint (which [`route`] would carry, with the server's token where it
+/// is Helix), and for a provider this crate has no table for.
+///
+/// ```
+/// use barbed_emotes::{EmoteProvider, proxy};
+///
+/// let image = "https://cdn.7tv.app/emote/60ae7316f7c927fad14e6ca2/2x.webp";
+/// assert_eq!(
+///     proxy::image_route(&EmoteProvider::SevenTv, image).as_deref(),
+///     Some("7tv/emote/60ae7316f7c927fad14e6ca2/2x.webp")
+/// );
+/// assert_eq!(proxy::image_route(&EmoteProvider::BetterTtv, image), None);
+/// ```
+pub fn image_route(provider: &EmoteProvider, url: &str) -> Option<String> {
+    route_among(url, |carried| {
+        carried.kind == UpstreamKind::Image && carried.provider == *provider
     })
+}
+
+/// The route for `url` on the first of the `wanted` rows that carries it.
+fn route_among(url: &str, wanted: impl Fn(&Carried) -> bool) -> Option<String> {
+    let rest = url.strip_prefix("https://")?;
+    CARRIED
+        .iter()
+        .filter(|carried| wanted(carried))
+        .find_map(|carried| {
+            let path = rest.strip_prefix(carried.host)?.strip_prefix('/')?;
+            let segments: Vec<&str> = path.split('/').collect();
+            (carried.admits)(&segments).then(|| format!("{}/{path}", carried.name))
+        })
 }
 
 /// `url` as asked through a proxy mounted at `base`
@@ -331,6 +361,49 @@ mod tests {
         ] {
             assert_eq!(route(other), None, "{other}");
         }
+    }
+
+    #[test]
+    fn an_image_route_is_its_own_providers_image() {
+        use EmoteProvider::{BetterTtv, FrankerFaceZ, SevenTv, Twitch};
+        let images = [
+            (
+                Twitch,
+                "https://static-cdn.jtvnw.net/emoticons/v2/25/static/dark/2.0",
+            ),
+            (SevenTv, "https://cdn.7tv.app/emote/60ae7316/2x.webp"),
+            (BetterTtv, "https://cdn.betterttv.net/emote/5f1b0186/2x"),
+            (FrankerFaceZ, "https://cdn.frankerfacez.com/emote/720507/2"),
+        ];
+        for (provider, address) in &images {
+            // The same route `route` gives, for its own provider alone.
+            assert_eq!(image_route(provider, address), route(address));
+            assert!(image_route(provider, address).is_some(), "{address}");
+            for (other, _) in images.iter().filter(|(other, _)| other != provider) {
+                assert_eq!(image_route(other, address), None, "{address}");
+            }
+            assert_eq!(
+                image_route(&EmoteProvider::Other("emoji".into()), address),
+                None
+            );
+        }
+        // A set's address is no image, whoever asks.
+        for (provider, set) in [
+            (Twitch, "https://api.twitch.tv/helix/chat/emotes/global"),
+            (SevenTv, "https://7tv.io/v3/emote-sets/global"),
+            (
+                BetterTtv,
+                "https://api.betterttv.net/3/cached/emotes/global",
+            ),
+            (FrankerFaceZ, "https://api.frankerfacez.com/v1/set/global"),
+        ] {
+            assert!(route(set).is_some());
+            assert_eq!(image_route(&provider, set), None, "{set}");
+        }
+        assert_eq!(
+            image_route(&SevenTv, "https://cdn.7tv.app/user/a/avatar.webp"),
+            None
+        );
     }
 
     #[test]
