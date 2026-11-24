@@ -12,7 +12,7 @@ use crate::model::{
     ImageFormat, ModifierTarget, ParseError,
 };
 use crate::safe::{is_plain_id, path_on};
-use crate::wire::{read_set, segments};
+use crate::wire::{or_default, read_set, segments};
 
 /// The host FrankerFaceZ's emote images are on.
 pub const IMAGE_HOST: &str = "cdn.frankerfacez.com";
@@ -81,13 +81,13 @@ struct WireEmote {
     width: Option<f64>,
     #[serde(default)]
     height: Option<f64>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     hidden: bool,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     modifier: bool,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     modifier_flags: u32,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     urls: WireUrls,
     #[serde(default)]
     animated: Option<WireUrls>,
@@ -103,7 +103,7 @@ struct WireSet<'a> {
     id: Option<WireId>,
     #[serde(default)]
     title: Option<String>,
-    #[serde(borrow, default)]
+    #[serde(borrow, default, deserialize_with = "or_default")]
     emoticons: Vec<&'a RawValue>,
 }
 
@@ -264,11 +264,11 @@ impl FfzGlobal {
 
 #[derive(Deserialize)]
 struct WireGlobal<'a> {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     default_sets: Vec<WireId>,
     #[serde(borrow)]
     sets: BTreeMap<String, &'a RawValue>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     users: BTreeMap<String, Vec<String>>,
 }
 
@@ -341,7 +341,7 @@ impl FfzRoom {
 #[derive(Deserialize)]
 struct WireRoomAnswer<'a> {
     room: WireRoom,
-    #[serde(borrow, default)]
+    #[serde(borrow, default, deserialize_with = "or_default")]
     sets: BTreeMap<String, &'a RawValue>,
 }
 
@@ -466,6 +466,36 @@ mod tests {
             "https://cdn.frankerfacez.com/emote/700/mask/1"
         );
         assert!(emotes[0].hidden && !emotes[0].is_visible());
+    }
+
+    #[test]
+    fn a_null_is_a_field_left_out() {
+        let body = r#"{"room":{"set":1},"sets":{"1":{"emoticons":[
+            {"id":1,"name":"Nulls","hidden":null,"modifier":null,"modifier_flags":null,"animated":null,
+             "urls":{"2":"https://cdn.frankerfacez.com/emote/1/2"}},
+            {"id":2,"name":"NoUrls","urls":null},
+            {"id":3,"name":"Odd","hidden":"no","urls":{"2":"https://cdn.frankerfacez.com/emote/3/2"}}
+        ]}}}"#;
+        let room = parse_room(body).expect("a room");
+        // No image, and a value of another type, still fail their entries.
+        assert_eq!(room.skipped(), 2);
+        let emotes = room.into_emotes();
+        assert_eq!(codes(&emotes), ["Nulls"]);
+        assert!(!emotes[0].hidden && emotes[0].is_standalone() && !emotes[0].animated);
+    }
+
+    #[test]
+    fn a_null_list_is_an_empty_one() {
+        let global =
+            parse_global(r#"{"default_sets":null,"sets":{"3":{"emoticons":null}},"users":null}"#)
+                .expect("the global sets");
+        assert_eq!(global.sets.len(), 1);
+        assert!(global.sets[0].is_empty() && global.skipped() == 0);
+        assert!(global.default_set_ids.is_empty() && global.user_sets.is_empty());
+
+        let room = parse_room(r#"{"room":{"set":null},"sets":null}"#).expect("a room");
+        assert_eq!(room.set_id, None);
+        assert!(room.sets.is_empty() && room.skipped() == 0);
     }
 
     #[test]

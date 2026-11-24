@@ -6,8 +6,8 @@
 //! timestamps, counts) are never built. A large channel's 7TV set is a few
 //! megabytes of them.
 
-use serde::Deserialize;
 use serde::de::IgnoredAny;
+use serde::{Deserialize, Deserializer};
 use serde_json::value::RawValue;
 
 use crate::model::{Emote, EmoteSet, ParseError};
@@ -56,6 +56,19 @@ pub(crate) fn expect_object(body: &str, what: &'static str) -> Result<(), ParseE
     // Not JSON at all is the more useful thing to say.
     serde_json::from_str::<IgnoredAny>(body)?;
     Err(ParseError::Shape(what))
+}
+
+/// An optional field, where `null` says the same as leaving it out: its
+/// default (`#[serde(default, deserialize_with = "or_default")]`). Providers
+/// write `null` for what they have not got, and a `null` flag is no reason
+/// to lose the emote, or a `null` list the whole answer. A value of another
+/// type still fails what it is in.
+pub(crate) fn or_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de> + Default,
+{
+    Ok(Option::<T>::deserialize(deserializer)?.unwrap_or_default())
 }
 
 /// The segments of `path`, which starts with its `/`.

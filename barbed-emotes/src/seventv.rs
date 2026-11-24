@@ -11,7 +11,7 @@ use crate::model::{
     Emote, EmoteId, EmoteImage, EmoteModifier, EmoteProvider, EmoteSet, ImageFormat, ParseError,
 };
 use crate::safe::{is_plain_id, path_on};
-use crate::wire::{expect_object, read_set, segments};
+use crate::wire::{expect_object, or_default, read_set, segments};
 
 /// The host 7TV's emote images are on.
 pub const IMAGE_HOST: &str = "cdn.7tv.app";
@@ -58,7 +58,7 @@ struct WireSet<'a> {
     id: Option<String>,
     #[serde(default)]
     name: Option<String>,
-    #[serde(borrow, default)]
+    #[serde(borrow, default, deserialize_with = "or_default")]
     emotes: Vec<&'a RawValue>,
 }
 
@@ -66,7 +66,7 @@ struct WireSet<'a> {
 struct WireActiveEmote {
     id: String,
     name: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     flags: i64,
     #[serde(default)]
     data: Option<WireEmoteData>,
@@ -74,9 +74,9 @@ struct WireActiveEmote {
 
 #[derive(Default, Deserialize)]
 struct WireEmoteData {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     flags: i64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     animated: bool,
     #[serde(default)]
     host: Option<WireHost>,
@@ -85,7 +85,7 @@ struct WireEmoteData {
 #[derive(Deserialize)]
 struct WireHost {
     url: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     files: Vec<WireFile>,
 }
 
@@ -225,13 +225,13 @@ struct WireUser<'a> {
     emote_set: Option<&'a RawValue>,
     #[serde(default)]
     emote_set_id: Option<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     connections: Vec<WireConnection>,
 }
 
 #[derive(Deserialize)]
 struct WireConnection {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     platform: String,
     #[serde(default)]
     emote_set: Option<WireSetRef>,
@@ -371,6 +371,48 @@ mod tests {
             set.emotes[1].image(&WEBP).unwrap().url,
             "https://cdn.7tv.app/emote/a7/2x.webp"
         );
+    }
+
+    #[test]
+    fn a_null_is_a_field_left_out() {
+        let set = parse_emote_set(
+            r#"{"id":"s","emotes":[
+                {"id":"b1","name":"Nulls","flags":null,"data":{"flags":null,"animated":null,"host":{"url":"//cdn.7tv.app/emote/b1","files":null}}},
+                {"id":"b2","name":"Odd","flags":"1"}
+            ]}"#,
+        )
+        .expect("a set");
+        // A value of another type still fails its entry.
+        assert_eq!(codes(&set), ["Nulls"]);
+        assert_eq!(set.skipped, 1);
+        let nulls = &set.emotes[0];
+        assert!(!nulls.animated && nulls.is_standalone());
+        // No file list: the files every emote has.
+        assert_eq!(
+            nulls.image(&WEBP).unwrap().url,
+            "https://cdn.7tv.app/emote/b1/2x.webp"
+        );
+    }
+
+    #[test]
+    fn a_null_list_is_an_empty_one() {
+        let set = parse_emote_set(r#"{"id":"s","name":"Empty","emotes":null}"#).expect("a set");
+        assert!(set.is_empty() && set.skipped == 0);
+        assert_eq!(set.id.as_deref(), Some("s"));
+
+        let user = parse_user(r#"{"emote_set":null,"emote_set_id":null,"connections":null}"#)
+            .expect("a user");
+        assert_eq!(user, SevenTvUser::default());
+
+        // A connection that does not say its platform is not Twitch's.
+        let user = parse_user(
+            r#"{"connections":[
+                {"platform":null,"emote_set_id":"other"},
+                {"platform":"TWITCH","emote_set":null,"emote_set_id":"mine"}
+            ]}"#,
+        )
+        .expect("a user");
+        assert_eq!(user.emote_set_id.as_deref(), Some("mine"));
     }
 
     #[test]

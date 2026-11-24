@@ -12,7 +12,7 @@ use crate::model::{
     ImageFormat, ModifierTarget, ParseError,
 };
 use crate::safe::is_plain_id;
-use crate::wire::{expect_object, read_set};
+use crate::wire::{expect_object, or_default, read_set};
 
 /// The host BetterTTV's emote images are on.
 pub const IMAGE_HOST: &str = "cdn.betterttv.net";
@@ -77,11 +77,13 @@ fn modifier_effect(code: &str) -> EmoteModifierFlags {
 struct WireEmote {
     id: String,
     code: String,
-    #[serde(rename = "imageType", default)]
+    #[serde(rename = "imageType", default, deserialize_with = "or_default")]
     image_type: String,
+    /// Where the answer says, whether the emote moves; where it does not
+    /// (or says `null`), a GIF is taken to.
     #[serde(default)]
-    animated: bool,
-    #[serde(default)]
+    animated: Option<bool>,
+    #[serde(default, deserialize_with = "or_default")]
     modifier: bool,
 }
 
@@ -89,7 +91,11 @@ fn emote_from_wire(wire: WireEmote) -> Option<Emote> {
     if wire.code.is_empty() || !is_plain_id(&wire.id) {
         return None;
     }
-    let animated = wire.animated || wire.image_type.eq_ignore_ascii_case("gif");
+    // The answer's `animated` where it has one: a GIF of one frame is
+    // uploaded as a GIF too.
+    let animated = wire
+        .animated
+        .unwrap_or_else(|| wire.image_type.eq_ignore_ascii_case("gif"));
     let uploaded = ImageFormat::from_extension(&wire.image_type);
     let at = |path: &str| format!("https://{IMAGE_HOST}/emote/{}/{path}", wire.id);
     let mut images = Vec::with_capacity(9);
@@ -132,9 +138,10 @@ fn set_from_wire(name: &str, entries: Vec<&RawValue>) -> EmoteSet {
 /// Reads the answer of [`GLOBAL_URL`] (an array of emotes).
 ///
 /// Each emote has, at three scales, the file as it was uploaded (PNG, or a
-/// GIF where animated), its WebP, and an animated emote's still WebP. A
-/// modifier (`w!`, `h!`, …) is an [effect](EmoteModifier::effect) on the
-/// emote after it.
+/// GIF where animated), its WebP, and an animated emote's still WebP. An
+/// emote is animated where the answer says so; where it does not say, a GIF
+/// is. A modifier (`w!`, `h!`, …) is an [effect](EmoteModifier::effect) on
+/// the emote after it.
 pub fn parse_global(body: &str) -> Result<EmoteSet, ParseError> {
     let entries: Vec<&RawValue> = serde_json::from_str(body)?;
     Ok(set_from_wire("BetterTTV Global", entries))
@@ -168,9 +175,19 @@ impl BttvChannel {
 
 #[derive(Deserialize)]
 struct WireChannel<'a> {
-    #[serde(rename = "channelEmotes", borrow, default)]
+    #[serde(
+        rename = "channelEmotes",
+        borrow,
+        default,
+        deserialize_with = "or_default"
+    )]
     channel_emotes: Vec<&'a RawValue>,
-    #[serde(rename = "sharedEmotes", borrow, default)]
+    #[serde(
+        rename = "sharedEmotes",
+        borrow,
+        default,
+        deserialize_with = "or_default"
+    )]
     shared_emotes: Vec<&'a RawValue>,
 }
 
@@ -250,6 +267,57 @@ mod tests {
         assert!(wide.is_hidden());
         assert!(wide.flags.contains(EmoteModifierFlags::GROW_X));
         assert!(set.emotes[0].is_standalone() && !set.emotes[2].is_visible());
+    }
+
+    #[test]
+    fn the_answers_own_animated_is_believed() {
+        let body = r#"[
+            {"id":"5f1b0186cf6d2144653d2972","code":"StillGif","imageType":"gif","animated":false},
+            {"id":"5f1b0186cf6d2144653d2973","code":"OldGif","imageType":"gif"},
+            {"id":"5f1b0186cf6d2144653d2974","code":"NullGif","imageType":"gif","animated":null,"modifier":null},
+            {"id":"5f1b0186cf6d2144653d2975","code":"MovingWebp","imageType":"webp","animated":true},
+            {"id":"5f1b0186cf6d2144653d2976","code":"NoType","imageType":null}
+        ]"#;
+        let set = parse_global(body).expect("a set");
+        assert_eq!(set.skipped, 0);
+        assert_eq!(
+            codes(&set.emotes),
+            ["StillGif", "OldGif", "NullGif", "MovingWebp", "NoType"]
+        );
+        let moving: Vec<bool> = set.emotes.iter().map(|emote| emote.animated).collect();
+        // A GIF the answer calls still is still (a GIF of one frame); one
+        // it says nothing of moves.
+        assert_eq!(moving, [false, true, true, true, false]);
+        let still = &set.emotes[0];
+        assert!(still.images.iter().all(|image| !image.animated));
+        assert!(
+            !still
+                .images
+                .iter()
+                .any(|image| image.url.contains("/static/"))
+        );
+        assert!(set.emotes[2].is_standalone());
+        // As uploaded: still a GIF.
+        let request = ImageRequest {
+            formats: &[ImageFormat::Gif],
+            ..ImageRequest::default()
+        };
+        let image = still.image(&request).unwrap();
+        assert!(image.url.ends_with("/2x") && !image.animated);
+        assert_eq!(set.emotes[4].images[0].format, None);
+    }
+
+    #[test]
+    fn a_null_list_is_an_empty_one() {
+        let channel = parse_channel(
+            r#"{"id":"c","channelEmotes":null,"sharedEmotes":[
+                {"id":"5f1b0186cf6d2144653d2971","code":"Shared","imageType":"png"}
+            ]}"#,
+        )
+        .expect("a channel");
+        assert!(channel.channel.is_empty());
+        assert_eq!(codes(&channel.shared.emotes), ["Shared"]);
+        assert_eq!(channel.skipped(), 0);
     }
 
     #[test]

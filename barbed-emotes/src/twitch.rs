@@ -16,7 +16,7 @@ use crate::model::{
     Emote, EmoteId, EmoteImage, EmoteProvider, EmoteSet, ImageFormat, ParseError, Theme,
 };
 use crate::safe::is_plain_id;
-use crate::wire::read_set;
+use crate::wire::{or_default, read_set};
 
 /// The host Twitch's emote images are on.
 pub const IMAGE_HOST: &str = "static-cdn.jtvnw.net";
@@ -172,11 +172,11 @@ struct WireList<'a> {
 struct WireEmote {
     id: String,
     name: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     format: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     scale: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "or_default")]
     theme_mode: Vec<String>,
 }
 
@@ -293,5 +293,19 @@ mod tests {
         assert_eq!(set.skipped, 3);
         assert!(parse_emotes("{}").is_err());
         assert!(parse_emotes("not json").is_err());
+    }
+
+    #[test]
+    fn a_null_list_is_a_list_left_out() {
+        let body = r#"{"data":[
+            {"id":"25","name":"Kappa","format":null,"scale":null,"theme_mode":null},
+            {"id":"26","name":"Odd","format":["static",1]}
+        ]}"#;
+        let set = parse_emotes(body).expect("a list");
+        assert_eq!(set.skipped, 1);
+        let kappa = &set.emotes[0];
+        // Every image of the template, still.
+        assert!(!kappa.animated);
+        assert_eq!(kappa.images.len(), 6);
     }
 }
