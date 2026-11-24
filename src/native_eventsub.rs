@@ -1,5 +1,7 @@
 //! The EventSub WebSocket chat stream on `tokio` and `tungstenite`.
 
+use std::time::Duration;
+
 use anyhow::{Context, Result, anyhow, bail};
 use futures_util::{SinkExt, StreamExt};
 use reqwest::Client;
@@ -20,6 +22,14 @@ use crate::helix;
 
 const EVENTSUB_WEBSOCKET_URL: &str = "wss://eventsub.wss.twitch.tv/ws";
 
+/// How long past the session's keepalive timeout the stream waits before it
+/// gives the connection up, for a keepalive that is merely late.
+const KEEPALIVE_MARGIN: Duration = Duration::from_secs(5);
+
+/// How long a new connection may take to send its welcome. Twitch sends it
+/// at once.
+const WELCOME_TIMEOUT: Duration = Duration::from_secs(15);
+
 type EventSubSocket = WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>;
 
 pub struct EventSubChatStream {
@@ -32,8 +42,39 @@ impl EventSubChatStream {
         &self.session.id
     }
 
+    /// The session's keepalive timeout: Twitch sends an event or a keepalive
+    /// at least this often while the connection is alive.
+    pub fn keepalive_timeout(&self) -> Option<Duration> {
+        self.session
+            .keepalive_timeout_seconds
+            .map(|seconds| Duration::from_secs(u64::from(seconds)))
+    }
+
+    /// The next event. `Ok(None)` means Twitch closed the connection.
+    ///
+    /// An error also means the connection is gone and a new one is needed:
+    /// among others, when nothing arrived for longer than the session's
+    /// keepalive timeout, which is how a connection that died without a word
+    /// (a sleeping laptop, a dropped NAT mapping) shows.
     pub async fn next_event(&mut self) -> Result<Option<EventSubStreamEvent>> {
-        while let Some(text) = next_text_frame(&mut self.ws).await? {
+        loop {
+            let frame = match self.keepalive_timeout() {
+                Some(keepalive) => {
+                    let limit = keepalive + KEEPALIVE_MARGIN;
+                    tokio::time::timeout(limit, next_text_frame(&mut self.ws))
+                        .await
+                        .map_err(|_| {
+                            anyhow!(
+                                "EventSub sent nothing for {} seconds: the connection is lost",
+                                limit.as_secs()
+                            )
+                        })??
+                }
+                None => next_text_frame(&mut self.ws).await?,
+            };
+            let Some(text) = frame else {
+                return Ok(None);
+            };
             let envelope = decode_eventsub_websocket_message(&text)
                 .context("failed to parse EventSub payload")?;
             if let Some(event) = envelope
@@ -43,8 +84,6 @@ impl EventSubChatStream {
                 return Ok(Some(event));
             }
         }
-
-        Ok(None)
     }
 
     pub async fn close(&mut self) -> Result<()> {
@@ -65,7 +104,9 @@ pub async fn connect_chat_stream(
         &config.access_token,
     )
     .await?;
-    let session = wait_for_session_welcome(&mut ws).await?;
+    let session = tokio::time::timeout(WELCOME_TIMEOUT, wait_for_session_welcome(&mut ws))
+        .await
+        .context("EventSub sent no welcome message in time")??;
     debug!(
         session_id = %session.id,
         keepalive = session.keepalive_timeout_seconds,

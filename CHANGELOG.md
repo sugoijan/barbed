@@ -28,6 +28,51 @@ This file is append-only and records `barbed` changesO. Each entry lists the pub
     read the real answers of two large channels (969 7TV, 274 BetterTTV and
     4 FrankerFaceZ emotes) with nothing left out
 
+### Fixes from a review of the whole codebase
+
+- Public API added/changed:
+  - breaking: `oauth::verify_extension_jwt` takes `now_ms` and refuses a
+    token whose `exp` has passed (`SigningError::Expired`) or that has none.
+    Before, an extension JWT stayed valid forever once signed
+  - fixed: webhook verification no longer rejects every message when the
+    server's clock runs behind Twitch's. `verify_and_decode_webhook_message`
+    and `webhook_timestamp_is_fresh` called a timestamp even milliseconds in
+    the future stale; a timestamp is now stale only when it is more than
+    `max_age` away from `now`, on either side
+  - fixed: `native::refresh_access_token` answered `Ok(None)` (refresh token
+    rejected) to every `400` and `401`, so `ensure_valid_stored_auth` and
+    `refresh_stored_auth` deleted the stored login on a wrong client id or a
+    missing client secret. Only a `401`, or the `400` whose message is about
+    the refresh token, counts as rejected now
+    (`oauth::refresh_token_was_rejected`); anything else is an error and the
+    stored login is kept
+  - fixed: `native::EventSubChatStream::next_event` waited forever on a
+    connection that died without closing. It now fails when nothing arrives
+    for the session's keepalive timeout plus five seconds, and
+    `connect_chat_stream` when no welcome arrives within fifteen.
+    `EventSubChatStream::keepalive_timeout` exposes the timeout
+  - fixed: `irc::TwitchIrcClient::next_event` lost the part of a line it had
+    read when its future was dropped (as `select!` does), and returned the
+    rest of the line as `TwitchIrcEvent::Other`. Invalid UTF-8 in a line is
+    replaced instead of ending the read with an error
+  - fixed: `irc::normalize_token` panicked on a token with a multi-byte
+    character across its sixth byte
+  - fixed: `irc::parse_notice` returned NOTICE text with backslash sequences
+    unescaped as if it were a tag value
+- Root feature flags:
+  - `reqwest-client` for the refresh fix, `tokio-eventsub` for the stream,
+    `tokio-irc` for the IRC client; none for the rest
+- Known remaining gaps:
+  - `HelixEndpoint::missing_scopes` reports every scope the documentation
+    names for an endpoint, though the documentation often means one of them
+    (now said in its docs). Telling "any of" from "all of" needs the
+    generator to read the authorization text, which it does not yet
+  - `irc::TwitchIrcClient` connects without TLS: the OAuth token and the
+    chat cross the network in the clear (now said in its docs)
+  - the device code requests send `scope`, the name RFC 8628 gives the
+    parameter, while Twitch's documentation names it `scopes` and also lists
+    it for the token request; not checked against the live endpoint
+
 ### Cleanup pass over the whole codebase
 
 - Public API added/changed:

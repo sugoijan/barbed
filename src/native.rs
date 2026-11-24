@@ -14,7 +14,7 @@ use crate::oauth::{
     TwitchAuthOutcome, TwitchDeviceAuthorization, TwitchTokenState, client_credentials_request,
     device_code_request_with_scope, device_token_request, normalize_scopes,
     openid_configuration_request, openid_userinfo_request, refresh_token_request,
-    revoke_token_request, validate_token_request,
+    refresh_token_was_rejected, revoke_token_request, validate_token_request,
 };
 
 #[derive(Clone)]
@@ -263,23 +263,24 @@ pub async fn validate_access_token(
     .await
 }
 
-/// Refreshes a token; `Ok(None)` means Twitch rejected the refresh token.
+/// Refreshes a token; `Ok(None)` means Twitch rejected the refresh token
+/// ([`refresh_token_was_rejected`]). Any other failure is an error: the
+/// refresh token may still be good.
 pub async fn refresh_access_token(
     http: &Client,
     client_id: &str,
     refresh_token: &str,
 ) -> Result<Option<TwitchTokenState>> {
-    let exchange: Option<TwitchTokenExchange> = send_json_or_none(
-        http,
-        refresh_token_request(client_id, refresh_token),
-        &[400, 401],
-        "Twitch refresh token",
-    )
-    .await?;
-    exchange
-        .map(|exchange| exchange.into_token_state(Some(refresh_token), now_ms()))
-        .transpose()
-        .map_err(anyhow::Error::from)
+    let response =
+        send_prepared_request(http, refresh_token_request(client_id, refresh_token)).await?;
+    if refresh_token_was_rejected(response.status, &response.body) {
+        return Ok(None);
+    }
+    let exchange: TwitchTokenExchange = helix::parse_typed_response(response, 200)
+        .context("Twitch refresh token request failed")?;
+    Ok(Some(
+        exchange.into_token_state(Some(refresh_token), now_ms())?,
+    ))
 }
 
 pub async fn fetch_authenticated_user(

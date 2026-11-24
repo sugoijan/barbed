@@ -96,6 +96,14 @@ pub struct HelixJsonResponse {
 }
 
 impl HelixEndpoint {
+    /// The scopes of [`scopes`](Self::scopes) that `granted` lacks.
+    ///
+    /// `scopes` is every scope Twitch's documentation names for the endpoint,
+    /// and the documentation often means "one of" (`channel:read:polls` or
+    /// `channel:manage:polls`), names a scope only one kind of token needs,
+    /// or mentions one as an example. So a non-empty answer does not mean
+    /// Twitch will refuse the token; an empty one does mean it has every
+    /// scope that could be asked for.
     pub fn missing_scopes(&self, granted: &[String]) -> Vec<&'static str> {
         self.scopes
             .iter()

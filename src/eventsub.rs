@@ -904,8 +904,11 @@ pub fn webhook_timestamp_is_fresh(
     ))
 }
 
+/// Whether `timestamp` is within `max_age` of `now`, on either side: a
+/// message is stale when it is old, not when our clock runs a little behind
+/// Twitch's and its timestamp is still ahead of us.
 fn timestamp_is_fresh(timestamp: OffsetDateTime, now: OffsetDateTime, max_age: Duration) -> bool {
-    now >= timestamp && now - timestamp <= max_age
+    (now - timestamp).abs() <= max_age
 }
 
 pub fn verify_and_decode_webhook_message(
@@ -1111,6 +1114,33 @@ mod tests {
             fragments: Vec::new(),
         };
         assert_eq!(bare.tokenize(&index).len(), 1);
+    }
+
+    #[test]
+    fn a_webhook_timestamp_is_stale_by_age_not_by_clock_skew() {
+        let at = |timestamp: &str| {
+            EventSubWebhookHeaders::from_pairs([
+                ("Twitch-Eventsub-Message-Id", "msg-1"),
+                ("Twitch-Eventsub-Message-Type", "notification"),
+                ("Twitch-Eventsub-Message-Timestamp", timestamp),
+                ("Twitch-Eventsub-Message-Signature", "sha256=abc"),
+                ("Twitch-Eventsub-Subscription-Type", "channel.follow"),
+                ("Twitch-Eventsub-Subscription-Version", "2"),
+            ])
+            .expect("headers should parse")
+        };
+        let now = OffsetDateTime::parse("2024-01-01T00:10:00Z", &Rfc3339).expect("a time");
+        let max_age = Duration::minutes(10);
+        let fresh = |timestamp: &str| {
+            webhook_timestamp_is_fresh(&at(timestamp), now, max_age).expect("a timestamp")
+        };
+        assert!(fresh("2024-01-01T00:09:59Z"));
+        assert!(fresh("2024-01-01T00:00:00Z"));
+        assert!(!fresh("2023-12-31T23:59:59Z"));
+        // Our clock a little behind Twitch's: the message is not stale.
+        assert!(fresh("2024-01-01T00:10:00.300Z"));
+        // But a timestamp far in the future is no better than an old one.
+        assert!(!fresh("2024-01-01T00:20:01Z"));
     }
 
     #[test]

@@ -26,6 +26,7 @@ impl TwitchIrcConfig {
             token: token.into(),
             channel: channel.into(),
             host: "irc.chat.twitch.tv".to_string(),
+            // Twitch's plaintext port: see `TwitchIrcClient::connect`.
             port: 6667,
             request_capabilities: true,
             raw_mode: false,
@@ -89,7 +90,12 @@ pub trait TwitchIrcApi: Send {
 }
 
 pub fn normalize_token(token: &str) -> String {
-    if token.len() >= 6 && token[..6].eq_ignore_ascii_case("oauth:") {
+    // By bytes: a token that is not ASCII there has no such prefix.
+    let has_prefix = token
+        .as_bytes()
+        .get(..6)
+        .is_some_and(|prefix| prefix.eq_ignore_ascii_case(b"oauth:"));
+    if has_prefix {
         format!("oauth:{}", &token[6..])
     } else {
         format!("oauth:{token}")
@@ -233,8 +239,9 @@ pub fn parse_notice(line: &str) -> Option<String> {
     }
 
     remainder = &remainder["NOTICE ".len()..];
+    // The text as it is: only tag values are escaped, never a message.
     let text = remainder.split_once(" :")?.1;
-    Some(unescape_irc_tag(text))
+    Some(text.to_string())
 }
 
 pub fn parse_line(line: &str, raw_mode: bool) -> TwitchIrcEvent {
@@ -354,13 +361,20 @@ pub struct TwitchIrcClient {
     disconnect: Vec<String>,
     reader: tokio::io::BufReader<tokio::net::tcp::OwnedReadHalf>,
     writer: tokio::net::tcp::OwnedWriteHalf,
-    /// Reused line buffer; one allocation for the connection instead of one per line.
-    line: String,
+    /// The line being read. It is kept between calls: a `next_event` dropped
+    /// part-way through a line (as `select!` does) loses none of it.
+    line: Vec<u8>,
     closed: bool,
 }
 
 #[cfg(feature = "tokio-irc")]
 impl TwitchIrcClient {
+    /// Connects to `config.host:config.port` over plain TCP and logs in.
+    ///
+    /// **The connection is not encrypted**: the OAuth token and the chat are
+    /// readable by anyone on the network path. This client has no TLS yet
+    /// (Twitch's TLS port, 6697, will not work with it), so use it only on a
+    /// network you trust, or read chat through EventSub instead.
     pub async fn connect(config: TwitchIrcConfig) -> Result<Self, IrcError> {
         use tokio::net::TcpStream;
 
@@ -377,7 +391,7 @@ impl TwitchIrcClient {
             disconnect: disconnect_commands(&config),
             reader: tokio::io::BufReader::new(read_half),
             writer: write_half,
-            line: String::new(),
+            line: Vec::new(),
             closed: false,
         })
     }
@@ -394,21 +408,25 @@ impl TwitchIrcApi for TwitchIrcClient {
         }
 
         loop {
-            self.line.clear();
-            let bytes = self.reader.read_line(&mut self.line).await?;
-            if bytes == 0 {
+            // `read_until` keeps what it has read in `self.line` if this
+            // future is dropped, where `read_line` would lose it.
+            let read = self.reader.read_until(b'\n', &mut self.line).await?;
+            if read == 0 && self.line.is_empty() {
                 return Ok(None);
             }
 
-            let line = self.line.trim_end_matches(['\r', '\n']);
+            let line = String::from_utf8_lossy(&self.line)
+                .trim_end_matches(['\r', '\n'])
+                .to_string();
+            self.line.clear();
             if line.is_empty() {
                 continue;
             }
 
-            if let Some(response) = ping_response(line) {
+            if let Some(response) = ping_response(&line) {
                 send_line(&mut self.writer, &response).await?;
             }
-            return Ok(Some(parse_line(line, self.raw_mode)));
+            return Ok(Some(parse_line(&line, self.raw_mode)));
         }
     }
 
@@ -472,6 +490,70 @@ mod tests {
         assert_eq!(message.display_name.as_deref(), Some("Viewer Name"));
         assert_eq!(message.badges, vec!["moderator/1", "subscriber/6"]);
         assert_eq!(message.text, "hello there");
+    }
+
+    /// A read that is dropped part-way through a line, as `select!` drops the
+    /// branch it did not take, loses none of it: the next read gives the
+    /// whole line.
+    #[cfg(feature = "tokio-irc")]
+    #[tokio::test(flavor = "current_thread")]
+    async fn a_dropped_read_loses_no_part_of_a_line() {
+        use std::time::Duration;
+        use tokio::io::AsyncWriteExt;
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("a local port");
+        let mut config = TwitchIrcConfig::new("viewer", "secret", "chan");
+        config.host = "127.0.0.1".to_string();
+        config.port = listener.local_addr().expect("its address").port();
+
+        let server = tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.expect("the client");
+            socket
+                .write_all(b":friend!friend@friend.tmi.twitch.tv PRIVMSG #chan :hel")
+                .await
+                .expect("the first half");
+            tokio::time::sleep(Duration::from_millis(200)).await;
+            socket.write_all(b"lo\r\n").await.expect("the second half");
+            tokio::time::sleep(Duration::from_millis(200)).await;
+        });
+
+        let mut client = TwitchIrcClient::connect(config)
+            .await
+            .expect("a connection");
+        let dropped = tokio::time::timeout(Duration::from_millis(100), client.next_event()).await;
+        assert!(dropped.is_err(), "the line was not whole yet");
+        let event = client
+            .next_event()
+            .await
+            .expect("a read")
+            .expect("an event");
+        match event {
+            TwitchIrcEvent::Privmsg(message) => assert_eq!(message.text, "hello"),
+            other => panic!("expected the whole message, got {other:?}"),
+        }
+        server.await.expect("the server task");
+    }
+
+    #[test]
+    fn normalize_token_takes_any_text() {
+        assert_eq!(normalize_token("abc"), "oauth:abc");
+        assert_eq!(normalize_token("oauth:abc"), "oauth:abc");
+        assert_eq!(normalize_token("OAuth:abc"), "oauth:abc");
+        assert_eq!(normalize_token(""), "oauth:");
+        // A character that straddles the prefix's length is no prefix, and
+        // no panic.
+        assert_eq!(normalize_token("abcd€xyz"), "oauth:abcd€xyz");
+    }
+
+    #[test]
+    fn parse_notice_keeps_backslashes() {
+        let line = r":tmi.twitch.tv NOTICE #chan :Use \server or C:\path\s";
+        assert_eq!(
+            parse_notice(line).expect("notice should parse"),
+            r"Use \server or C:\path\s"
+        );
     }
 
     #[test]

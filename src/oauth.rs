@@ -197,6 +197,19 @@ pub fn device_token_request(client_id: &str, device_code: &str) -> PreparedReque
     )
 }
 
+/// Whether the token endpoint's answer to a refresh says the refresh token
+/// itself is no longer good, so that the user has to authorize again: a
+/// `401`, or the `400` whose message is about the refresh token. Any other
+/// failure (a wrong client id, a missing client secret, an outage) is not
+/// the token's, and must not make an app forget a login that still works.
+pub fn refresh_token_was_rejected(status: u16, body: &str) -> bool {
+    match status {
+        401 => true,
+        400 => body.to_ascii_lowercase().contains("refresh token"),
+        _ => false,
+    }
+}
+
 pub fn refresh_token_request(client_id: &str, refresh_token: &str) -> PreparedRequest {
     form_post_request(
         TWITCH_TOKEN_URL,
@@ -352,9 +365,14 @@ pub fn sign_extension_jwt<T: Serialize>(secret: &[u8], claims: &T) -> Result<Str
     ))
 }
 
+/// Verifies a Twitch extension JWT signed with the extension's `secret` and
+/// returns its claims. A token whose `exp` (seconds) has passed at `now_ms`
+/// is [`SigningError::Expired`], and one without an `exp` is malformed:
+/// Twitch's always have one.
 pub fn verify_extension_jwt<T: DeserializeOwned>(
     secret: &[u8],
     token: &str,
+    now_ms: i64,
 ) -> Result<T, SigningError> {
     if secret.is_empty() {
         return Err(SigningError::MissingSigningSecret);
@@ -368,6 +386,18 @@ pub fn verify_extension_jwt<T: DeserializeOwned>(
         return Err(SigningError::InvalidSignature);
     }
     let payload = decode_base64_url_no_pad(claims)?;
+    #[derive(Deserialize)]
+    struct Expiry {
+        exp: Option<i64>,
+    }
+    let expiry: Expiry = serde_json::from_slice(&payload)?;
+    let expires_at_ms = expiry
+        .exp
+        .ok_or(SigningError::MalformedToken)?
+        .saturating_mul(1_000);
+    if now_ms >= expires_at_ms {
+        return Err(SigningError::Expired);
+    }
     serde_json::from_slice(&payload).map_err(SigningError::from)
 }
 
@@ -501,9 +531,56 @@ mod tests {
             user_id: "42".to_string(),
         };
         let token = sign_extension_jwt(b"super-secret", &claims).expect("jwt should sign");
+        let before = (claims.exp - 1) * 1_000;
         let verified: Claims =
-            verify_extension_jwt(b"super-secret", &token).expect("jwt should verify");
+            verify_extension_jwt(b"super-secret", &token, before).expect("jwt should verify");
         assert_eq!(verified, claims);
+
+        // An expired token is refused, however good its signature.
+        for now_ms in [claims.exp * 1_000, (claims.exp + 86_400) * 1_000] {
+            assert!(matches!(
+                verify_extension_jwt::<Claims>(b"super-secret", &token, now_ms),
+                Err(SigningError::Expired)
+            ));
+        }
+        assert!(matches!(
+            verify_extension_jwt::<Claims>(b"another-secret", &token, before),
+            Err(SigningError::InvalidSignature)
+        ));
+    }
+
+    #[test]
+    fn extension_jwt_without_an_expiry_is_malformed() {
+        #[derive(Debug, Serialize, Deserialize)]
+        struct Claims {
+            user_id: String,
+        }
+
+        let claims = Claims {
+            user_id: "42".to_string(),
+        };
+        let token = sign_extension_jwt(b"super-secret", &claims).expect("jwt should sign");
+        assert!(matches!(
+            verify_extension_jwt::<Claims>(b"super-secret", &token, 0),
+            Err(SigningError::MalformedToken)
+        ));
+    }
+
+    #[test]
+    fn only_a_refused_refresh_token_counts_as_rejected() {
+        let invalid = r#"{"error":"Bad Request","status":400,"message":"Invalid refresh token"}"#;
+        assert!(refresh_token_was_rejected(400, invalid));
+        assert!(refresh_token_was_rejected(401, ""));
+        // A misconfigured client is not the token's fault.
+        let client = r#"{"status":400,"message":"invalid client"}"#;
+        assert!(!refresh_token_was_rejected(400, client));
+        assert!(!refresh_token_was_rejected(
+            400,
+            r#"{"status":400,"message":"missing client secret"}"#
+        ));
+        assert!(!refresh_token_was_rejected(403, invalid));
+        assert!(!refresh_token_was_rejected(500, ""));
+        assert!(!refresh_token_was_rejected(200, ""));
     }
 
     #[test]
