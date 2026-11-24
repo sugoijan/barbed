@@ -2,6 +2,48 @@
 
 This file is append-only and records `barbed` changesO. Each entry lists the public API involved, the root feature flags needed, and any known gaps that still remain.
 
+## 0.0.8 - 2026-11-24
+
+### Emotes: what moving DitoDitoInfinito's parsers to `barbed-emotes` showed
+
+- Public API added/changed:
+  - fixed: a provider's `null` in an optional field reads as the field left
+    out, as Helix answers already do. Before, serde's `default` covered a
+    missing field only, so one `null` cost its whole emote (BetterTTV
+    `imageType`, `animated`, `modifier`; 7TV `flags` on the set's entry and
+    on `data`, `data.animated`, `host.files`; FrankerFaceZ `hidden`,
+    `modifier`, `modifier_flags`, `urls`; Twitch `format`, `scale`,
+    `theme_mode`) or its whole answer, an error instead of a set (7TV
+    `emotes`, `connections` and a connection's `platform`; BetterTTV
+    `channelEmotes`, `sharedEmotes`; FrankerFaceZ `emoticons`,
+    `default_sets`, `users` and a room's `sets`). A value of another type (a
+    string where a flag is wanted) still fails what it is in
+  - changed: BetterTTV's `animated` is believed where the answer gives it.
+    A GIF the answer calls still (`"imageType":"gif","animated":false`, a
+    GIF of one frame) was read as animated and given `static/<n>x.webp`
+    files that may not exist; it is now a still emote with no such files.
+    `imageType: gif` decides only where the answer does not say (an older
+    answer without the field, or `null`)
+  - `proxy::image_route(&provider, url)`: the route for `url` only where it
+    is an image on that provider's image host, for a client that draws an
+    emote and must not be handed another provider's image or a set endpoint.
+    It is `proxy::route` narrowed to one row of the table, so a client no
+    longer matches on route names (`7tv`, not `7tv-api`)
+  - the `barbed-emotes` package ships `LICENSE-MIT` and `LICENSE-APACHE`
+    (links to the workspace's `LICENSES/`, which a member's package does not
+    include), and the MIT text names its copyright holder instead of the
+    template's `<year> <copyright holders>`, in both packages
+- Root feature flags:
+  - none
+- Known remaining gaps:
+  - the cost of the parsers in a wasm bundle was measured by the game and
+    not reduced: about 124 KB (38 KB gzipped) with all four providers, most
+    of it serde's code for the typed wire structs. One reader over
+    `serde_json::Value` would be smaller and slower; nothing was changed
+  - an element of another type inside a list still fails its entry (one odd
+    7TV file fails its emote), and inside an answer-level map its answer
+    (FrankerFaceZ `users`)
+
 ## 0.0.7 - 2026-11-24
 
 ### Emotes: what porting LUPO to `barbed-emotes` showed was missing
