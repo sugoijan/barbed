@@ -2,7 +2,7 @@
 
 This file is append-only and records `barbed` changesO. Each entry lists the public API involved, the root feature flags needed, and any known gaps that still remain.
 
-## 0.0.6 - 2026-11-23
+## 0.0.6 - 2026-11-24
 
 ### Twitch surface refreshed against the relaunched docs (2026-11-10)
 
@@ -108,6 +108,81 @@ This file is append-only and records `barbed` changesO. Each entry lists the pub
 - Known remaining gaps:
   - `chrono` stays in the dependency tree until `worker` ships its Jiff
     migration (cloudflare/workers-rs#1149); remove the audit ignore then
+
+### Emotes: one `barbed-emotes` crate, without I/O
+
+- Public API added/changed:
+  - new crate `barbed-emotes`, re-exported as `barbed::emotes`: Twitch, 7TV,
+    BetterTTV and FrankerFaceZ emotes for any HTTP client and any target
+    (it depends on `serde`, `serde_json`, `bitflags` and `thiserror` only and
+    builds for `wasm32-unknown-unknown`). It replaces `barbed-core`'s emote
+    types and the `barbed-7tv`, `barbed-bttv` and `barbed-ffz` crates, which
+    could only parse inside their own `reqwest` clients; DitoDitoInfinito
+    and LUPO each carried a hand-written copy because of it
+  - breaking: `barbed-core`, `barbed-7tv`, `barbed-bttv` and `barbed-ffz`
+    leave the workspace (their 0.0.5 releases stay on crates.io), and with
+    them `barbed::seventv`, `barbed::bttv`, `barbed::ffz`, the `*Api` traits,
+    the `InMemory*Api` fakes, the three `reqwest` clients and
+    `barbed_core::USER_AGENT`
+  - breaking: the model. `EmoteImage` is `url`, `scale` (1 to 4), `animated`,
+    `format` (`ImageFormat`: PNG, GIF, WebP, AVIF), `theme` and
+    `width`/`height`; `EmoteImageFormat`, `EmoteImageScale` and
+    `EmoteThemeMode` are gone. `Emote` gains `animated` and `hidden`
+    (`is_animated()` is gone). `Emote::image(&ImageRequest)` picks the file
+    to draw by scale, motion, theme and the formats the caller decodes
+  - breaking: modifiers. `EmoteModifier` gains `target` (`Preceding` or
+    `Following`); 7TV's zero-width emotes are overlays
+    (`EmoteModifier::overlay()`), BetterTTV's `w!`, `h!`, … are effects on the
+    emote after them, and `EmoteModifierFlags` names all of FrankerFaceZ's
+    bits (`SLIDE`, `APPEAR`, `LEAVE`, `ROTATE`, `ROTATE_90`, `GREYSCALE`,
+    `SEPIA`, `NO_SPACE`) plus `ROTATE_270`. FrankerFaceZ's top-level `hidden`
+    is `Emote::hidden` and no longer sets `HIDDEN`, which is the modifier's
+    own flag, as FrankerFaceZ's client reads them
+  - parsers take the answer's body as text: `twitch::parse_emotes` (Helix's
+    three emote lists), `seventv::{parse_user, parse_emote_set}` (the user
+    answer carries the channel's set, one request instead of two),
+    `bttv::{parse_global, parse_channel}`, `ffz::{parse_global, parse_room}`
+    (the room's own set is told from the rest), next to the addresses to ask
+    (`seventv::user_url`, `bttv::GLOBAL_URL`, …)
+  - a provider's answer is treated as untrusted: ids have one plain shape
+    (`is_plain_id`), every image is an `https` address on the provider's own
+    image host under a path that cannot leave it, and an entry that fails is
+    left out and counted (`EmoteSet::skipped`) instead of failing the set
+  - 7TV images list every scale and format (with an animated emote's still
+    frame) instead of guessing the scale from a substring of the file name;
+    BetterTTV images include the WebP and still files; FrankerFaceZ images
+    come in a fixed order
+  - `twitch::{image_url, image, emote, emote_from_lists}` build Twitch's
+    images from an id; `EventSubMessageEmote::to_emote` now returns `Option`
+    and takes every scale when the fragment lists none
+  - matching: `EmoteIndex` (a channel's code over a global one, then 7TV over
+    BetterTTV over FrankerFaceZ, configurable) and `Tokenizer`, which cuts a
+    message into `Piece::Text` and `Piece::Emote` with the modifiers attached
+    to the emote they change; `EventSubChatMessageText::tokenize` does it for
+    an EventSub chat message, `emotes::HelixEmotes` turns Helix's emote lists
+    into `Emote`s
+  - loading: `SetLoader` says which sets a channel's chat needs as requests
+    the caller makes, treats a channel's `404` as "no set", retries a failed
+    direct request through a proxy, and reports each set (`SetReport`)
+  - `proxy::{route, upstream, proxied}`: the closed list of addresses a
+    server may fetch for a client, shared by both sides, with
+    `Upstream::accepts` for the answer's media type
+- Root feature flags:
+  - none for all of the above; `seventv`, `bttv`, `ffz` and their `-reqwest`
+    variants are removed
+  - `reqwest-client` adds `emotes::EmoteClient`, which makes a `SetLoader`'s
+    requests (in `barbed-emotes`: its own `reqwest-client` feature)
+- Known remaining gaps:
+  - DitoDitoInfinito, its server's emote proxy and LUPO still use their own
+    copies; this entry only makes the crate they can move to
+  - reading an image's container, animation limits and image caches stay
+    with the display
+  - an IRC message's `emotes` tag is not turned into pieces yet (EventSub
+    fragments are)
+  - the parsers were run against the three providers' global sets as they
+    answered on 2026-11-24; the channel endpoints are read from the
+    providers' documentation and 7TV's source, with fixtures of that shape
+  - FrankerFaceZ's mask images have no proxy route
 
 ## 0.0.5 - 2026-11-09
 

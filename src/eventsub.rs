@@ -7,9 +7,7 @@ use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
 use time::{Duration, error::Parse as TimeParseError};
 
-use crate::emotes::{
-    Emote, EmoteId, EmoteImage, EmoteImageFormat, EmoteImageScale, EmoteProvider, EmoteThemeMode,
-};
+use crate::emotes::{Emote, EmoteIndex, Piece};
 pub use crate::helix::EndpointStability;
 
 pub const CHANNEL_CHAT_MESSAGE: &str = "channel.chat.message";
@@ -339,56 +337,17 @@ pub struct EventSubMessageEmote {
 }
 
 impl EventSubMessageEmote {
-    pub fn to_emote(&self, code: impl Into<String>) -> Emote {
-        let formats = parse_or(
-            &self.format,
-            &[EmoteImageFormat::Static],
-            EmoteImageFormat::parse,
-        );
-        let themes = parse_or(
-            &self.theme_modes,
-            &[EmoteThemeMode::Light, EmoteThemeMode::Dark],
-            EmoteThemeMode::parse,
-        );
-        let scales = parse_or(&self.scale, &[EmoteImageScale::One], EmoteImageScale::parse);
-        let (themes, scales) = (&themes, &scales);
-
-        let images = formats
-            .iter()
-            .flat_map(|format| {
-                themes.iter().flat_map(move |theme| {
-                    scales.iter().map(move |scale| {
-                        EmoteImage::new(
-                            format.clone(),
-                            scale.clone(),
-                            format!(
-                                "https://static-cdn.jtvnw.net/emoticons/v2/{}/{}/{}/{}",
-                                self.id,
-                                format.as_str(),
-                                theme.as_str(),
-                                scale.as_str()
-                            ),
-                        )
-                        .with_theme(theme.clone())
-                    })
-                })
-            })
-            .collect();
-
-        Emote::new(
-            EmoteId::new(EmoteProvider::Twitch, self.id.clone()),
+    /// This Twitch emote, written `code` in the message, with the images its
+    /// `format`, `scale` and `theme_mode` lists name. `None` for an id of
+    /// another shape than Twitch's ([`crate::emotes::is_plain_id`]).
+    pub fn to_emote(&self, code: impl Into<String>) -> Option<Emote> {
+        crate::emotes::twitch::emote_from_lists(
+            &self.id,
             code,
-            images,
+            &self.format,
+            &self.scale,
+            &self.theme_modes,
         )
-    }
-}
-
-/// Parses each value, or returns `default` when Twitch omitted the list.
-fn parse_or<T: Clone>(values: &[String], default: &[T], parse: fn(&str) -> T) -> Vec<T> {
-    if values.is_empty() {
-        default.to_vec()
-    } else {
-        values.iter().map(|value| parse(value)).collect()
     }
 }
 
@@ -425,6 +384,33 @@ pub struct EventSubChatMessageText {
     pub text: String,
     #[serde(default)]
     pub fragments: Vec<EventSubMessageFragment>,
+}
+
+impl EventSubChatMessageText {
+    /// The message cut into text and emotes: its Twitch emotes from the
+    /// fragments that name them, and in its text fragments the codes `index`
+    /// knows (7TV's, BetterTTV's, FrankerFaceZ's), with modifiers attached
+    /// to the emote they change ([`crate::emotes::Tokenizer`]). Mentions,
+    /// cheermotes and any other fragment stay text.
+    pub fn tokenize(&self, index: &EmoteIndex) -> Vec<Piece> {
+        let mut tokenizer = index.tokenizer();
+        if self.fragments.is_empty() {
+            tokenizer.text(&self.text);
+        }
+        for fragment in &self.fragments {
+            let emote = fragment
+                .emote
+                .as_ref()
+                .filter(|_| fragment.fragment_type == EventSubMessageFragmentType::Emote)
+                .and_then(|emote| emote.to_emote(fragment.text.as_str()));
+            match (&fragment.fragment_type, emote) {
+                (_, Some(emote)) => tokenizer.emote(emote, &fragment.text),
+                (EventSubMessageFragmentType::Text, None) => tokenizer.text(&fragment.text),
+                (_, None) => tokenizer.verbatim(&fragment.text),
+            };
+        }
+        tokenizer.finish()
+    }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -1019,19 +1005,83 @@ mod tests {
 
     #[test]
     fn twitch_eventsub_emote_converts_to_generic_emote() {
-        let emote = EventSubMessageEmote {
+        let wire = EventSubMessageEmote {
             id: "25".to_string(),
             emote_set_id: None,
             owner_id: None,
             format: vec!["static".to_string(), "animated".to_string()],
             scale: vec!["1.0".to_string(), "2.0".to_string()],
             theme_modes: vec!["light".to_string()],
-        }
-        .to_emote("Kappa");
+        };
+        let emote = wire.to_emote("Kappa").expect("a Twitch emote");
 
         assert_eq!(emote.code, "Kappa");
-        assert!(emote.is_animated());
+        assert!(emote.animated);
         assert_eq!(emote.images.len(), 4);
+        assert_eq!(
+            emote.images[0].url,
+            "https://static-cdn.jtvnw.net/emoticons/v2/25/animated/light/1.0"
+        );
+
+        let odd = EventSubMessageEmote {
+            id: "../25".to_string(),
+            ..wire
+        };
+        assert!(odd.to_emote("Kappa").is_none());
+    }
+
+    #[test]
+    fn a_chat_message_is_cut_into_text_and_emotes() {
+        use crate::emotes::{EmoteId, EmoteModifier, EmoteProvider, EmoteScope};
+
+        let seven = |id: &str, code: &str| {
+            Emote::new(EmoteId::new(EmoteProvider::SevenTv, id), code, Vec::new())
+        };
+        let mut index = EmoteIndex::new();
+        index.insert(EmoteScope::Channel, seven("1", "catJAM"));
+        index.insert(
+            EmoteScope::Global,
+            seven("2", "RainTime").with_modifier(EmoteModifier::overlay()),
+        );
+
+        let message: EventSubChatMessageText = serde_json::from_value(serde_json::json!({
+            "text": "hi Kappa RainTime catJAM @catJAM Cheer100",
+            "fragments": [
+                {"type": "text", "text": "hi "},
+                {"type": "emote", "text": "Kappa", "emote": {
+                    "id": "25", "emote_set_id": "0", "owner_id": "0", "format": ["static"]
+                }},
+                {"type": "text", "text": " RainTime catJAM "},
+                {"type": "mention", "text": "@catJAM", "mention": {
+                    "user_id": "1", "user_name": "catJAM", "user_login": "catjam"
+                }},
+                {"type": "text", "text": " "},
+                {"type": "cheermote", "text": "Cheer100", "cheermote": {
+                    "prefix": "cheer", "bits": 100, "tier": 100
+                }}
+            ]
+        }))
+        .expect("a message");
+
+        let pieces = message.tokenize(&index);
+        let source: String = pieces.iter().map(Piece::source).collect();
+        assert_eq!(source, message.text);
+        assert_eq!(pieces.len(), 5);
+        assert_eq!(pieces[0], Piece::Text("hi ".to_string()));
+        // Twitch's own emote, with the 7TV overlay written after it.
+        let kappa = pieces[1].as_emote().expect("an emote");
+        assert_eq!(kappa.emote.id, EmoteId::new(EmoteProvider::Twitch, "25"));
+        assert_eq!(kappa.modifiers[0].code, "RainTime");
+        assert_eq!(pieces[3].as_emote().expect("an emote").emote.code, "catJAM");
+        // A mention and a cheermote are never emotes.
+        assert_eq!(pieces[4], Piece::Text(" @catJAM Cheer100".to_string()));
+
+        // A message without fragments: its text.
+        let bare = EventSubChatMessageText {
+            text: "catJAM".to_string(),
+            fragments: Vec::new(),
+        };
+        assert_eq!(bare.tokenize(&index).len(), 1);
     }
 
     #[test]

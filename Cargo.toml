@@ -2,10 +2,7 @@
 resolver = "3"
 members = [
     ".",
-    "barbed-core",
-    "barbed-7tv",
-    "barbed-bttv",
-    "barbed-ffz",
+    "barbed-emotes",
 ]
 
 [workspace.package]
@@ -19,11 +16,8 @@ documentation = "https://docs.rs/barbed"
 
 [workspace.dependencies]
 # Internal crates: bumping a release edits `workspace.package.version` plus
-# these four requirements, all in this file.
-barbed-core = { path = "barbed-core", version = "0.0.6" }
-barbed_7tv = { package = "barbed-7tv", path = "barbed-7tv", version = "0.0.6", default-features = false }
-barbed_bttv = { package = "barbed-bttv", path = "barbed-bttv", version = "0.0.6", default-features = false }
-barbed_ffz = { package = "barbed-ffz", path = "barbed-ffz", version = "0.0.6", default-features = false }
+# this requirement, both in this file.
+barbed-emotes = { path = "barbed-emotes", version = "0.0.6" }
 
 async-trait = "0.1"
 base64 = "0.23"
@@ -59,10 +53,7 @@ keywords = ["twitch", "eventsub", "helix", "oauth"]
 anyhow = { version = "1", optional = true }
 async-trait.workspace = true
 base64.workspace = true
-barbed-core.workspace = true
-barbed_7tv = { workspace = true, optional = true }
-barbed_bttv = { workspace = true, optional = true }
-barbed_ffz = { workspace = true, optional = true }
+barbed-emotes.workspace = true
 futures-util = { workspace = true, optional = true }
 hex.workspace = true
 hmac.workspace = true
@@ -83,7 +74,13 @@ worker = { version = "0.9", optional = true }
 
 [features]
 cloudflare-worker = ["dep:worker", "dep:wasm-bindgen"]
-reqwest-client = ["dep:anyhow", "dep:reqwest", "dep:tokio", "dep:tracing"]
+reqwest-client = [
+    "dep:anyhow",
+    "dep:reqwest",
+    "dep:tokio",
+    "dep:tracing",
+    "barbed-emotes/reqwest-client",
+]
 tokio-eventsub = [
     "reqwest-client",
     "dep:futures-util",
@@ -91,12 +88,6 @@ tokio-eventsub = [
     "dep:tokio-tungstenite",
 ]
 tokio-irc = ["dep:tokio"]
-seventv = ["dep:barbed_7tv"]
-seventv-reqwest = ["seventv", "barbed_7tv/reqwest-client"]
-bttv = ["dep:barbed_bttv"]
-bttv-reqwest = ["bttv", "barbed_bttv/reqwest-client"]
-ffz = ["dep:barbed_ffz"]
-ffz-reqwest = ["ffz", "barbed_ffz/reqwest-client"]
 
 [package.metadata.docs.rs]
 all-features = true

@@ -37,10 +37,7 @@ version = "0.0.6"
 dependencies = [
  "anyhow",
  "async-trait",
- "barbed-7tv",
- "barbed-bttv",
- "barbed-core",
- "barbed-ffz",
+ "barbed-emotes",
  "base64",
  "futures-util",
  "hex",
@@ -60,45 +57,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "barbed-7tv"
-version = "0.0.6"
-dependencies = [
- "async-trait",
- "barbed-core",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "barbed-bttv"
-version = "0.0.6"
-dependencies = [
- "async-trait",
- "barbed-core",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "barbed-core"
+name = "barbed-emotes"
 version = "0.0.6"
 dependencies = [
  "bitflags",
- "serde",
-]
-
-[[package]]
-name = "barbed-ffz"
-version = "0.0.6"
-dependencies = [
- "async-trait",
- "barbed-core",
+ "futures-util",
  "reqwest",
  "serde",
  "serde_json",

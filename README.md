@@ -19,26 +19,21 @@ The root `barbed` crate currently includes:
 - EventSub WebSocket decoding, chat subscription helpers, and a native async stream client
 - Checked-in Twitch surface catalogs plus generated low-level Helix/EventSub registries
 - Twitch IRC parsing plus an optional native async IRC client
-- Provider-neutral emote/domain types
+- Chat emotes from Twitch, 7TV, BetterTTV and FrankerFaceZ (the `barbed-emotes` crate, re-exported as `barbed::emotes`)
 - HMAC signing helpers
 - Trait-based auth/session abstractions with in-memory reference implementations
 
-Optional feature flags add integrations for specific runtimes and providers:
+Optional feature flags add integrations for specific runtimes:
 
 - `cloudflare-worker` — send prepared requests via the Cloudflare Workers Fetch API
-- `reqwest-client` — native HTTP helpers built on `reqwest`
+- `reqwest-client` — native HTTP helpers built on `reqwest`, including `emotes::EmoteClient`
 - `tokio-eventsub` — native EventSub WebSocket client using `tokio` and `tungstenite`
 - `tokio-irc` — native Twitch IRC client using `tokio`
-- `seventv`, `bttv`, `ffz` — re-export the corresponding provider crates from the root crate
-- `seventv-reqwest`, `bttv-reqwest`, `ffz-reqwest` — enable reqwest-backed HTTP clients in those provider crates
 
 Workspace crates:
 
 - `barbed` — core Twitch/OAuth/EventSub/IRC APIs
-- `barbed-7tv` — 7TV API coverage used by LUPO
-- `barbed-bttv` — BetterTTV API coverage used by LUPO
-- `barbed-ffz` — FrankerFaceZ API coverage used by LUPO
-- `barbed-core` — internal shared domain types used by the workspace
+- `barbed-emotes` — emotes without I/O, usable by itself (it builds for wasm): one model for all four providers, parsers for their answers that check every id and image address, word matching with modifiers (7TV zero-width, FrankerFaceZ and BetterTTV effects), a set loader driven by requests the caller makes, and the proxy routes a client and its server share
 
 Generated Twitch surface data lives in [`twitch_catalog`](/Users/jan/sugoijan/barbed/twitch_catalog/summary.json) and is refreshed by [`tools/twitch_surface.py`](/Users/jan/sugoijan/barbed/tools/twitch_surface.py).
 

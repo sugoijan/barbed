@@ -1,0 +1,29 @@
+[package]
+name = "barbed-emotes"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/barbed-emotes"
+description = "Twitch, 7TV, BetterTTV and FrankerFaceZ emotes without I/O: set parsers, word matching, set loading and proxy routes"
+keywords = ["twitch", "emotes", "7tv", "bttv", "ffz"]
+
+[dependencies]
+bitflags.workspace = true
+futures-util = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[features]
+# An HTTP client that makes the requests a `SetLoader` asks for.
+reqwest-client = ["dep:futures-util", "dep:reqwest"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dev-dependencies]
+tokio.workspace = true
