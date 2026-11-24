@@ -74,6 +74,7 @@ mod safe;
 pub mod seventv;
 mod text;
 pub mod twitch;
+mod wire;
 
 #[cfg(feature = "reqwest-client")]
 pub use client::{DEFAULT_TIMEOUT, EmoteClient, USER_AGENT};

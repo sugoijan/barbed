@@ -28,6 +28,52 @@ This file is append-only and records `barbed` changesO. Each entry lists the pub
     read the real answers of two large channels (969 7TV, 274 BetterTTV and
     4 FrankerFaceZ emotes) with nothing left out
 
+### Cleanup pass over the whole codebase
+
+- Public API added/changed:
+  - each provider's address rules are written once, in its own module, for
+    its parser and for `emotes::proxy` alike; before, the proxy kept a second
+    copy of the hosts and path shapes, and the two had drifted. An emote
+    image a parser builds is now always one the proxy carries, so these are
+    left out at parse time: a 7TV file whose name is not exactly
+    `<1-4>x[_static].<webp|avif|gif|png>` (an uppercase extension, a padded
+    scale), a 7TV emote whose files are not under `/emote/<id>`, and a
+    FrankerFaceZ image that is not `emote/<id>/[animated/]<1|2|4>`. Mask
+    images are still any plain path on FrankerFaceZ's image host
+  - the parsers read an answer entry by entry from its text instead of
+    through a whole `serde_json::Value`: about half the time and a quarter
+    of the peak memory for a large channel's 7TV set (measured on a 969-emote
+    set: 23 ms to 13 ms, 11 MB to 3 MB). A body that is JSON of another shape
+    is now `ParseError::Shape` in every parser. `serde_json` gains its
+    `raw_value` feature
+  - `EmoteClient::load` hands each answer to the loader as it arrives
+    instead of waiting for the slowest request of a round, and a proxy retry
+    starts as soon as its direct request failed
+  - `EventSubChatMessageText::tokenize` builds a Twitch emote written many
+    times in one message once; `twitch::emote` builds each address with one
+    allocation
+  - `tools/twitch_surface.py build` formats the Rust it writes with
+    `rustfmt`, so `cargo fmt` no longer has to follow a regeneration; its
+    leftovers from the old HTML-table parser are gone, and
+    `eventsub_generated.rs` is 400 lines shorter (one macro call instead of
+    82 identical trait impls)
+  - no API change: the `tokio-eventsub` half of `native` moved to its own
+    file behind one `cfg` (building with `reqwest-client` alone no longer
+    warns about unused imports); the tokenizer keeps one buffer and ranges
+    into it; the loader has one table of its sets
+- Root feature flags:
+  - none
+- Known remaining gaps:
+  - left for a later, breaking pass: one transport trait instead of the
+    parallel `native` and `cloudflare_worker` flows, the OAuth token types
+    living in `helix`, the two response types (`RawResponse`,
+    `HttpResponse`), a shared chat-message type for the ten generated events
+    that carry message fragments, and discovering shared EventSub objects
+    instead of listing them in `SHARED_SECTIONS`
+  - `helix.rs` still names the generated group modules by hand
+  - a 7TV user answer that names its set only by id is read as having no
+    emotes; the loader does not follow up with the set's own address
+
 ## 0.0.6 - 2026-11-24
 
 ### Twitch surface refreshed against the relaunched docs (2026-11-10)

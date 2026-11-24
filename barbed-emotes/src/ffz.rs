@@ -5,16 +5,20 @@
 use std::collections::BTreeMap;
 
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::value::RawValue;
 
 use crate::model::{
     Emote, EmoteId, EmoteImage, EmoteModifier, EmoteModifierFlags, EmoteProvider, EmoteSet,
     ImageFormat, ModifierTarget, ParseError,
 };
-use crate::safe::{https, is_plain_id, path_on};
+use crate::safe::{is_plain_id, path_on};
+use crate::wire::{read_set, segments};
 
 /// The host FrankerFaceZ's emote images are on.
 pub const IMAGE_HOST: &str = "cdn.frankerfacez.com";
+
+/// The host of FrankerFaceZ's API.
+pub(crate) const API_HOST: &str = "api.frankerfacez.com";
 
 /// FrankerFaceZ's global emote sets.
 pub const GLOBAL_URL: &str = "https://api.frankerfacez.com/v1/set/global";
@@ -23,8 +27,31 @@ pub const GLOBAL_URL: &str = "https://api.frankerfacez.com/v1/set/global";
 /// set. It answers `404` for a channel without FrankerFaceZ. `None` for an
 /// id of another shape than Twitch's.
 pub fn room_url(twitch_user_id: &str) -> Option<String> {
-    is_plain_id(twitch_user_id)
-        .then(|| format!("https://api.frankerfacez.com/v1/room/id/{twitch_user_id}"))
+    is_plain_id(twitch_user_id).then(|| format!("https://{API_HOST}/v1/room/id/{twitch_user_id}"))
+}
+
+/// The size steps FrankerFaceZ serves.
+const SCALES: [&str; 3] = ["1", "2", "4"];
+
+/// Whether the segments of a path on [`IMAGE_HOST`] are an emote's image:
+/// `emote/<id>/<scale>`, or `emote/<id>/animated/<scale>`.
+pub(crate) fn is_image_path(path: &[&str]) -> bool {
+    match path {
+        ["emote", id, scale] | ["emote", id, "animated", scale] => {
+            is_plain_id(id) && SCALES.contains(scale)
+        }
+        _ => false,
+    }
+}
+
+/// Whether the segments of a path on [`API_HOST`] are a room's or the
+/// global sets' address ([`room_url`], [`GLOBAL_URL`]).
+pub(crate) fn is_api_path(path: &[&str]) -> bool {
+    match path {
+        ["v1", "room", "id", id] => is_plain_id(id),
+        ["v1", "set", "global"] => true,
+        _ => false,
+    }
 }
 
 /// A number or a string, as FrankerFaceZ writes ids.
@@ -71,24 +98,42 @@ struct WireEmote {
 }
 
 #[derive(Deserialize)]
-struct WireSet {
+struct WireSet<'a> {
     #[serde(default)]
     id: Option<WireId>,
     #[serde(default)]
     title: Option<String>,
-    #[serde(default)]
-    emoticons: Vec<Value>,
+    #[serde(borrow, default)]
+    emoticons: Vec<&'a RawValue>,
+}
+
+/// Which addresses a `{"1": url, "2": url, "4": url}` map may hold.
+#[derive(Clone, Copy, PartialEq)]
+enum Kind {
+    /// An emote's own image: only an address of the shape they all have
+    /// ([`is_image_path`]), so that the proxy carries every one of them.
+    Emote,
+    /// A modifier's mask: any plain path on the image host.
+    Mask,
 }
 
 /// The images of a `{"1": url, "2": url, "4": url}` map that are on
 /// FrankerFaceZ's image host, smallest first.
-fn images(urls: &WireUrls, animated: bool, size: Option<(f64, f64)>) -> Vec<EmoteImage> {
+fn images(
+    urls: &WireUrls,
+    kind: Kind,
+    animated: bool,
+    size: Option<(f64, f64)>,
+) -> Vec<EmoteImage> {
     let mut images: Vec<EmoteImage> = urls
         .iter()
         .filter_map(|(scale, url)| {
             let scale: u8 = scale.parse().ok().filter(|scale| (1..=4).contains(scale))?;
             let path = path_on(IMAGE_HOST, url.as_deref()?)?;
-            let mut image = EmoteImage::new(https(IMAGE_HOST, path), scale)
+            if kind == Kind::Emote && !is_image_path(&segments(path)) {
+                return None;
+            }
+            let mut image = EmoteImage::new(format!("https://{IMAGE_HOST}{path}"), scale)
                 .animated(animated)
                 .with_format(if animated {
                     ImageFormat::WebP
@@ -110,8 +155,7 @@ fn images(urls: &WireUrls, animated: bool, size: Option<(f64, f64)>) -> Vec<Emot
     images
 }
 
-fn emote_from_wire(value: Value) -> Option<Emote> {
-    let wire: WireEmote = serde_json::from_value(value).ok()?;
+fn emote_from_wire(wire: WireEmote) -> Option<Emote> {
     let id = wire.id.into_string();
     if wire.name.is_empty() || !is_plain_id(&id) {
         return None;
@@ -121,9 +165,9 @@ fn emote_from_wire(value: Value) -> Option<Emote> {
     let mut all = wire
         .animated
         .as_ref()
-        .map(|urls| images(urls, true, size))
+        .map(|urls| images(urls, Kind::Emote, true, size))
         .unwrap_or_default();
-    all.extend(images(&wire.urls, false, size));
+    all.extend(images(&wire.urls, Kind::Emote, false, size));
     if all.is_empty() {
         return None;
     }
@@ -134,53 +178,37 @@ fn emote_from_wire(value: Value) -> Option<Emote> {
     )
     .with_hidden(wire.hidden);
     if wire.modifier {
-        let flags = EmoteModifierFlags::from_bits_retain(wire.modifier_flags);
         let mut mask_images = wire
             .mask_animated
             .as_ref()
-            .map(|urls| images(urls, true, size))
+            .map(|urls| images(urls, Kind::Mask, true, size))
             .unwrap_or_default();
         if let Some(urls) = &wire.mask {
-            mask_images.extend(images(urls, false, size));
+            mask_images.extend(images(urls, Kind::Mask, false, size));
         }
         emote.modifier = Some(EmoteModifier {
             target: ModifierTarget::Preceding,
-            flags,
+            flags: EmoteModifierFlags::from_bits_retain(wire.modifier_flags),
             mask_images,
         });
     }
     Some(emote)
 }
 
-fn set_from_wire(key: &str, value: Value) -> Option<EmoteSet> {
-    let wire: WireSet = serde_json::from_value(value).ok()?;
-    let mut set = EmoteSet {
-        id: Some(
-            wire.id
-                .map(WireId::into_string)
-                .unwrap_or_else(|| key.to_string()),
-        ),
-        name: wire.title,
-        ..EmoteSet::default()
-    };
-    for value in wire.emoticons {
-        match emote_from_wire(value) {
-            Some(emote) => set.emotes.push(emote),
-            None => set.skipped += 1,
-        }
-    }
-    Some(set)
-}
-
 /// The sets of a `{"<id>": set}` map in the order of their ids, and how many
 /// of them were of another shape.
-fn sets_from_wire(sets: BTreeMap<String, Value>) -> (Vec<EmoteSet>, usize) {
+fn sets_from_wire(sets: BTreeMap<String, &RawValue>) -> (Vec<EmoteSet>, usize) {
     let mut out: Vec<EmoteSet> = Vec::new();
     let mut skipped = 0;
     for (key, value) in sets {
-        match set_from_wire(&key, value) {
-            Some(set) => out.push(set),
-            None => skipped += 1,
+        match serde_json::from_str::<WireSet<'_>>(value.get()) {
+            Ok(wire) => out.push(read_set(
+                Some(wire.id.map(WireId::into_string).unwrap_or(key)),
+                wire.title,
+                wire.emoticons,
+                emote_from_wire,
+            )),
+            Err(_) => skipped += 1,
         }
     }
     let number = |set: &EmoteSet| set.id.as_deref().and_then(|id| id.parse::<u64>().ok());
@@ -235,10 +263,11 @@ impl FfzGlobal {
 }
 
 #[derive(Deserialize)]
-struct WireGlobal {
+struct WireGlobal<'a> {
     #[serde(default)]
     default_sets: Vec<WireId>,
-    sets: BTreeMap<String, Value>,
+    #[serde(borrow)]
+    sets: BTreeMap<String, &'a RawValue>,
     #[serde(default)]
     users: BTreeMap<String, Vec<String>>,
 }
@@ -252,7 +281,7 @@ struct WireGlobal {
 /// own bits), drawn over it too unless its flags say it is hidden. An emote
 /// FrankerFaceZ does not list is marked ([`Emote::hidden`]), not left out.
 pub fn parse_global(body: &str) -> Result<FfzGlobal, ParseError> {
-    let wire: WireGlobal = serde_json::from_str(body)?;
+    let wire: WireGlobal<'_> = serde_json::from_str(body)?;
     let (sets, skipped_sets) = sets_from_wire(wire.sets);
     Ok(FfzGlobal {
         sets,
@@ -310,10 +339,10 @@ impl FfzRoom {
 }
 
 #[derive(Deserialize)]
-struct WireRoomAnswer {
+struct WireRoomAnswer<'a> {
     room: WireRoom,
-    #[serde(default)]
-    sets: BTreeMap<String, Value>,
+    #[serde(borrow, default)]
+    sets: BTreeMap<String, &'a RawValue>,
 }
 
 #[derive(Deserialize)]
@@ -329,7 +358,7 @@ struct WireRoom {
 /// Reads the answer of [`room_url`] (`{"room": {"set": <id>, …}, "sets":
 /// {...}}`).
 pub fn parse_room(body: &str) -> Result<FfzRoom, ParseError> {
-    let wire: WireRoomAnswer = serde_json::from_str(body)?;
+    let wire: WireRoomAnswer<'_> = serde_json::from_str(body)?;
     let (sets, skipped_sets) = sets_from_wire(wire.sets);
     Ok(FfzRoom {
         twitch_id: wire.room.twitch_id.map(WireId::into_string),

@@ -5,15 +5,19 @@
 //! at [`GLOBAL_SET_URL`]. Both are public and need no token.
 
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::value::RawValue;
 
 use crate::model::{
     Emote, EmoteId, EmoteImage, EmoteModifier, EmoteProvider, EmoteSet, ImageFormat, ParseError,
 };
-use crate::safe::{https, is_plain_id, is_plain_path, path_on};
+use crate::safe::{is_plain_id, path_on};
+use crate::wire::{expect_object, read_set, segments};
 
 /// The host 7TV's emote images are on.
 pub const IMAGE_HOST: &str = "cdn.7tv.app";
+
+/// The host of 7TV's API.
+pub(crate) const API_HOST: &str = "7tv.io";
 
 /// 7TV's global emote set.
 pub const GLOBAL_SET_URL: &str = "https://7tv.io/v3/emote-sets/global";
@@ -22,12 +26,25 @@ pub const GLOBAL_SET_URL: &str = "https://7tv.io/v3/emote-sets/global";
 /// with its active emote set. It answers `404` for a channel without 7TV.
 /// `None` for an id of another shape than Twitch's.
 pub fn user_url(twitch_user_id: &str) -> Option<String> {
-    is_plain_id(twitch_user_id).then(|| format!("https://7tv.io/v3/users/twitch/{twitch_user_id}"))
+    is_plain_id(twitch_user_id)
+        .then(|| format!("https://{API_HOST}/v3/users/twitch/{twitch_user_id}"))
 }
 
 /// The address of emote set `set_id`.
 pub fn emote_set_url(set_id: &str) -> Option<String> {
-    is_plain_id(set_id).then(|| format!("https://7tv.io/v3/emote-sets/{set_id}"))
+    is_plain_id(set_id).then(|| format!("https://{API_HOST}/v3/emote-sets/{set_id}"))
+}
+
+/// Whether the segments of a path on [`IMAGE_HOST`] are an emote's image
+/// file: `emote/<id>/<file>` ([`file_shape`]).
+pub(crate) fn is_image_path(path: &[&str]) -> bool {
+    matches!(path, ["emote", id, file] if is_plain_id(id) && file_shape(file).is_some())
+}
+
+/// Whether the segments of a path on [`API_HOST`] are a user's or a set's
+/// address ([`user_url`], [`emote_set_url`], [`GLOBAL_SET_URL`]).
+pub(crate) fn is_api_path(path: &[&str]) -> bool {
+    matches!(path, ["v3", "users", "twitch", id] | ["v3", "emote-sets", id] if is_plain_id(id))
 }
 
 /// A set's `flags` bit on one of its emotes: drawn over the emote before it.
@@ -35,14 +52,14 @@ const ACTIVE_ZERO_WIDTH: i64 = 1 << 0;
 /// An emote's own `flags` bit: zero-width wherever it is used.
 const EMOTE_ZERO_WIDTH: i64 = 1 << 8;
 
-#[derive(Deserialize)]
-struct WireSet {
+#[derive(Default, Deserialize)]
+struct WireSet<'a> {
     #[serde(default)]
     id: Option<String>,
     #[serde(default)]
     name: Option<String>,
-    #[serde(default)]
-    emotes: Vec<Value>,
+    #[serde(borrow, default)]
+    emotes: Vec<&'a RawValue>,
 }
 
 #[derive(Deserialize)]
@@ -83,20 +100,30 @@ struct WireFile {
     height: Option<u32>,
 }
 
-/// The scale and format of a file named `<n>x.<ext>` or `<n>x_static.<ext>`.
+/// The scale and format of an image file's name: `<n>x.<format>` or
+/// `<n>x_static.<format>`, the scale 1 to 4 and the format `webp`, `avif`,
+/// `gif` or `png`, written exactly so.
 fn file_shape(name: &str) -> Option<(u8, ImageFormat)> {
     let (stem, extension) = name.split_once('.')?;
     let stem = stem.strip_suffix("_static").unwrap_or(stem);
-    let scale: u8 = stem.strip_suffix('x')?.parse().ok()?;
-    (1..=4)
-        .contains(&scale)
-        .then_some(())
-        .and(ImageFormat::from_extension(extension))
-        .map(|format| (scale, format))
+    let scale = match stem {
+        "1x" => 1,
+        "2x" => 2,
+        "3x" => 3,
+        "4x" => 4,
+        _ => return None,
+    };
+    let format = match extension {
+        "webp" => ImageFormat::WebP,
+        "avif" => ImageFormat::Avif,
+        "gif" => ImageFormat::Gif,
+        "png" => ImageFormat::Png,
+        _ => return None,
+    };
+    Some((scale, format))
 }
 
-fn emote_from_wire(value: Value) -> Option<Emote> {
-    let wire: WireActiveEmote = serde_json::from_value(value).ok()?;
+fn emote_from_wire(wire: WireActiveEmote) -> Option<Emote> {
     if wire.name.is_empty() || !is_plain_id(&wire.id) {
         return None;
     }
@@ -109,11 +136,13 @@ fn emote_from_wire(value: Value) -> Option<Emote> {
     };
     let image = |name: &str, animated: bool, file: Option<&WireFile>| {
         let (scale, format) = file_shape(name)?;
-        let path = format!("{base}/{name}");
-        if !is_plain_path(&path) {
+        let url = format!("https://{IMAGE_HOST}{base}/{name}");
+        // Only an address of the shape every emote's files have.
+        let path = &url["https://".len() + IMAGE_HOST.len()..];
+        if !is_image_path(&segments(path)) {
             return None;
         }
-        let mut image = EmoteImage::new(https(IMAGE_HOST, &path), scale)
+        let mut image = EmoteImage::new(url, scale)
             .animated(animated)
             .with_format(format);
         if let Some(file) = file {
@@ -123,7 +152,7 @@ fn emote_from_wire(value: Value) -> Option<Emote> {
         Some(image)
     };
     let files = data.host.map(|host| host.files).unwrap_or_default();
-    let mut images = Vec::new();
+    let mut images = Vec::with_capacity(files.len().max(2) * 2);
     for file in &files {
         images.extend(image(&file.name, data.animated, Some(file)));
         // An animated emote's still frame, where the answer names one.
@@ -155,19 +184,8 @@ fn emote_from_wire(value: Value) -> Option<Emote> {
     Some(emote)
 }
 
-fn set_from_wire(wire: WireSet) -> EmoteSet {
-    let mut set = EmoteSet {
-        id: wire.id,
-        name: wire.name,
-        ..EmoteSet::default()
-    };
-    for value in wire.emotes {
-        match emote_from_wire(value) {
-            Some(emote) => set.emotes.push(emote),
-            None => set.skipped += 1,
-        }
-    }
-    set
+fn set_from_wire(wire: WireSet<'_>) -> EmoteSet {
+    read_set(wire.id, wire.name, wire.emotes, emote_from_wire)
 }
 
 /// Reads an emote set (`{"id", "name", "emotes": [...]}`): the answer of
@@ -179,11 +197,8 @@ fn set_from_wire(wire: WireSet) -> EmoteSet {
 /// followed by its still frame, or the one file of a still emote. A
 /// zero-width emote is an [overlay](EmoteModifier::overlay).
 pub fn parse_emote_set(body: &str) -> Result<EmoteSet, ParseError> {
-    let value: Value = serde_json::from_str(body)?;
-    if !value.is_object() {
-        return Err(ParseError::Shape("a 7TV emote set is an object"));
-    }
-    Ok(set_from_wire(serde_json::from_value(value)?))
+    expect_object(body, "a 7TV emote set is an object")?;
+    Ok(set_from_wire(serde_json::from_str(body)?))
 }
 
 /// What [`user_url`] answered: a 7TV account connected to a Twitch channel.
@@ -205,9 +220,9 @@ impl SevenTvUser {
 }
 
 #[derive(Deserialize)]
-struct WireUser {
-    #[serde(default)]
-    emote_set: Option<Value>,
+struct WireUser<'a> {
+    #[serde(borrow, default)]
+    emote_set: Option<&'a RawValue>,
     #[serde(default)]
     emote_set_id: Option<String>,
     #[serde(default)]
@@ -233,13 +248,12 @@ struct WireSetRef {
 /// emotes. The answer of `/v3/users/<7tv id>` is read too, which names the
 /// Twitch connection's set by id only.
 pub fn parse_user(body: &str) -> Result<SevenTvUser, ParseError> {
-    let value: Value = serde_json::from_str(body)?;
-    if !value.is_object() {
-        return Err(ParseError::Shape("a 7TV user is an object"));
-    }
-    let wire: WireUser = serde_json::from_value(value)?;
+    expect_object(body, "a 7TV user is an object")?;
+    let wire: WireUser<'_> = serde_json::from_str(body)?;
     let emote_set = match wire.emote_set {
-        Some(set) if set.is_object() => Some(set_from_wire(serde_json::from_value(set)?)),
+        Some(set) if expect_object(set.get(), "").is_ok() => {
+            Some(set_from_wire(serde_json::from_str(set.get())?))
+        }
         _ => None,
     };
     let emote_set_id = emote_set

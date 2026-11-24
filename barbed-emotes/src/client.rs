@@ -2,7 +2,8 @@
 
 use std::time::Duration;
 
-use futures_util::future::join_all;
+use futures_util::StreamExt;
+use futures_util::stream::FuturesUnordered;
 
 use crate::load::{LoadError, SetLoader};
 
@@ -50,19 +51,24 @@ impl EmoteClient {
         response.text().await.map_err(failed)
     }
 
-    /// Makes the requests `loader` asks for, each round at once, until it is
-    /// done.
+    /// Makes the requests `loader` asks for, all at once, and hands it each
+    /// answer as it comes, until it is done: a small set is read without
+    /// waiting for a large one, and a retry starts as soon as its first
+    /// request failed.
     pub async fn load(&self, loader: &mut SetLoader) {
+        let mut pending = FuturesUnordered::new();
         loop {
-            let requests = loader.requests();
-            if requests.is_empty() {
+            for request in loader.requests() {
+                pending.push(async move {
+                    let answer = self.get(&request.url).await;
+                    (request, answer)
+                });
+            }
+            let Some((request, answer)) = pending.next().await else {
                 return;
-            }
-            let answers = join_all(requests.iter().map(|request| self.get(&request.url))).await;
-            for (request, answer) in requests.iter().zip(answers) {
-                let answer = answer.as_deref().map_err(Clone::clone);
-                loader.answered(request.key, request.via, answer);
-            }
+            };
+            let answer = answer.as_deref().map_err(Clone::clone);
+            loader.answered(request.key, request.via, answer);
         }
     }
 

@@ -23,15 +23,6 @@ pub struct EmoteUse {
 }
 
 impl EmoteUse {
-    fn alone(emote: Arc<Emote>, source: &str) -> Self {
-        Self {
-            emote,
-            modifiers: Vec::new(),
-            source: source.to_string(),
-            range: 0..0,
-        }
-    }
-
     /// The effects of its modifiers together, without
     /// [`HIDDEN`](EmoteModifierFlags::HIDDEN).
     ///
@@ -112,10 +103,18 @@ impl Piece {
     }
 }
 
-enum Raw {
-    Space(String),
-    Text(String),
-    Emote(Arc<Emote>, String),
+/// What a run of the message's text is.
+enum Kind {
+    Space,
+    Text,
+    Emote(Arc<Emote>),
+}
+
+/// A run of the message's text: a word, the spaces between two, or a part
+/// given whole. `range` is its place in [`Tokenizer::source`].
+struct Token {
+    kind: Kind,
+    range: Range<usize>,
 }
 
 /// Cuts one message into [`Piece`]s.
@@ -160,7 +159,9 @@ enum Raw {
 /// ```
 pub struct Tokenizer<'a> {
     index: &'a EmoteIndex,
-    raw: Vec<Raw>,
+    /// Everything given so far, in order.
+    source: String,
+    tokens: Vec<Token>,
     start: usize,
 }
 
@@ -168,7 +169,8 @@ impl<'a> Tokenizer<'a> {
     pub fn new(index: &'a EmoteIndex) -> Self {
         Self {
             index,
-            raw: Vec::new(),
+            source: String::new(),
+            tokens: Vec::new(),
             start: 0,
         }
     }
@@ -180,173 +182,141 @@ impl<'a> Tokenizer<'a> {
         self
     }
 
+    fn push(&mut self, kind: Kind, text: &str) {
+        let start = self.source.len();
+        self.source.push_str(text);
+        self.tokens.push(Token {
+            kind,
+            range: start..self.source.len(),
+        });
+    }
+
     /// Text whose words are looked up in the index.
     pub fn text(&mut self, text: &str) -> &mut Self {
-        for (token, space) in split_keeping_spaces(text) {
-            self.raw.push(if space {
-                Raw::Space(token.to_string())
-            } else {
-                match self.index.get(token) {
-                    Some(emote) => Raw::Emote(Arc::clone(emote), token.to_string()),
-                    None => Raw::Text(token.to_string()),
-                }
-            });
+        for (run, space) in split_keeping_spaces(text) {
+            let kind = match self.index.get(run) {
+                _ if space => Kind::Space,
+                Some(emote) => Kind::Emote(Arc::clone(emote)),
+                None => Kind::Text,
+            };
+            self.push(kind, run);
         }
         self
     }
 
     /// Text that is kept as it is, never looked up.
     pub fn verbatim(&mut self, text: &str) -> &mut Self {
-        if text.is_empty() {
-            return self;
+        if !text.is_empty() {
+            let space = text.chars().all(char::is_whitespace);
+            self.push(if space { Kind::Space } else { Kind::Text }, text);
         }
-        self.raw.push(if text.chars().all(char::is_whitespace) {
-            Raw::Space(text.to_string())
-        } else {
-            Raw::Text(text.to_string())
-        });
         self
     }
 
     /// An emote the platform named, written `source` in the message.
     pub fn emote(&mut self, emote: impl Into<Arc<Emote>>, source: &str) -> &mut Self {
-        self.raw.push(Raw::Emote(emote.into(), source.to_string()));
+        self.push(Kind::Emote(emote.into()), source);
         self
     }
 
     /// The message's pieces: neighboring text joined, modifiers attached.
     pub fn finish(self) -> Vec<Piece> {
-        let raw = self.raw;
-        let mut out = Pieces {
-            pieces: Vec::new(),
-            end: self.start,
-        };
+        let Self {
+            source,
+            tokens,
+            start,
+            ..
+        } = self;
+        let kind = |at: usize| tokens.get(at).map(|token| &token.kind);
+        let mut pieces: Vec<Piece> = Vec::new();
         let mut at = 0;
-        while let Some(item) = raw.get(at) {
-            let (emote, source) = match item {
-                Raw::Space(text) | Raw::Text(text) => {
-                    out.push_text(text);
-                    at += 1;
-                    continue;
+        while let Some(token) = tokens.get(at) {
+            // The emote this piece is, and the first and last tokens of it
+            // with its modifiers: a run of text where there is no emote.
+            let mut modifiers: Vec<Arc<Emote>> = Vec::new();
+            let mut emote_at = matches!(token.kind, Kind::Emote(_)).then_some(at);
+            if let Kind::Emote(emote) = &token.kind
+                && targets(emote, ModifierTarget::Following)
+            {
+                // Modifiers of the emote after them: all of them up to that
+                // emote, or text where there is none.
+                let mut next = at;
+                loop {
+                    match kind(next) {
+                        Some(Kind::Emote(prefix)) if targets(prefix, ModifierTarget::Following) => {
+                            attach(&mut modifiers, prefix)
+                        }
+                        Some(Kind::Space) => {}
+                        _ => break,
+                    }
+                    next += 1;
                 }
-                Raw::Emote(emote, source) => (emote, source),
-            };
-            if !targets_following(emote) {
-                // An emote, or a modifier of the emote before it that has
-                // none: a piece of its own, with what follows it attached.
-                let mut piece = EmoteUse::alone(Arc::clone(emote), source);
-                at = attach_followers(&raw, at + 1, &mut piece);
-                out.push_emote(piece);
-                continue;
+                emote_at = matches!(kind(next), Some(Kind::Emote(_))).then_some(next);
             }
-            // Modifiers of the emote after them: all of them up to that
-            // emote, or text where there is none.
-            let mut end = at;
-            let mut prefixes: Vec<&Arc<Emote>> = Vec::new();
+            let Some(emote_at) = emote_at else {
+                push_text(&mut pieces, &source, token.range.clone(), start);
+                at += 1;
+                continue;
+            };
+            let Some(Kind::Emote(emote)) = kind(emote_at) else {
+                unreachable!("emote_at is the place of an emote");
+            };
+            // Modifiers of the emote before them, spaces alone between.
+            let mut last = emote_at;
             loop {
-                match raw.get(end) {
-                    Some(Raw::Emote(next, _)) if targets_following(next) => prefixes.push(next),
-                    Some(Raw::Space(_)) => {}
+                let mut next = last + 1;
+                while let Some(Kind::Space) = kind(next) {
+                    next += 1;
+                }
+                match kind(next) {
+                    Some(Kind::Emote(suffix)) if targets(suffix, ModifierTarget::Preceding) => {
+                        attach(&mut modifiers, suffix);
+                        last = next;
+                    }
                     _ => break,
                 }
-                end += 1;
             }
-            match raw.get(end) {
-                Some(Raw::Emote(base, base_source)) => {
-                    let mut piece = EmoteUse::alone(Arc::clone(base), base_source);
-                    piece.source = raw[at..=end].iter().map(source_of).collect();
-                    for prefix in prefixes {
-                        attach(&mut piece, prefix);
-                    }
-                    at = attach_followers(&raw, end + 1, &mut piece);
-                    out.push_emote(piece);
-                }
-                _ => {
-                    out.push_text(source);
-                    at += 1;
-                }
-            }
+            let range = token.range.start..tokens[last].range.end;
+            pieces.push(Piece::Emote(EmoteUse {
+                emote: Arc::clone(emote),
+                modifiers,
+                source: source[range.clone()].to_string(),
+                range: start + range.start..start + range.end,
+            }));
+            at = last + 1;
         }
-        out.pieces
+        pieces
     }
 }
 
-/// The pieces made so far, and the byte of the message they reach: every
-/// piece starts where the one before it ended.
-struct Pieces {
-    pieces: Vec<Piece>,
-    end: usize,
-}
-
-impl Pieces {
-    /// Adds `text`, joined to the text piece before it if there is one.
-    fn push_text(&mut self, text: &str) {
-        let start = self.end;
-        self.end += text.len();
-        match self.pieces.last_mut() {
-            Some(Piece::Text { text: had, range }) => {
-                had.push_str(text);
-                range.end = self.end;
-            }
-            _ => self.pieces.push(Piece::Text {
-                text: text.to_string(),
-                range: start..self.end,
-            }),
-        }
-    }
-
-    fn push_emote(&mut self, mut emote: EmoteUse) {
-        let start = self.end;
-        self.end += emote.source.len();
-        emote.range = start..self.end;
-        self.pieces.push(Piece::Emote(emote));
-    }
-}
-
-fn targets_following(emote: &Emote) -> bool {
+/// Whether `emote` is a modifier of the emote on that side of it.
+fn targets(emote: &Emote, target: ModifierTarget) -> bool {
     emote
         .modifier
         .as_ref()
-        .is_some_and(|modifier| modifier.target == ModifierTarget::Following)
+        .is_some_and(|modifier| modifier.target == target)
 }
 
-fn targets_preceding(emote: &Emote) -> bool {
-    emote
-        .modifier
-        .as_ref()
-        .is_some_and(|modifier| modifier.target == ModifierTarget::Preceding)
-}
-
-fn source_of(raw: &Raw) -> &str {
-    match raw {
-        Raw::Space(text) | Raw::Text(text) | Raw::Emote(_, text) => text,
+/// Adds `modifier`, once.
+fn attach(modifiers: &mut Vec<Arc<Emote>>, modifier: &Arc<Emote>) {
+    if !modifiers.iter().any(|had| had.id == modifier.id) {
+        modifiers.push(Arc::clone(modifier));
     }
 }
 
-fn attach(piece: &mut EmoteUse, modifier: &Arc<Emote>) {
-    if !piece.modifiers.iter().any(|had| had.id == modifier.id) {
-        piece.modifiers.push(Arc::clone(modifier));
-    }
-}
-
-/// Attaches to `piece` the modifiers of the emote before them that follow
-/// it from `at`, spaces alone between them. The place after the last one.
-fn attach_followers(raw: &[Raw], mut at: usize, piece: &mut EmoteUse) -> usize {
-    loop {
-        let mut next = at;
-        while let Some(Raw::Space(_)) = raw.get(next) {
-            next += 1;
+/// Adds the text at `range` of `source`, joined to the text piece before it
+/// if there is one. Ranges are counted from `start`.
+fn push_text(pieces: &mut Vec<Piece>, source: &str, range: Range<usize>, start: usize) {
+    let end = start + range.end;
+    match pieces.last_mut() {
+        Some(Piece::Text { text, range: had }) => {
+            text.push_str(&source[range]);
+            had.end = end;
         }
-        match raw.get(next) {
-            Some(Raw::Emote(modifier, _)) if targets_preceding(modifier) => {
-                for item in &raw[at..=next] {
-                    piece.source.push_str(source_of(item));
-                }
-                attach(piece, modifier);
-                at = next + 1;
-            }
-            _ => return at,
-        }
+        _ => pieces.push(Piece::Text {
+            text: source[range.clone()].to_string(),
+            range: start + range.start..end,
+        }),
     }
 }
 

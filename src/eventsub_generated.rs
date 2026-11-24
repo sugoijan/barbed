@@ -18,12 +18,6 @@ pub struct GenericEventSubPayload {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for GenericEventSubPayload {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Shared `bits-voting` object from the EventSub reference documentation.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SharedBitsVoting {
@@ -323,12 +317,6 @@ pub struct AutomodMessageHold1EventMessageFragmentsCheermote {
     pub tier: i64,
 }
 
-impl super::HasSourceTimestamp for AutomodMessageHold1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `automod.message.hold` version 2. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageHold2Event {
@@ -490,12 +478,6 @@ pub struct AutomodMessageHold2EventBlockedTermTermsFoundBoundary {
     pub end_pos: i64,
 }
 
-impl super::HasSourceTimestamp for AutomodMessageHold2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `automod.message.update` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodMessageUpdate1Event {
@@ -597,12 +579,6 @@ pub struct AutomodMessageUpdate1EventMessageFragmentsCheermote {
     /// The tier level of the cheermote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub tier: i64,
-}
-
-impl super::HasSourceTimestamp for AutomodMessageUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `automod.message.update` version 2. Undocumented fields are dropped when decoding.
@@ -778,12 +754,6 @@ pub struct AutomodMessageUpdate2EventBlockedTermTermsFoundBoundary {
     pub end_pos: i64,
 }
 
-impl super::HasSourceTimestamp for AutomodMessageUpdate2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `automod.settings.update` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodSettingsUpdate1Event {
@@ -837,12 +807,6 @@ pub struct AutomodSettingsUpdate1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for AutomodSettingsUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `automod.terms.update` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutomodTermsUpdate1Event {
@@ -878,12 +842,6 @@ pub struct AutomodTermsUpdate1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for AutomodTermsUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.ad_break.begin` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelAdBreakBegin1Event {
@@ -917,12 +875,6 @@ pub struct ChannelAdBreakBegin1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelAdBreakBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.bits.use` version 1. Undocumented fields are dropped when decoding.
@@ -1061,12 +1013,6 @@ pub struct ChannelBitsUse1EventCustomPowerUp {
     pub reward_id: String,
 }
 
-impl super::HasSourceTimestamp for ChannelBitsUse1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.cheer` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelCheer1Event {
@@ -1100,12 +1046,6 @@ pub struct ChannelCheer1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelCheer1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.custom_power_up_redemption.add` version 1. Undocumented fields are dropped when decoding.
@@ -1149,12 +1089,6 @@ pub struct ChannelCustomPowerUpRedemptionAdd1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelCustomPowerUpRedemptionAdd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.follow` version 2. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelFollow2Event {
@@ -1184,12 +1118,6 @@ pub struct ChannelFollow2Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelFollow2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.raid` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelRaid1Event {
@@ -1217,12 +1145,6 @@ pub struct ChannelRaid1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelRaid1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.shoutout.create` version 1. Undocumented fields are dropped when decoding.
@@ -1272,12 +1194,6 @@ pub struct ChannelShoutoutCreate1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelShoutoutCreate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.shoutout.receive` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelShoutoutReceive1Event {
@@ -1308,12 +1224,6 @@ pub struct ChannelShoutoutReceive1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelShoutoutReceive1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.subscribe` version 1. Undocumented fields are dropped when decoding.
@@ -1348,12 +1258,6 @@ pub struct ChannelSubscribe1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelSubscribe1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.subscription.end` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelSubscriptionEnd1Event {
@@ -1384,12 +1288,6 @@ pub struct ChannelSubscriptionEnd1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelSubscriptionEnd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.subscription.gift` version 1. Undocumented fields are dropped when decoding.
@@ -1428,12 +1326,6 @@ pub struct ChannelSubscriptionGift1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelSubscriptionGift1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.subscription.message` version 1. Undocumented fields are dropped when decoding.
@@ -1477,12 +1369,6 @@ pub struct ChannelSubscriptionMessage1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelSubscriptionMessage1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.update` version 2. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelUpdate2Event {
@@ -1515,12 +1401,6 @@ pub struct ChannelUpdate2Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelUpdate2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.vip.add` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelVipAdd1Event {
@@ -1547,12 +1427,6 @@ pub struct ChannelVipAdd1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelVipAdd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.vip.remove` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelVipRemove1Event {
@@ -1577,12 +1451,6 @@ pub struct ChannelVipRemove1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelVipRemove1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.ban` version 1. Undocumented fields are dropped when decoding.
@@ -1630,12 +1498,6 @@ pub struct ChannelBan1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelBan1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.moderate` version 1. Undocumented fields are dropped when decoding.
@@ -1959,12 +1821,6 @@ pub struct ChannelModerate1EventUnbanRequest {
     /// The message included by the moderator explaining their approval or denial.
     #[serde(default, deserialize_with = "super::null_default")]
     pub moderator_message: String,
-}
-
-impl super::HasSourceTimestamp for ChannelModerate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.moderate` version 2. Undocumented fields are dropped when decoding.
@@ -2313,12 +2169,6 @@ pub struct ChannelModerate2EventWarn {
     pub chat_rules_cited: Vec<String>,
 }
 
-impl super::HasSourceTimestamp for ChannelModerate2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.moderator.add` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModeratorAdd1Event {
@@ -2345,12 +2195,6 @@ pub struct ChannelModeratorAdd1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelModeratorAdd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.moderator.remove` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelModeratorRemove1Event {
@@ -2375,12 +2219,6 @@ pub struct ChannelModeratorRemove1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelModeratorRemove1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.shield_mode.begin` version 1. Undocumented fields are dropped when decoding.
@@ -2415,12 +2253,6 @@ pub struct ChannelShieldModeBegin1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelShieldModeBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.shield_mode.end` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelShieldModeEnd1Event {
@@ -2451,12 +2283,6 @@ pub struct ChannelShieldModeEnd1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelShieldModeEnd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.suspicious_user.message` version 1. Undocumented fields are dropped when decoding.
@@ -2556,12 +2382,6 @@ pub struct ChannelSuspiciousUserMessage1EventMessageFragmentsEmote {
     pub emote_set_id: String,
 }
 
-impl super::HasSourceTimestamp for ChannelSuspiciousUserMessage1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.suspicious_user.update` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelSuspiciousUserUpdate1Event {
@@ -2600,12 +2420,6 @@ pub struct ChannelSuspiciousUserUpdate1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelSuspiciousUserUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.unban` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelUnban1Event {
@@ -2641,12 +2455,6 @@ pub struct ChannelUnban1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelUnban1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.unban_request.create` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelUnbanRequestCreate1Event {
@@ -2680,12 +2488,6 @@ pub struct ChannelUnbanRequestCreate1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelUnbanRequestCreate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.unban_request.resolve` version 1. Undocumented fields are dropped when decoding.
@@ -2732,12 +2534,6 @@ pub struct ChannelUnbanRequestResolve1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelUnbanRequestResolve1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.warning.acknowledge` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelWarningAcknowledge1Event {
@@ -2762,12 +2558,6 @@ pub struct ChannelWarningAcknowledge1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelWarningAcknowledge1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.warning.send` version 1. Undocumented fields are dropped when decoding.
@@ -2809,12 +2599,6 @@ pub struct ChannelWarningSend1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelWarningSend1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.channel_points_automatic_reward_redemption.add` version 1. Undocumented fields are dropped when decoding.
@@ -2881,12 +2665,6 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd1EventRewardUnlockedE
     /// The human readable emote token.
     #[serde(default, deserialize_with = "super::null_default")]
     pub name: String,
-}
-
-impl super::HasSourceTimestamp for ChannelChannelPointsAutomaticRewardRedemptionAdd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.channel_points_automatic_reward_redemption.add` version 2. Undocumented fields are dropped when decoding.
@@ -2985,12 +2763,6 @@ pub struct ChannelChannelPointsAutomaticRewardRedemptionAdd2EventMessageFragment
     pub id: String,
 }
 
-impl super::HasSourceTimestamp for ChannelChannelPointsAutomaticRewardRedemptionAdd2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.channel_points_custom_reward_redemption.add` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChannelPointsCustomRewardRedemptionAdd1Event {
@@ -3032,12 +2804,6 @@ pub struct ChannelChannelPointsCustomRewardRedemptionAdd1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardRedemptionAdd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.channel_points_custom_reward_redemption.update` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChannelPointsCustomRewardRedemptionUpdate1Event {
@@ -3077,12 +2843,6 @@ pub struct ChannelChannelPointsCustomRewardRedemptionUpdate1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardRedemptionUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.channel_points_custom_reward.add` version 1. Undocumented fields are dropped when decoding.
@@ -3153,12 +2913,6 @@ pub struct ChannelChannelPointsCustomRewardAdd1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardAdd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.channel_points_custom_reward.remove` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChannelPointsCustomRewardRemove1Event {
@@ -3225,12 +2979,6 @@ pub struct ChannelChannelPointsCustomRewardRemove1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardRemove1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.channel_points_custom_reward.update` version 1. Undocumented fields are dropped when decoding.
@@ -3301,12 +3049,6 @@ pub struct ChannelChannelPointsCustomRewardUpdate1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelChannelPointsCustomRewardUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.charity_campaign.donate` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelCharityCampaignDonate1Event {
@@ -3366,12 +3108,6 @@ pub struct ChannelCharityCampaignDonate1EventAmount {
     /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
     #[serde(default, deserialize_with = "super::null_default")]
     pub currency: String,
-}
-
-impl super::HasSourceTimestamp for ChannelCharityCampaignDonate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.charity_campaign.progress` version 1. Undocumented fields are dropped when decoding.
@@ -3438,12 +3174,6 @@ pub struct ChannelCharityCampaignProgress1EventTargetAmount {
     /// The ISO-4217 three-letter currency code that identifies the type of currency in value.
     #[serde(default, deserialize_with = "super::null_default")]
     pub currency: String,
-}
-
-impl super::HasSourceTimestamp for ChannelCharityCampaignProgress1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.charity_campaign.start` version 1. Undocumented fields are dropped when decoding.
@@ -3515,12 +3245,6 @@ pub struct ChannelCharityCampaignStart1EventTargetAmount {
     pub currency: String,
 }
 
-impl super::HasSourceTimestamp for ChannelCharityCampaignStart1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.charity_campaign.stop` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelCharityCampaignStop1Event {
@@ -3590,12 +3314,6 @@ pub struct ChannelCharityCampaignStop1EventTargetAmount {
     pub currency: String,
 }
 
-impl super::HasSourceTimestamp for ChannelCharityCampaignStop1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.chat_settings.update` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChatSettingsUpdate1Event {
@@ -3634,12 +3352,6 @@ pub struct ChannelChatSettingsUpdate1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelChatSettingsUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.chat.clear` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChatClear1Event {
@@ -3655,12 +3367,6 @@ pub struct ChannelChatClear1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelChatClear1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.chat.clear_user_messages` version 1. Undocumented fields are dropped when decoding.
@@ -3687,12 +3393,6 @@ pub struct ChannelChatClearUserMessages1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelChatClearUserMessages1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.chat.notification` version 1. Undocumented fields are dropped when decoding.
@@ -4161,12 +3861,6 @@ pub struct ChannelChatNotification1EventSourceBadges {
     pub info: String,
 }
 
-impl super::HasSourceTimestamp for ChannelChatNotification1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.chat.user_message_hold` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelChatUserMessageHold1Event {
@@ -4250,12 +3944,6 @@ pub struct ChannelChatUserMessageHold1EventMessageFragmentsCheermote {
     /// The tier level of the cheermote.
     #[serde(default, deserialize_with = "super::null_default")]
     pub tier: i64,
-}
-
-impl super::HasSourceTimestamp for ChannelChatUserMessageHold1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.chat.user_message_update` version 1. Undocumented fields are dropped when decoding.
@@ -4346,12 +4034,6 @@ pub struct ChannelChatUserMessageUpdate1EventMessageFragmentsCheermote {
     pub tier: i64,
 }
 
-impl super::HasSourceTimestamp for ChannelChatUserMessageUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.shared_chat.begin` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelSharedChatBegin1Event {
@@ -4398,12 +4080,6 @@ pub struct ChannelSharedChatBegin1EventParticipants {
     pub broadcaster_user_login: String,
 }
 
-impl super::HasSourceTimestamp for ChannelSharedChatBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.shared_chat.end` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelSharedChatEnd1Event {
@@ -4431,12 +4107,6 @@ pub struct ChannelSharedChatEnd1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelSharedChatEnd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.shared_chat.update` version 1. Undocumented fields are dropped when decoding.
@@ -4485,12 +4155,6 @@ pub struct ChannelSharedChatUpdate1EventParticipants {
     pub broadcaster_user_login: String,
 }
 
-impl super::HasSourceTimestamp for ChannelSharedChatUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `conduit.shard.disabled` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ConduitShardDisabled1Event {
@@ -4529,12 +4193,6 @@ pub struct ConduitShardDisabled1EventTransport {
     /// Time that the WebSocket session disconnected.
     #[serde(default, deserialize_with = "super::null_default")]
     pub disconnected_at: String,
-}
-
-impl super::HasSourceTimestamp for ConduitShardDisabled1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `drop.entitlement.grant` version 1. Undocumented fields are dropped when decoding.
@@ -4586,12 +4244,6 @@ pub struct DropEntitlementGrant1EventData {
     pub created_at: String,
 }
 
-impl super::HasSourceTimestamp for DropEntitlementGrant1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `extension.bits_transaction.create` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ExtensionBitsTransactionCreate1Event {
@@ -4625,12 +4277,6 @@ pub struct ExtensionBitsTransactionCreate1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ExtensionBitsTransactionCreate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.goal.begin` version 1. Undocumented fields are dropped when decoding.
@@ -4674,12 +4320,6 @@ pub struct ChannelGoalBegin1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelGoalBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.goal.end` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelGoalEnd1Event {
@@ -4721,12 +4361,6 @@ pub struct ChannelGoalEnd1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelGoalEnd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.goal.progress` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelGoalProgress1Event {
@@ -4766,12 +4400,6 @@ pub struct ChannelGoalProgress1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelGoalProgress1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.guest_star_guest.update` version beta. Undocumented fields are dropped when decoding.
@@ -4836,12 +4464,6 @@ pub struct ChannelGuestStarGuestUpdateBetaEvent {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelGuestStarGuestUpdateBetaEvent {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.guest_star_session.begin` version beta. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelGuestStarSessionBeginBetaEvent {
@@ -4863,12 +4485,6 @@ pub struct ChannelGuestStarSessionBeginBetaEvent {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelGuestStarSessionBeginBetaEvent {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.guest_star_session.end` version beta. Undocumented fields are dropped when decoding.
@@ -4906,12 +4522,6 @@ pub struct ChannelGuestStarSessionEndBetaEvent {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelGuestStarSessionEndBetaEvent {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.guest_star_settings.update` version beta. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelGuestStarSettingsUpdateBetaEvent {
@@ -4939,12 +4549,6 @@ pub struct ChannelGuestStarSettingsUpdateBetaEvent {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelGuestStarSettingsUpdateBetaEvent {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.hype_train.begin` version 2. Undocumented fields are dropped when decoding.
@@ -5037,12 +4641,6 @@ pub struct ChannelHypeTrainBegin2EventSharedTrainParticipants {
     pub broadcaster_user_name: String,
 }
 
-impl super::HasSourceTimestamp for ChannelHypeTrainBegin2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.hype_train.end` version 2. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelHypeTrainEnd2Event {
@@ -5122,12 +4720,6 @@ pub struct ChannelHypeTrainEnd2EventSharedTrainParticipants {
     /// The display name of the broadcaster participating in the shared Hype Train.
     #[serde(default, deserialize_with = "super::null_default")]
     pub broadcaster_user_name: String,
-}
-
-impl super::HasSourceTimestamp for ChannelHypeTrainEnd2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.hype_train.progress` version 2. Undocumented fields are dropped when decoding.
@@ -5214,12 +4806,6 @@ pub struct ChannelHypeTrainProgress2EventSharedTrainParticipants {
     pub broadcaster_user_name: String,
 }
 
-impl super::HasSourceTimestamp for ChannelHypeTrainProgress2Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.poll.begin` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelPollBegin1Event {
@@ -5256,12 +4842,6 @@ pub struct ChannelPollBegin1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelPollBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.poll.end` version 1. Undocumented fields are dropped when decoding.
@@ -5305,12 +4885,6 @@ pub struct ChannelPollEnd1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelPollEnd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.poll.progress` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelPollProgress1Event {
@@ -5349,12 +4923,6 @@ pub struct ChannelPollProgress1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelPollProgress1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.prediction.begin` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelPredictionBegin1Event {
@@ -5385,12 +4953,6 @@ pub struct ChannelPredictionBegin1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelPredictionBegin1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.prediction.end` version 1. Undocumented fields are dropped when decoding.
@@ -5431,12 +4993,6 @@ pub struct ChannelPredictionEnd1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelPredictionEnd1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `channel.prediction.lock` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ChannelPredictionLock1Event {
@@ -5467,12 +5023,6 @@ pub struct ChannelPredictionLock1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for ChannelPredictionLock1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `channel.prediction.progress` version 1. Undocumented fields are dropped when decoding.
@@ -5507,12 +5057,6 @@ pub struct ChannelPredictionProgress1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for ChannelPredictionProgress1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `stream.offline` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct StreamOffline1Event {
@@ -5531,12 +5075,6 @@ pub struct StreamOffline1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for StreamOffline1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `stream.online` version 1. Undocumented fields are dropped when decoding.
@@ -5565,12 +5103,6 @@ pub struct StreamOnline1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for StreamOnline1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `user.authorization.grant` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct UserAuthorizationGrant1Event {
@@ -5591,12 +5123,6 @@ pub struct UserAuthorizationGrant1Event {
     pub source_timestamp: Option<OffsetDateTime>,
 }
 
-impl super::HasSourceTimestamp for UserAuthorizationGrant1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
-
 /// Event payload for `user.authorization.revoke` version 1. Undocumented fields are dropped when decoding.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct UserAuthorizationRevoke1Event {
@@ -5615,12 +5141,6 @@ pub struct UserAuthorizationRevoke1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for UserAuthorizationRevoke1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `user.update` version 1. Undocumented fields are dropped when decoding.
@@ -5647,12 +5167,6 @@ pub struct UserUpdate1Event {
     /// Timestamp from the delivery envelope; not part of the payload itself.
     #[serde(skip)]
     pub source_timestamp: Option<OffsetDateTime>,
-}
-
-impl super::HasSourceTimestamp for UserUpdate1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
 }
 
 /// Event payload for `user.whisper.message` version 1. Undocumented fields are dropped when decoding.
@@ -5695,11 +5209,90 @@ pub struct UserWhisperMessage1EventWhisper {
     pub text: String,
 }
 
-impl super::HasSourceTimestamp for UserWhisperMessage1Event {
-    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {
-        self.source_timestamp = source_timestamp;
-    }
-}
+super::impl_source_timestamp!(
+    GenericEventSubPayload,
+    AutomodMessageHold1Event,
+    AutomodMessageHold2Event,
+    AutomodMessageUpdate1Event,
+    AutomodMessageUpdate2Event,
+    AutomodSettingsUpdate1Event,
+    AutomodTermsUpdate1Event,
+    ChannelAdBreakBegin1Event,
+    ChannelBitsUse1Event,
+    ChannelCheer1Event,
+    ChannelCustomPowerUpRedemptionAdd1Event,
+    ChannelFollow2Event,
+    ChannelRaid1Event,
+    ChannelShoutoutCreate1Event,
+    ChannelShoutoutReceive1Event,
+    ChannelSubscribe1Event,
+    ChannelSubscriptionEnd1Event,
+    ChannelSubscriptionGift1Event,
+    ChannelSubscriptionMessage1Event,
+    ChannelUpdate2Event,
+    ChannelVipAdd1Event,
+    ChannelVipRemove1Event,
+    ChannelBan1Event,
+    ChannelModerate1Event,
+    ChannelModerate2Event,
+    ChannelModeratorAdd1Event,
+    ChannelModeratorRemove1Event,
+    ChannelShieldModeBegin1Event,
+    ChannelShieldModeEnd1Event,
+    ChannelSuspiciousUserMessage1Event,
+    ChannelSuspiciousUserUpdate1Event,
+    ChannelUnban1Event,
+    ChannelUnbanRequestCreate1Event,
+    ChannelUnbanRequestResolve1Event,
+    ChannelWarningAcknowledge1Event,
+    ChannelWarningSend1Event,
+    ChannelChannelPointsAutomaticRewardRedemptionAdd1Event,
+    ChannelChannelPointsAutomaticRewardRedemptionAdd2Event,
+    ChannelChannelPointsCustomRewardRedemptionAdd1Event,
+    ChannelChannelPointsCustomRewardRedemptionUpdate1Event,
+    ChannelChannelPointsCustomRewardAdd1Event,
+    ChannelChannelPointsCustomRewardRemove1Event,
+    ChannelChannelPointsCustomRewardUpdate1Event,
+    ChannelCharityCampaignDonate1Event,
+    ChannelCharityCampaignProgress1Event,
+    ChannelCharityCampaignStart1Event,
+    ChannelCharityCampaignStop1Event,
+    ChannelChatSettingsUpdate1Event,
+    ChannelChatClear1Event,
+    ChannelChatClearUserMessages1Event,
+    ChannelChatNotification1Event,
+    ChannelChatUserMessageHold1Event,
+    ChannelChatUserMessageUpdate1Event,
+    ChannelSharedChatBegin1Event,
+    ChannelSharedChatEnd1Event,
+    ChannelSharedChatUpdate1Event,
+    ConduitShardDisabled1Event,
+    DropEntitlementGrant1Event,
+    ExtensionBitsTransactionCreate1Event,
+    ChannelGoalBegin1Event,
+    ChannelGoalEnd1Event,
+    ChannelGoalProgress1Event,
+    ChannelGuestStarGuestUpdateBetaEvent,
+    ChannelGuestStarSessionBeginBetaEvent,
+    ChannelGuestStarSessionEndBetaEvent,
+    ChannelGuestStarSettingsUpdateBetaEvent,
+    ChannelHypeTrainBegin2Event,
+    ChannelHypeTrainEnd2Event,
+    ChannelHypeTrainProgress2Event,
+    ChannelPollBegin1Event,
+    ChannelPollEnd1Event,
+    ChannelPollProgress1Event,
+    ChannelPredictionBegin1Event,
+    ChannelPredictionEnd1Event,
+    ChannelPredictionLock1Event,
+    ChannelPredictionProgress1Event,
+    StreamOffline1Event,
+    StreamOnline1Event,
+    UserAuthorizationGrant1Event,
+    UserAuthorizationRevoke1Event,
+    UserUpdate1Event,
+    UserWhisperMessage1Event,
+);
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

@@ -11,7 +11,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use crate::index::{DEFAULT_PROVIDER_ORDER, EmoteIndex, EmoteScope};
-use crate::model::{Emote, EmoteProvider, ParseError};
+use crate::model::{Emote, EmoteProvider, EmoteSet, ParseError};
 use crate::{bttv, ffz, proxy, seventv, twitch};
 
 /// How a request reaches a provider.
@@ -130,12 +130,17 @@ enum State {
     Failed,
 }
 
+/// How a set's answer is read: its emotes, and how many of its entries were
+/// left out.
+type Read = fn(&str) -> Result<(Vec<Emote>, usize), ParseError>;
+
 #[derive(Clone, Debug)]
 struct Slot {
     provider: EmoteProvider,
     scope: EmoteScope,
     /// The provider's address.
     url: String,
+    read: Read,
     state: State,
     failures: Vec<String>,
     emotes: Vec<Arc<Emote>>,
@@ -143,59 +148,59 @@ struct Slot {
 }
 
 impl Slot {
-    /// A set at `url`, asked directly unless it needs a token (`direct`).
-    fn new(provider: EmoteProvider, scope: EmoteScope, url: String, direct: bool) -> Self {
-        Self {
-            provider,
+    /// The set of `provider` and `scope`, a channel's being that of Twitch
+    /// user `channel`: where it is, whether it may be asked directly (no
+    /// token needed), and how its answer is read. `None` where there is no
+    /// such set, or no address for it.
+    fn of(provider: &EmoteProvider, scope: EmoteScope, channel: &str) -> Option<Self> {
+        use EmoteProvider::{BetterTtv, FrankerFaceZ, SevenTv, Twitch};
+        use EmoteScope::{Channel, Global};
+
+        fn whole(set: EmoteSet) -> (Vec<Emote>, usize) {
+            (set.emotes, set.skipped)
+        }
+        let (url, direct, read): (String, bool, Read) = match (provider, scope) {
+            (Twitch, Global) => (twitch::GLOBAL_EMOTES_URL.to_string(), false, |body| {
+                Ok(whole(twitch::parse_emotes(body)?))
+            }),
+            (SevenTv, Channel) => (seventv::user_url(channel)?, true, |body| {
+                Ok(whole(
+                    seventv::parse_user(body)?.emote_set.unwrap_or_default(),
+                ))
+            }),
+            (SevenTv, Global) => (seventv::GLOBAL_SET_URL.to_string(), true, |body| {
+                Ok(whole(seventv::parse_emote_set(body)?))
+            }),
+            (BetterTtv, Channel) => (bttv::channel_url(channel)?, true, |body| {
+                let channel = bttv::parse_channel(body)?;
+                let skipped = channel.skipped();
+                Ok((channel.into_emotes(), skipped))
+            }),
+            (BetterTtv, Global) => (bttv::GLOBAL_URL.to_string(), true, |body| {
+                Ok(whole(bttv::parse_global(body)?))
+            }),
+            (FrankerFaceZ, Channel) => (ffz::room_url(channel)?, true, |body| {
+                let room = ffz::parse_room(body)?;
+                let skipped = room.skipped();
+                Ok((room.into_emotes(), skipped))
+            }),
+            (FrankerFaceZ, Global) => (ffz::GLOBAL_URL.to_string(), true, |body| {
+                let global = ffz::parse_global(body)?;
+                Ok((global.default_emotes(), global.skipped()))
+            }),
+            _ => return None,
+        };
+        Some(Self {
+            provider: provider.clone(),
             scope,
             url,
+            read,
             state: State::Waiting(if direct { Via::Direct } else { Via::Proxy }),
             failures: Vec::new(),
             emotes: Vec::new(),
             skipped: 0,
-        }
+        })
     }
-}
-
-/// The emotes of an answer and how many of its entries were left out.
-fn parse(
-    provider: &EmoteProvider,
-    scope: EmoteScope,
-    body: &str,
-) -> Result<(Vec<Emote>, usize), ParseError> {
-    Ok(match (provider, scope) {
-        (EmoteProvider::Twitch, EmoteScope::Global) => {
-            let set = twitch::parse_emotes(body)?;
-            (set.emotes, set.skipped)
-        }
-        (EmoteProvider::SevenTv, EmoteScope::Channel) => {
-            let set = seventv::parse_user(body)?.emote_set.unwrap_or_default();
-            (set.emotes, set.skipped)
-        }
-        (EmoteProvider::SevenTv, EmoteScope::Global) => {
-            let set = seventv::parse_emote_set(body)?;
-            (set.emotes, set.skipped)
-        }
-        (EmoteProvider::BetterTtv, EmoteScope::Channel) => {
-            let channel = bttv::parse_channel(body)?;
-            let skipped = channel.skipped();
-            (channel.into_emotes(), skipped)
-        }
-        (EmoteProvider::BetterTtv, EmoteScope::Global) => {
-            let set = bttv::parse_global(body)?;
-            (set.emotes, set.skipped)
-        }
-        (EmoteProvider::FrankerFaceZ, EmoteScope::Channel) => {
-            let room = ffz::parse_room(body)?;
-            let skipped = room.skipped();
-            (room.into_emotes(), skipped)
-        }
-        (EmoteProvider::FrankerFaceZ, EmoteScope::Global) => {
-            let global = ffz::parse_global(body)?;
-            (global.default_emotes(), global.skipped())
-        }
-        _ => return Err(ParseError::Shape("no such set to read")),
-    })
 }
 
 /// The emote sets of one chat, read through requests the caller makes.
@@ -230,18 +235,12 @@ impl SetLoader {
     /// ([`is_plain_id`](crate::is_plain_id)).
     pub fn for_channel(twitch_user_id: &str) -> Self {
         let mut loader = Self::default();
-        for provider in DEFAULT_PROVIDER_ORDER {
-            let channel = match provider {
-                EmoteProvider::SevenTv => seventv::user_url(twitch_user_id),
-                EmoteProvider::BetterTtv => bttv::channel_url(twitch_user_id),
-                _ => ffz::room_url(twitch_user_id),
-            };
-            if let Some(url) = channel {
+        for provider in &DEFAULT_PROVIDER_ORDER {
+            for scope in [EmoteScope::Channel, EmoteScope::Global] {
                 loader
                     .slots
-                    .push(Slot::new(provider.clone(), EmoteScope::Channel, url, true));
+                    .extend(Slot::of(provider, scope, twitch_user_id));
             }
-            loader.push_global(provider);
         }
         loader
     }
@@ -249,26 +248,12 @@ impl SetLoader {
     /// 7TV's, BetterTTV's and FrankerFaceZ's global sets alone.
     pub fn for_globals() -> Self {
         let mut loader = Self::default();
-        for provider in DEFAULT_PROVIDER_ORDER {
-            loader.push_global(provider);
+        for provider in &DEFAULT_PROVIDER_ORDER {
+            loader
+                .slots
+                .extend(Slot::of(provider, EmoteScope::Global, ""));
         }
         loader
-    }
-
-    fn push_global(&mut self, provider: EmoteProvider) {
-        let (url, direct) = match provider {
-            EmoteProvider::Twitch => (twitch::GLOBAL_EMOTES_URL, false),
-            EmoteProvider::SevenTv => (seventv::GLOBAL_SET_URL, true),
-            EmoteProvider::BetterTtv => (bttv::GLOBAL_URL, true),
-            EmoteProvider::FrankerFaceZ => (ffz::GLOBAL_URL, true),
-            EmoteProvider::Other(_) => return,
-        };
-        self.slots.push(Slot::new(
-            provider,
-            EmoteScope::Global,
-            url.to_string(),
-            direct,
-        ));
     }
 
     /// Also reads Twitch's global emotes, first of all. Helix needs a token,
@@ -278,10 +263,8 @@ impl SetLoader {
     /// A real chat does not need them: its messages name their Twitch emotes.
     /// They are for showing emotes outside a message, a picker or a demo.
     pub fn with_twitch_globals(mut self) -> Self {
-        let mut twitch = Self::default();
-        twitch.push_global(EmoteProvider::Twitch);
-        twitch.slots.append(&mut self.slots);
-        self.slots = twitch.slots;
+        let twitch = Slot::of(&EmoteProvider::Twitch, EmoteScope::Global, "");
+        self.slots.splice(0..0, twitch);
         self
     }
 
@@ -359,20 +342,25 @@ impl SetLoader {
         if slot.state != State::Asked(via) {
             return false;
         }
-        let read = answer
-            .map_err(|error| (error.to_string(), error))
-            .and_then(|body| {
-                let unreadable = |why: String| (why.clone(), LoadError::Failed(why));
-                let (emotes, skipped) = parse(&slot.provider, slot.scope, body)
-                    .map_err(|error| unreadable(error.to_string()))?;
-                if emotes.is_empty() && slot.scope == EmoteScope::Global {
-                    return Err(unreadable(format!(
+        let read = match answer {
+            Err(error @ LoadError::Status(404)) if slot.scope == EmoteScope::Channel => {
+                slot.failures
+                    .push(format!("the channel has no set ({error})"));
+                slot.state = State::NoSet;
+                return false;
+            }
+            Err(error) => Err(error.to_string()),
+            Ok(body) => match (slot.read)(body) {
+                Err(error) => Err(error.to_string()),
+                Ok((emotes, skipped)) if emotes.is_empty() && slot.scope == EmoteScope::Global => {
+                    Err(format!(
                         "no emote in {} bytes ({skipped} entries skipped)",
                         body.len()
-                    )));
+                    ))
                 }
-                Ok((emotes, skipped))
-            });
+                Ok(read) => Ok(read),
+            },
+        };
         match read {
             Ok((emotes, skipped)) => {
                 slot.emotes = emotes.into_iter().map(Arc::new).collect();
@@ -381,13 +369,7 @@ impl SetLoader {
                 self.version += 1;
                 true
             }
-            Err((why, LoadError::Status(404))) if slot.scope == EmoteScope::Channel => {
-                slot.failures
-                    .push(format!("the channel has no set ({why})"));
-                slot.state = State::NoSet;
-                false
-            }
-            Err((why, _)) => {
+            Err(why) => {
                 let way = match via {
                     Via::Direct => "directly",
                     Via::Proxy => "through the proxy",

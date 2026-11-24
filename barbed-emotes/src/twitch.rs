@@ -10,15 +10,19 @@
 //! own server; [`parse_emotes`] reads all three.
 
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::value::RawValue;
 
 use crate::model::{
     Emote, EmoteId, EmoteImage, EmoteProvider, EmoteSet, ImageFormat, ParseError, Theme,
 };
-use crate::safe::{https, is_plain_id};
+use crate::safe::is_plain_id;
+use crate::wire::read_set;
 
 /// The host Twitch's emote images are on.
 pub const IMAGE_HOST: &str = "static-cdn.jtvnw.net";
+
+/// Where Helix is, without the scheme.
+pub(crate) const API_HOST: &str = "api.twitch.tv/helix";
 
 /// Helix's Get Global Emotes. It needs an app or a user token.
 pub const GLOBAL_EMOTES_URL: &str = "https://api.twitch.tv/helix/chat/emotes/global";
@@ -26,33 +30,57 @@ pub const GLOBAL_EMOTES_URL: &str = "https://api.twitch.tv/helix/chat/emotes/glo
 /// The size steps Twitch serves: `1.0`, `2.0` and `3.0`.
 pub const SCALES: [u8; 3] = [1, 2, 3];
 
-/// The address of emote `id`'s image: its still PNG, or its animated GIF.
-/// `None` for an id of another shape than Twitch's
-/// ([`is_plain_id`]) or a scale Twitch does not serve.
-pub fn image_url(id: &str, animated: bool, theme: Theme, scale: u8) -> Option<String> {
-    if !is_plain_id(id) || !SCALES.contains(&scale) {
-        return None;
-    }
-    let format = if animated { "animated" } else { "static" };
-    Some(https(
-        IMAGE_HOST,
-        &format!("/emoticons/v2/{id}/{format}/{}/{scale}.0", theme.as_str()),
-    ))
+const FORMATS: [&str; 2] = ["static", "animated"];
+const THEMES: [&str; 2] = ["dark", "light"];
+const SCALE_NAMES: [&str; 3] = ["1.0", "2.0", "3.0"];
+
+/// Whether the segments of a path on [`IMAGE_HOST`] are an emote image of
+/// the template: `emoticons/v2/<id>/<format>/<theme>/<scale>`.
+pub(crate) fn is_image_path(path: &[&str]) -> bool {
+    matches!(path, ["emoticons", "v2", id, format, theme, scale]
+        if is_plain_id(id)
+            && FORMATS.contains(format)
+            && THEMES.contains(theme)
+            && SCALE_NAMES.contains(scale))
 }
 
-/// Emote `id`'s image ([`image_url`]) with what is known of it.
-pub fn image(id: &str, animated: bool, theme: Theme, scale: u8) -> Option<EmoteImage> {
+/// Whether the segments of a path under [`API_HOST`] are an emote list the
+/// proxy asks Helix for: Get Global Emotes alone.
+pub(crate) fn is_api_path(path: &[&str]) -> bool {
+    path == ["chat", "emotes", "global"]
+}
+
+/// The address of the image of an emote whose id is known to be plain.
+fn template(id: &str, animated: bool, theme: Theme, scale: u8) -> String {
+    let format = FORMATS[usize::from(animated)];
+    format!(
+        "https://{IMAGE_HOST}/emoticons/v2/{id}/{format}/{}/{scale}.0",
+        theme.as_str()
+    )
+}
+
+fn template_image(id: &str, animated: bool, theme: Theme, scale: u8) -> EmoteImage {
     let format = if animated {
         ImageFormat::Gif
     } else {
         ImageFormat::Png
     };
-    Some(
-        EmoteImage::new(image_url(id, animated, theme, scale)?, scale)
-            .animated(animated)
-            .with_format(format)
-            .with_theme(theme),
-    )
+    EmoteImage::new(template(id, animated, theme, scale), scale)
+        .animated(animated)
+        .with_format(format)
+        .with_theme(theme)
+}
+
+/// The address of emote `id`'s image: its still PNG, or its animated GIF.
+/// `None` for an id of another shape than Twitch's ([`is_plain_id`]) or a
+/// scale Twitch does not serve.
+pub fn image_url(id: &str, animated: bool, theme: Theme, scale: u8) -> Option<String> {
+    (is_plain_id(id) && SCALES.contains(&scale)).then(|| template(id, animated, theme, scale))
+}
+
+/// Emote `id`'s image ([`image_url`]) with what is known of it.
+pub fn image(id: &str, animated: bool, theme: Theme, scale: u8) -> Option<EmoteImage> {
+    (is_plain_id(id) && SCALES.contains(&scale)).then(|| template_image(id, animated, theme, scale))
 }
 
 /// Twitch emote `id`, written `code`, with every image the template serves:
@@ -70,14 +98,15 @@ pub fn emote_with(
     themes: &[Theme],
     scales: &[u8],
 ) -> Option<Emote> {
-    let mut images = Vec::new();
-    for moving in [true, false] {
-        if moving && !animated {
-            continue;
-        }
+    if !is_plain_id(id) {
+        return None;
+    }
+    let motions: &[bool] = if animated { &[true, false] } else { &[false] };
+    let mut images = Vec::with_capacity(motions.len() * themes.len() * scales.len());
+    for moving in motions {
         for theme in themes {
-            for scale in scales {
-                images.extend(image(id, moving, *theme, *scale));
+            for scale in scales.iter().filter(|scale| SCALES.contains(scale)) {
+                images.push(template_image(id, *moving, *theme, *scale));
             }
         }
     }
@@ -114,10 +143,11 @@ pub fn emote_from_lists<S: AsRef<str>>(
     let scales: Vec<u8> = scale
         .iter()
         .filter_map(|scale| {
-            let scale = scale.as_ref();
-            scale.strip_suffix(".0").unwrap_or(scale).parse().ok()
+            let at = SCALE_NAMES
+                .iter()
+                .position(|name| *name == scale.as_ref())?;
+            Some(SCALES[at])
         })
-        .filter(|scale| SCALES.contains(scale))
         .collect();
     emote_with(
         id,
@@ -133,8 +163,9 @@ pub fn emote_from_lists<S: AsRef<str>>(
 }
 
 #[derive(Deserialize)]
-struct WireList {
-    data: Vec<Value>,
+struct WireList<'a> {
+    #[serde(borrow)]
+    data: Vec<&'a RawValue>,
 }
 
 #[derive(Deserialize)]
@@ -149,8 +180,7 @@ struct WireEmote {
     theme_mode: Vec<String>,
 }
 
-fn emote_from_wire(value: Value) -> Option<Emote> {
-    let wire: WireEmote = serde_json::from_value(value).ok()?;
+fn emote_from_wire(wire: WireEmote) -> Option<Emote> {
     if wire.name.is_empty() {
         return None;
     }
@@ -168,15 +198,8 @@ fn emote_from_wire(value: Value) -> Option<Emote> {
 /// …}], "template"}`). The images are built from each emote's id, as the
 /// `template` Twitch documents does, never taken from the answer.
 pub fn parse_emotes(body: &str) -> Result<EmoteSet, ParseError> {
-    let list: WireList = serde_json::from_str(body)?;
-    let mut set = EmoteSet::default();
-    for value in list.data {
-        match emote_from_wire(value) {
-            Some(emote) => set.emotes.push(emote),
-            None => set.skipped += 1,
-        }
-    }
-    Ok(set)
+    let list: WireList<'_> = serde_json::from_str(body)?;
+    Ok(read_set(None, None, list.data, emote_from_wire))
 }
 
 #[cfg(test)]

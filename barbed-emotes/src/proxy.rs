@@ -13,7 +13,7 @@
 //!
 //! Only the shapes this crate itself produces pass: the four providers'
 //! image files and their emote set endpoints, every id of one plain shape
-//! ([`is_plain_id`]). A route cannot name a host, a
+//! ([`is_plain_id`](crate::is_plain_id)). A route cannot name a host, a
 //! query, or a path outside those shapes.
 //!
 //! | Route | Upstream |
@@ -28,7 +28,7 @@
 //! | `ffz-api/v1/room/id/<id>`, `ffz-api/v1/set/global` | `api.frankerfacez.com` |
 
 use crate::model::EmoteProvider;
-use crate::safe::is_plain_id;
+use crate::{bttv, ffz, seventv, twitch};
 
 /// What a route's answer is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -79,81 +79,105 @@ impl Upstream {
     }
 }
 
-fn one_of(value: &str, list: &[&str]) -> bool {
-    list.contains(&value)
+/// One kind of address the proxy carries: a route name, the host it stands
+/// for, and which paths on that host it admits. The paths' shapes are each
+/// provider module's own, the same its parser builds its addresses to.
+struct Carried {
+    name: &'static str,
+    provider: EmoteProvider,
+    kind: UpstreamKind,
+    auth: UpstreamAuth,
+    /// The host, with a path before the route's where there is one.
+    host: &'static str,
+    admits: fn(&[&str]) -> bool,
 }
 
-/// Whether `file` is a 7TV image file: `<1-4>x[_static].<format>`.
-fn seventv_file(file: &str) -> bool {
-    let Some((stem, extension)) = file.split_once('.') else {
-        return false;
-    };
-    let stem = stem.strip_suffix("_static").unwrap_or(stem);
-    one_of(stem, &["1x", "2x", "3x", "4x"]) && one_of(extension, &["webp", "avif", "gif", "png"])
+const fn images(
+    name: &'static str,
+    provider: EmoteProvider,
+    host: &'static str,
+    admits: fn(&[&str]) -> bool,
+) -> Carried {
+    Carried {
+        name,
+        provider,
+        kind: UpstreamKind::Image,
+        auth: UpstreamAuth::None,
+        host,
+        admits,
+    }
 }
+
+const fn sets(
+    name: &'static str,
+    provider: EmoteProvider,
+    auth: UpstreamAuth,
+    host: &'static str,
+    admits: fn(&[&str]) -> bool,
+) -> Carried {
+    Carried {
+        name,
+        provider,
+        kind: UpstreamKind::Json,
+        auth,
+        host,
+        admits,
+    }
+}
+
+/// Everything the proxy carries. [`upstream`] reads it by name, [`route`]
+/// by host.
+static CARRIED: [Carried; 8] = {
+    use EmoteProvider::{BetterTtv, FrankerFaceZ, SevenTv, Twitch};
+    use UpstreamAuth::{None, TwitchApp};
+    [
+        images("twitch", Twitch, twitch::IMAGE_HOST, twitch::is_image_path),
+        sets(
+            "twitch-api",
+            Twitch,
+            TwitchApp,
+            twitch::API_HOST,
+            twitch::is_api_path,
+        ),
+        images("7tv", SevenTv, seventv::IMAGE_HOST, seventv::is_image_path),
+        sets(
+            "7tv-api",
+            SevenTv,
+            None,
+            seventv::API_HOST,
+            seventv::is_api_path,
+        ),
+        images("bttv", BetterTtv, bttv::IMAGE_HOST, bttv::is_image_path),
+        sets(
+            "bttv-api",
+            BetterTtv,
+            None,
+            bttv::API_HOST,
+            bttv::is_api_path,
+        ),
+        images("ffz", FrankerFaceZ, ffz::IMAGE_HOST, ffz::is_image_path),
+        sets(
+            "ffz-api",
+            FrankerFaceZ,
+            None,
+            ffz::API_HOST,
+            ffz::is_api_path,
+        ),
+    ]
+};
 
 /// The address `route` (`<name>/<path>`, no leading `/`) stands for, or
 /// `None` where it is not one of the shapes of this module's table. This is
 /// the server's whole check of a request.
 pub fn upstream(route: &str) -> Option<Upstream> {
-    use EmoteProvider::{BetterTtv, FrankerFaceZ, SevenTv, Twitch};
-    use UpstreamKind::{Image, Json};
-
     let (name, path) = route.split_once('/')?;
-    let parts: Vec<&str> = path.split('/').collect();
-    let (provider, kind, auth, host) = match name {
-        "twitch" => (Twitch, Image, UpstreamAuth::None, "static-cdn.jtvnw.net"),
-        "twitch-api" => (Twitch, Json, UpstreamAuth::TwitchApp, "api.twitch.tv/helix"),
-        "7tv" => (SevenTv, Image, UpstreamAuth::None, "cdn.7tv.app"),
-        "7tv-api" => (SevenTv, Json, UpstreamAuth::None, "7tv.io"),
-        "bttv" => (BetterTtv, Image, UpstreamAuth::None, "cdn.betterttv.net"),
-        "bttv-api" => (BetterTtv, Json, UpstreamAuth::None, "api.betterttv.net"),
-        "ffz" => (
-            FrankerFaceZ,
-            Image,
-            UpstreamAuth::None,
-            "cdn.frankerfacez.com",
-        ),
-        "ffz-api" => (
-            FrankerFaceZ,
-            Json,
-            UpstreamAuth::None,
-            "api.frankerfacez.com",
-        ),
-        _ => return None,
-    };
-    let known = match (name, parts.as_slice()) {
-        ("twitch", ["emoticons", "v2", id, format, theme, scale]) => {
-            is_plain_id(id)
-                && one_of(format, &["static", "animated"])
-                && one_of(theme, &["dark", "light"])
-                && one_of(scale, &["1.0", "2.0", "3.0"])
-        }
-        ("twitch-api", ["chat", "emotes", "global"]) => true,
-        ("7tv", ["emote", id, file]) => is_plain_id(id) && seventv_file(file),
-        ("7tv-api", ["v3", "users", "twitch", id]) => is_plain_id(id),
-        ("7tv-api", ["v3", "emote-sets", id]) => is_plain_id(id),
-        ("bttv", ["emote", id, size]) => {
-            is_plain_id(id) && one_of(size, &["1x", "2x", "3x", "1x.webp", "2x.webp", "3x.webp"])
-        }
-        ("bttv", ["emote", id, "static", size]) => {
-            is_plain_id(id) && one_of(size, &["1x.webp", "2x.webp", "3x.webp"])
-        }
-        ("bttv-api", ["3", "cached", "users", "twitch", id]) => is_plain_id(id),
-        ("bttv-api", ["3", "cached", "emotes", "global"]) => true,
-        ("ffz", ["emote", id, size]) => is_plain_id(id) && one_of(size, &["1", "2", "4"]),
-        ("ffz", ["emote", id, "animated", size]) => {
-            is_plain_id(id) && one_of(size, &["1", "2", "4"])
-        }
-        ("ffz-api", ["v1", "room", "id", id]) => is_plain_id(id),
-        ("ffz-api", ["v1", "set", "global"]) => true,
-        _ => false,
-    };
-    known.then(|| Upstream {
-        url: format!("https://{host}/{path}"),
-        provider,
-        kind,
-        auth,
+    let carried = CARRIED.iter().find(|carried| carried.name == name)?;
+    let segments: Vec<&str> = path.split('/').collect();
+    (carried.admits)(&segments).then(|| Upstream {
+        url: format!("https://{}/{path}", carried.host),
+        provider: carried.provider.clone(),
+        kind: carried.kind,
+        auth: carried.auth,
     })
 }
 
@@ -162,20 +186,11 @@ pub fn upstream(route: &str) -> Option<Upstream> {
 /// returns, `upstream(route)` gives `url` back.
 pub fn route(url: &str) -> Option<String> {
     let rest = url.strip_prefix("https://")?;
-    let (host, path) = rest.split_once('/')?;
-    let (name, path) = match host {
-        "static-cdn.jtvnw.net" => ("twitch", path),
-        "api.twitch.tv" => ("twitch-api", path.strip_prefix("helix/")?),
-        "cdn.7tv.app" => ("7tv", path),
-        "7tv.io" => ("7tv-api", path),
-        "cdn.betterttv.net" => ("bttv", path),
-        "api.betterttv.net" => ("bttv-api", path),
-        "cdn.frankerfacez.com" => ("ffz", path),
-        "api.frankerfacez.com" => ("ffz-api", path),
-        _ => return None,
-    };
-    let route = format!("{name}/{path}");
-    (upstream(&route)?.url == url).then_some(route)
+    CARRIED.iter().find_map(|carried| {
+        let path = rest.strip_prefix(carried.host)?.strip_prefix('/')?;
+        let segments: Vec<&str> = path.split('/').collect();
+        (carried.admits)(&segments).then(|| format!("{}/{path}", carried.name))
+    })
 }
 
 /// `url` as asked through a proxy mounted at `base`

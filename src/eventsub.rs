@@ -397,12 +397,22 @@ impl EventSubChatMessageText {
         if self.fragments.is_empty() {
             tokenizer.text(&self.text);
         }
+        // The message's Twitch emotes by id: one written many times (as
+        // emotes often are) is built once.
+        let mut seen: Vec<(&str, Arc<Emote>)> = Vec::new();
         for fragment in &self.fragments {
             let emote = fragment
                 .emote
                 .as_ref()
                 .filter(|_| fragment.fragment_type == EventSubMessageFragmentType::Emote)
-                .and_then(|emote| emote.to_emote(fragment.text.as_str()));
+                .and_then(|wire| {
+                    if let Some((_, had)) = seen.iter().find(|(id, _)| *id == wire.id) {
+                        return Some(Arc::clone(had));
+                    }
+                    let emote = Arc::new(wire.to_emote(fragment.text.as_str())?);
+                    seen.push((&wire.id, Arc::clone(&emote)));
+                    Some(emote)
+                });
             match (&fragment.fragment_type, emote) {
                 (_, Some(emote)) => tokenizer.emote(emote, &fragment.text),
                 (EventSubMessageFragmentType::Text, None) => tokenizer.text(&fragment.text),
@@ -544,6 +554,21 @@ trait HasSourceTimestamp {
     fn set_source_timestamp(&mut self, ts: Option<OffsetDateTime>);
 }
 
+/// Implements [`HasSourceTimestamp`] for payload structs, each of which has a
+/// `source_timestamp` field. The generated module names its own structs.
+macro_rules! impl_source_timestamp {
+    ($($payload:ty),+ $(,)?) => {$(
+        impl $crate::eventsub::HasSourceTimestamp for $payload {
+            fn set_source_timestamp(&mut self, ts: Option<time::OffsetDateTime>) {
+                self.source_timestamp = ts;
+            }
+        }
+    )+};
+}
+use impl_source_timestamp;
+
+impl_source_timestamp!(EventSubChatMessage, EventSubChatMessageDeleted);
+
 /// Treats an explicit JSON `null` like an absent field; EventSub payloads use
 /// `null` liberally for optional values.
 pub(crate) fn null_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
@@ -552,18 +577,6 @@ where
     T: Deserialize<'de> + Default,
 {
     Ok(Option::<T>::deserialize(deserializer)?.unwrap_or_default())
-}
-
-impl HasSourceTimestamp for EventSubChatMessage {
-    fn set_source_timestamp(&mut self, ts: Option<OffsetDateTime>) {
-        self.source_timestamp = ts;
-    }
-}
-
-impl HasSourceTimestamp for EventSubChatMessageDeleted {
-    fn set_source_timestamp(&mut self, ts: Option<OffsetDateTime>) {
-        self.source_timestamp = ts;
-    }
 }
 
 impl EventSubWebSocketEnvelope {
@@ -1076,6 +1089,21 @@ mod tests {
         // A mention and a cheermote are never emotes.
         assert_eq!(pieces[4].as_text(), Some(" @catJAM Cheer100"));
         assert_eq!(pieces[4].range(), 24..message.text.len());
+
+        // The same Twitch emote twice is one emote, shared.
+        let twice: EventSubChatMessageText = serde_json::from_value(serde_json::json!({
+            "text": "Kappa Kappa",
+            "fragments": [
+                {"type": "emote", "text": "Kappa", "emote": {"id": "25", "format": ["static"]}},
+                {"type": "text", "text": " "},
+                {"type": "emote", "text": "Kappa", "emote": {"id": "25", "format": ["static"]}}
+            ]
+        }))
+        .expect("a message");
+        let pieces = twice.tokenize(&index);
+        let first = pieces[0].as_emote().expect("an emote");
+        let second = pieces[2].as_emote().expect("an emote");
+        assert!(Arc::ptr_eq(&first.emote, &second.emote));
 
         // A message without fragments: its text.
         let bare = EventSubChatMessageText {

@@ -218,10 +218,10 @@ pub fn pick_image<'a>(
         Some(format) => request.formats.iter().position(|f| *f == format),
     };
     let moving = request.animated && images.iter().any(|image| image.animated);
+    // The best key wins, and of equal ones the image listed first.
     images
         .iter()
-        .enumerate()
-        .filter_map(|(at, image)| {
+        .filter_map(|image| {
             let format = format_rank(image)?;
             let scale = match image.scale.cmp(&request.scale) {
                 std::cmp::Ordering::Equal => (0, 0),
@@ -233,7 +233,6 @@ pub fn pick_image<'a>(
                 image.theme.is_some_and(|theme| theme != request.theme),
                 scale,
                 format,
-                at,
             );
             Some((key, image))
         })

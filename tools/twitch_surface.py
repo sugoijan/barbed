@@ -8,6 +8,8 @@ import html
 import json
 import pathlib
 import re
+import shutil
+import subprocess
 import sys
 import urllib.request
 from typing import Any
@@ -26,13 +28,13 @@ FETCH_USER_AGENT = "Mozilla/5.0 (compatible; docs-catalog-sync)"
 SOURCE_URLS = {
     "helix_reference": DOCS_ORIGIN + REFERENCE_PATHS["helix"],
     "eventsub_reference": DOCS_ORIGIN + REFERENCE_PATHS["eventsub"],
-    "oauth_tokens": "https://dev.twitch.tv/docs/authentication/getting-tokens-oauth",
-    "oauth_oidc": "https://dev.twitch.tv/docs/authentication/getting-tokens-oidc",
-    "oauth_validate": "https://dev.twitch.tv/docs/authentication/validate-tokens",
-    "oauth_revoke": "https://dev.twitch.tv/docs/authentication/revoke-tokens",
-    "eventsub_webhooks": "https://dev.twitch.tv/docs/eventsub/handling-webhook-events/",
-    "changelog": "https://dev.twitch.tv/docs/change-log",
-    "product_lifecycle": "https://dev.twitch.tv/docs/change-log/product-lifecycle",
+    "oauth_tokens": DOCS_ORIGIN + "/docs/authentication/getting-tokens-oauth",
+    "oauth_oidc": DOCS_ORIGIN + "/docs/authentication/getting-tokens-oidc",
+    "oauth_validate": DOCS_ORIGIN + "/docs/authentication/validate-tokens",
+    "oauth_revoke": DOCS_ORIGIN + "/docs/authentication/revoke-tokens",
+    "eventsub_webhooks": DOCS_ORIGIN + "/docs/eventsub/handling-webhook-events/",
+    "changelog": DOCS_ORIGIN + "/docs/change-log",
+    "product_lifecycle": DOCS_ORIGIN + "/docs/change-log/product-lifecycle",
 }
 
 
@@ -337,29 +339,11 @@ class ReferencePages:
             ) from None
 
 
-# Documented types that cannot have nested child fields.
-SCALAR_RESPONSE_TYPES = {
-    "string",
-    "integer",
-    "int64",
-    "unsigned integer",
-    "float",
-    "boolean",
-    "string[]",
-    "integer[]",
-}
-
-
-def response_type_can_nest(type_str: str) -> bool:
-    return type_str.strip().lower() not in SCALAR_RESPONSE_TYPES
-
-
 # EventSub reference docs use a looser type vocabulary than Helix; lookup is on
 # the lowercased raw cell so the catalog stores canonical type names.
 EVENTSUB_TYPE_ALIASES = {
     "str": "string",
     "int": "integer",
-    "int (or null)": "integer",
     "bool": "boolean",
     "[]string": "string[]",
 }
@@ -475,7 +459,7 @@ def parse_field_list(
             parent_type = parent["type"]
             # The docs occasionally type a parent as a scalar; the nesting is
             # explicit, so the parent is what gets corrected.
-            if not response_type_can_nest(parent_type) or parent_type.lower() == "array":
+            if parent_type.lower() in PRIMITIVE_RESPONSE_TYPES:
                 is_array = parent_type.endswith("[]") or parent_type.lower() == "array"
                 retyped = "Object[]" if is_array else "Object"
                 if normalize is not None:
@@ -766,7 +750,6 @@ RUST_KEYWORDS = {
 }
 MAP_RESPONSE_TYPES = {
     "map[string]string": "std::collections::BTreeMap<String, String>",
-    "map[string,string]": "std::collections::BTreeMap<String, String>",
     "map[string]object": "std::collections::BTreeMap<String, serde_json::Value>",
     "dictionary": "std::collections::BTreeMap<String, serde_json::Value>",
 }
@@ -774,7 +757,6 @@ PRIMITIVE_RESPONSE_TYPES = {
     "string": "String",
     "integer": "i64",
     "int64": "i64",
-    "unsigned integer": "i64",
     "float": "f64",
     "boolean": "bool",
     "string[]": "Vec<String>",
@@ -836,14 +818,19 @@ def render_struct_tree(
     *,
     indent: str,
     derives: str,
-    field_attr: Any,
-    special_field: Any = None,
+    null_default: str,
+    type_override: Any = None,
     child_namer: Any = None,
-    ref_struct: Any = None,
     root_extra_lines: tuple[str, ...] = (),
     is_root: bool = True,
 ) -> None:
     """Renders one struct and, depth-first, the nested structs its fields need.
+
+    `null_default` is the path of the `null_default` deserializer as the
+    rendered module reaches it. `type_override(field, is_root)` may name a
+    field's Rust type outright (a shared or hand-written struct), and
+    `child_namer(field, is_root)` the `(struct, prefix of its own children)`
+    of a nested object; either returns `None` for the default.
 
     Raises ResponseRenderError when the documented shape cannot be expressed.
     """
@@ -864,19 +851,15 @@ def render_struct_tree(
             raise ResponseRenderError(f"duplicate field `{ident}` in `{struct_name}`")
         seen_idents.add(ident)
         lowered = field["type"].strip().lower()
-        rust_type = special_field(field, is_root) if special_field is not None else None
-        if rust_type is None and ref_struct is not None:
-            rust_type = ref_struct(field)
+        rust_type = type_override(field, is_root) if type_override is not None else None
         if rust_type is None:
             child_struct = None
             if field.get("children") and lowered not in MAP_RESPONSE_TYPES:
-                if child_namer is not None:
-                    child_struct, grandchild_prefix = child_namer(
-                        field, is_root, child_prefix
-                    )
-                else:
+                named = child_namer(field, is_root) if child_namer is not None else None
+                if named is None:
                     child_struct = f"{child_prefix}{camel_case(name)}"
-                    grandchild_prefix = child_struct
+                    named = (child_struct, child_struct)
+                child_struct, grandchild_prefix = named
                 field_doc = doc_sentence(field["description"]) or f"`{name}` object."
                 pending.append(
                     (child_struct, grandchild_prefix, field["children"], field_doc)
@@ -885,8 +868,13 @@ def render_struct_tree(
         description = doc_sentence(field["description"])
         if description:
             lines.append(f"{indent}    /// {description}")
-        for attr in field_attr(field, rename):
-            lines.append(f"{indent}    {attr}")
+        # `null` decodes as the default value. The docs flag only some of the
+        # fields they describe as null (`nullable` in the catalog), so every
+        # field tolerates it rather than failing the whole body.
+        serde_args = ["default", f'deserialize_with = "{null_default}"']
+        if rename is not None:
+            serde_args.append(f"rename = {rust_string(rename)}")
+        lines.append(f"{indent}    #[serde({', '.join(serde_args)})]")
         lines.append(f"{indent}    pub {ident}: {rust_type},")
     if is_root:
         for line in root_extra_lines:
@@ -905,10 +893,9 @@ def render_struct_tree(
             child_doc,
             indent=indent,
             derives=derives,
-            field_attr=field_attr,
-            special_field=special_field,
+            null_default=null_default,
+            type_override=type_override,
             child_namer=child_namer,
-            ref_struct=ref_struct,
             is_root=False,
         )
 
@@ -932,16 +919,6 @@ def render_parse_impl(response_name: str, expected_status: int, body: list[str])
     ]
 
 
-def helix_field_attr(field: dict[str, Any], rename: str | None) -> list[str]:
-    # `null` decodes as the default value, as for EventSub payloads. The docs
-    # flag only some of the fields they describe as null (`nullable` in the
-    # catalog), so every field tolerates it rather than failing the response.
-    args = ["default", 'deserialize_with = "crate::eventsub::null_default"']
-    if rename is not None:
-        args.append(f"rename = {rust_string(rename)}")
-    return [f"#[serde({', '.join(args)})]"]
-
-
 def render_response_types(endpoint: dict[str, Any]) -> list[str]:
     """Renders the typed response structs for one endpoint.
 
@@ -952,18 +929,15 @@ def render_response_types(endpoint: dict[str, Any]) -> list[str]:
     response_name = response_struct_name(endpoint)
     rendered: list[str] = []
 
-    def special_field(field: dict[str, Any], is_root: bool) -> str | None:
+    def type_override(field: dict[str, Any], is_root: bool) -> str | None:
         if is_root and field["name"] == "pagination":
             return "crate::helix::HelixPagination"
         return None
 
-    def child_namer(
-        field: dict[str, Any], is_root: bool, child_prefix: str
-    ) -> tuple[str, str]:
+    def child_namer(field: dict[str, Any], is_root: bool) -> tuple[str, str] | None:
         if is_root and field["name"] == "data":
             return f"{base}Item", base
-        child_struct = f"{child_prefix}{camel_case(field['name'])}"
-        return child_struct, child_struct
+        return None
 
     render_struct_tree(
         rendered,
@@ -974,8 +948,8 @@ def render_response_types(endpoint: dict[str, Any]) -> list[str]:
         f"Response body for the \"{endpoint['name']}\" endpoint.",
         indent="    ",
         derives="Clone, Debug, Default, PartialEq, serde::Deserialize",
-        field_attr=helix_field_attr,
-        special_field=special_field,
+        null_default="crate::eventsub::null_default",
+        type_override=type_override,
         child_namer=child_namer,
     )
 
@@ -1041,10 +1015,9 @@ def render_helix_rust(helix: dict[str, Any]) -> str:
         out.append("    use super::*;")
         out.append("")
         for endpoint in endpoints:
-            const_name = snake_case(endpoint["id"]).upper()
+            const_name = endpoint["id"].upper()
             request_name = camel_case(endpoint["name"]) + "Request"
             description = endpoint["description"].replace("\n", " ")
-            description = description.replace("*/", "* /")
             scopes = endpoint["auth"]["scopes"]
             scopes_expr = "&[" + ", ".join(rust_string(scope) for scope in scopes) + "]"
             out.append(f"    /// {description}")
@@ -1108,16 +1081,8 @@ EVENT_SOURCE_TIMESTAMP_LINES = (
 )
 
 
-def eventsub_field_attr(field: dict[str, Any], rename: str | None) -> list[str]:
-    if rename is not None:
-        return [
-            "#[serde(default, deserialize_with = \"super::null_default\", "
-            f"rename = {rust_string(rename)})]"
-        ]
-    return ["#[serde(default, deserialize_with = \"super::null_default\")]"]
-
-
-def eventsub_ref_struct(field: dict[str, Any]) -> str | None:
+def eventsub_ref_struct(field: dict[str, Any], is_root: bool = False) -> str | None:
+    """The shared struct a field's `ref` names (a `type_override`)."""
     ref = field.get("ref")
     if ref is None:
         return None
@@ -1152,8 +1117,8 @@ def render_shared_event_structs(
             f"Shared `{slug}` object from the EventSub reference documentation.",
             indent="",
             derives="Clone, Debug, Default, PartialEq, Serialize, Deserialize",
-            field_attr=eventsub_field_attr,
-            ref_struct=eventsub_ref_struct,
+            null_default="super::null_default",
+            type_override=eventsub_ref_struct,
         )
     return rendered
 
@@ -1161,6 +1126,8 @@ def render_shared_event_structs(
 def render_event_struct(
     item: dict[str, Any], struct_names: set[str]
 ) -> list[str]:
+    """Renders an event's payload struct, which is named
+    `<eventsub_variant(item)>Event`, and the structs nested in it."""
     fields = item["event"]["fields"]
     if any(field["name"] == "source_timestamp" for field in fields):
         raise ResponseRenderError("documented field named `source_timestamp`")
@@ -1176,18 +1143,10 @@ def render_event_struct(
         "Undocumented fields are dropped when decoding.",
         indent="",
         derives="Clone, Debug, Default, PartialEq, Serialize, Deserialize",
-        field_attr=eventsub_field_attr,
-        ref_struct=eventsub_ref_struct,
+        null_default="super::null_default",
+        type_override=eventsub_ref_struct,
         root_extra_lines=EVENT_SOURCE_TIMESTAMP_LINES,
     )
-    rendered.append(f"impl super::HasSourceTimestamp for {struct_name} {{")
-    rendered.append(
-        "    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {"
-    )
-    rendered.append("        self.source_timestamp = source_timestamp;")
-    rendered.append("    }")
-    rendered.append("}")
-    rendered.append("")
     return rendered
 
 
@@ -1221,6 +1180,8 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
     variants = []
     aliases = []
     typed_blocks: list[str] = []
+    # The generated payload structs: each has a `source_timestamp` field.
+    stamped = ["GenericEventSubPayload"]
     match_arms = []
     all_entries = []
 
@@ -1237,6 +1198,7 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
         if payload_type is None and item["event"] is not None:
             payload_type = f"{variant}Event"
             typed_blocks.extend(render_event_struct(item, set(base_names)))
+            stamped.append(payload_type)
         elif payload_type is None:
             payload_type = "GenericEventSubPayload"
             aliases.append(f"{variant}Event")
@@ -1277,16 +1239,14 @@ def render_eventsub_rust(eventsub: dict[str, Any]) -> str:
     out.append("    pub source_timestamp: Option<OffsetDateTime>,")
     out.append("}")
     out.append("")
-    out.append("impl super::HasSourceTimestamp for GenericEventSubPayload {")
-    out.append("    fn set_source_timestamp(&mut self, source_timestamp: Option<OffsetDateTime>) {")
-    out.append("        self.source_timestamp = source_timestamp;")
-    out.append("    }")
-    out.append("}")
-    out.append("")
     out.extend(shared_blocks)
     out.extend(typed_blocks)
     for alias in aliases:
         out.append(f"pub type {alias} = GenericEventSubPayload;")
+    out.append("")
+    out.append("super::impl_source_timestamp!(")
+    out.extend(f"    {name}," for name in stamped)
+    out.append(");")
     out.append("")
     out.append("#[allow(clippy::large_enum_variant)]")
     out.append("#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]")
@@ -1381,6 +1341,18 @@ def build_command(args: argparse.Namespace) -> int:
     eventsub_rs = pathlib.Path(args.eventsub_rust)
     eventsub_rs.parent.mkdir(parents=True, exist_ok=True)
     eventsub_rs.write_text(render_eventsub_rust(eventsub))
+
+    # The rendered Rust is one statement a line; the checked-in files are
+    # formatted, so that regenerating them changes only what the docs changed.
+    if shutil.which("rustfmt"):
+        subprocess.run(
+            ["rustfmt", "--edition", "2024", str(helix_rs), str(eventsub_rs)], check=True
+        )
+    else:
+        print(
+            "rustfmt not found: run `cargo fmt --all` on the generated Rust",
+            file=sys.stderr,
+        )
 
     print(
         json.dumps(
@@ -1489,7 +1461,7 @@ def diff_catalogs(old: dict[str, Any], new: dict[str, Any]) -> tuple[str, int]:
                 after = new_by_id[item_id]
                 differing = sorted(
                     key
-                    for key in sorted(set(before) | set(after))
+                    for key in set(before) | set(after)
                     if before.get(key) != after.get(key)
                 )
                 lines.append(f"- `{item_id}` changed fields: {', '.join(differing)}")
@@ -1524,7 +1496,7 @@ def diff_catalogs(old: dict[str, Any], new: dict[str, Any]) -> tuple[str, int]:
 
     lines.append(f"Severity: `{severity}`")
     lines.append("")
-    lines.append("Severity guide: `0` none, `1` additive metadata, `2` surface changed, `3` removed/breaking.")
+    lines.append("Severity guide: `0` none, `2` surface changed, `3` removed/breaking.")
     lines.append("")
     return "\n".join(lines), severity
 

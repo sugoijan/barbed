@@ -46,11 +46,6 @@ pub(crate) fn path_on<'a>(host: &str, url: &'a str) -> Option<&'a str> {
     (found == host && is_plain_path(path)).then_some(path)
 }
 
-/// `https://<host><path>`.
-pub(crate) fn https(host: &str, path: &str) -> String {
-    format!("https://{host}{path}")
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

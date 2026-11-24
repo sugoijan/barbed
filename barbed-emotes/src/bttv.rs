@@ -5,16 +5,20 @@
 //! ask for these images through a proxy ([`crate::proxy`]).
 
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::value::RawValue;
 
 use crate::model::{
     Emote, EmoteId, EmoteImage, EmoteModifier, EmoteModifierFlags, EmoteProvider, EmoteSet,
     ImageFormat, ModifierTarget, ParseError,
 };
-use crate::safe::{https, is_plain_id};
+use crate::safe::is_plain_id;
+use crate::wire::{expect_object, read_set};
 
 /// The host BetterTTV's emote images are on.
 pub const IMAGE_HOST: &str = "cdn.betterttv.net";
+
+/// The host of BetterTTV's API.
+pub(crate) const API_HOST: &str = "api.betterttv.net";
 
 /// BetterTTV's global emotes.
 pub const GLOBAL_URL: &str = "https://api.betterttv.net/3/cached/emotes/global";
@@ -24,7 +28,32 @@ pub const GLOBAL_URL: &str = "https://api.betterttv.net/3/cached/emotes/global";
 /// `None` for an id of another shape than Twitch's.
 pub fn channel_url(twitch_user_id: &str) -> Option<String> {
     is_plain_id(twitch_user_id)
-        .then(|| format!("https://api.betterttv.net/3/cached/users/twitch/{twitch_user_id}"))
+        .then(|| format!("https://{API_HOST}/3/cached/users/twitch/{twitch_user_id}"))
+}
+
+/// The files of an emote as it was uploaded, by scale.
+const UPLOADED: [&str; 3] = ["1x", "2x", "3x"];
+/// Its WebP files, and under `static/` an animated emote's still ones.
+const WEBP: [&str; 3] = ["1x.webp", "2x.webp", "3x.webp"];
+
+/// Whether the segments of a path on [`IMAGE_HOST`] are an emote's image:
+/// `emote/<id>/<n>x[.webp]` or `emote/<id>/static/<n>x.webp`.
+pub(crate) fn is_image_path(path: &[&str]) -> bool {
+    match path {
+        ["emote", id, file] => is_plain_id(id) && (UPLOADED.contains(file) || WEBP.contains(file)),
+        ["emote", id, "static", file] => is_plain_id(id) && WEBP.contains(file),
+        _ => false,
+    }
+}
+
+/// Whether the segments of a path on [`API_HOST`] are a channel's or the
+/// global emotes' address ([`channel_url`], [`GLOBAL_URL`]).
+pub(crate) fn is_api_path(path: &[&str]) -> bool {
+    match path {
+        ["3", "cached", "users", "twitch", id] => is_plain_id(id),
+        ["3", "cached", "emotes", "global"] => true,
+        _ => false,
+    }
 }
 
 /// What a modifier's code does to the emote after it, as BetterTTV's own
@@ -56,28 +85,27 @@ struct WireEmote {
     modifier: bool,
 }
 
-fn emote_from_wire(value: Value) -> Option<Emote> {
-    let wire: WireEmote = serde_json::from_value(value).ok()?;
+fn emote_from_wire(wire: WireEmote) -> Option<Emote> {
     if wire.code.is_empty() || !is_plain_id(&wire.id) {
         return None;
     }
     let animated = wire.animated || wire.image_type.eq_ignore_ascii_case("gif");
     let uploaded = ImageFormat::from_extension(&wire.image_type);
-    let at = |path: String| https(IMAGE_HOST, &format!("/emote/{}/{path}", wire.id));
-    let mut images = Vec::new();
-    for scale in 1..=3u8 {
+    let at = |path: &str| format!("https://{IMAGE_HOST}/emote/{}/{path}", wire.id);
+    let mut images = Vec::with_capacity(9);
+    for (scale, (original, webp)) in (1u8..).zip(UPLOADED.into_iter().zip(WEBP)) {
         // The emote as it was uploaded (a GIF where it is animated).
-        let mut original = EmoteImage::new(at(format!("{scale}x")), scale).animated(animated);
-        original.format = uploaded;
-        images.push(original);
+        let mut image = EmoteImage::new(at(original), scale).animated(animated);
+        image.format = uploaded;
+        images.push(image);
         images.push(
-            EmoteImage::new(at(format!("{scale}x.webp")), scale)
+            EmoteImage::new(at(webp), scale)
                 .animated(animated)
                 .with_format(ImageFormat::WebP),
         );
         if animated {
             images.push(
-                EmoteImage::new(at(format!("static/{scale}x.webp")), scale)
+                EmoteImage::new(at(&format!("static/{webp}")), scale)
                     .with_format(ImageFormat::WebP),
             );
         }
@@ -97,18 +125,8 @@ fn emote_from_wire(value: Value) -> Option<Emote> {
     Some(emote)
 }
 
-fn set_from_wire(name: &str, entries: Vec<Value>) -> EmoteSet {
-    let mut set = EmoteSet {
-        name: Some(name.to_string()),
-        ..EmoteSet::default()
-    };
-    for value in entries {
-        match emote_from_wire(value) {
-            Some(emote) => set.emotes.push(emote),
-            None => set.skipped += 1,
-        }
-    }
-    set
+fn set_from_wire(name: &str, entries: Vec<&RawValue>) -> EmoteSet {
+    read_set(None, Some(name.to_string()), entries, emote_from_wire)
 }
 
 /// Reads the answer of [`GLOBAL_URL`] (an array of emotes).
@@ -118,7 +136,7 @@ fn set_from_wire(name: &str, entries: Vec<Value>) -> EmoteSet {
 /// modifier (`w!`, `h!`, …) is an [effect](EmoteModifier::effect) on the
 /// emote after it.
 pub fn parse_global(body: &str) -> Result<EmoteSet, ParseError> {
-    let entries: Vec<Value> = serde_json::from_str(body)?;
+    let entries: Vec<&RawValue> = serde_json::from_str(body)?;
     Ok(set_from_wire("BetterTTV Global", entries))
 }
 
@@ -149,21 +167,18 @@ impl BttvChannel {
 }
 
 #[derive(Deserialize)]
-struct WireChannel {
-    #[serde(rename = "channelEmotes", default)]
-    channel_emotes: Vec<Value>,
-    #[serde(rename = "sharedEmotes", default)]
-    shared_emotes: Vec<Value>,
+struct WireChannel<'a> {
+    #[serde(rename = "channelEmotes", borrow, default)]
+    channel_emotes: Vec<&'a RawValue>,
+    #[serde(rename = "sharedEmotes", borrow, default)]
+    shared_emotes: Vec<&'a RawValue>,
 }
 
 /// Reads the answer of [`channel_url`] (`{"channelEmotes": [...],
 /// "sharedEmotes": [...]}`).
 pub fn parse_channel(body: &str) -> Result<BttvChannel, ParseError> {
-    let value: Value = serde_json::from_str(body)?;
-    if !value.is_object() {
-        return Err(ParseError::Shape("a BetterTTV channel is an object"));
-    }
-    let wire: WireChannel = serde_json::from_value(value)?;
+    expect_object(body, "a BetterTTV channel is an object")?;
+    let wire: WireChannel<'_> = serde_json::from_str(body)?;
     Ok(BttvChannel {
         channel: set_from_wire("Channel Emotes", wire.channel_emotes),
         shared: set_from_wire("Shared Emotes", wire.shared_emotes),
